@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client"
+  output     = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPER_ADMIN
+  GYM_OWNER
+  MEMBER
+}
+
+// User model
+model User {
+  id                String        @id @default(uuid())
+  first_name        String
+  last_name         String
+  phone_number      String
+  address           String
+  city              String
+  state             String
+  zip_code          String
+  country           String
+  date_of_birth     DateTime
+  cnic              String?
+  profile_picture   String?
+  email             String?
+  password          String?
+  role              Role          @default(MEMBER)
+  subscription_id   String?
+  billing_model     BillingModel?
+  next_payment_date DateTime?
+  is_active         Boolean       @default(true)
+  is_deleted        Boolean       @default(false)
+  subscription      Subscription? @relation(fields: [subscription_id], references: [id])
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  todos             Todo[]
+  gyms_owned        Gym[]         @relation("UserGyms")
+  member            Member?
+}
+
+model Todo {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  is_completed Boolean  @default(false)
+  is_active    Boolean  @default(true)
+  is_deleted   Boolean  @default(false)
+  user_id      String
+  user         User     @relation(fields: [user_id], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum BillingModel {
+  MONTHLY
+  YEARLY
+}
+
+// Gym model
+model Gym {
+  id           String       @id @default(uuid())
+  name         String
+  owner_id     String
+  address      String?
+  city         String?
+  state        String?
+  zip_code     String?
+  country      String?
+  phone_number String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  is_active    Boolean      @default(true)
+  is_deleted   Boolean      @default(false)
+  // Relations
+  owner        User         @relation("UserGyms", fields: [owner_id], references: [id])
+  members      Member[]
+  equipment    Equipment[]
+}
+
+// Member model
+model Member {
+  id       String   @id @default(uuid())
+  user_id  String   @unique
+  gym_id   String
+  joinedAt DateTime @default(now())
+
+  // Relations
+  user       User         @relation(fields: [user_id], references: [id])
+  gym        Gym          @relation(fields: [gym_id], references: [id])
+  membership_fee membership_fee[]
+}
+
+model membership_fee {
+  id         String   @id @default(uuid())
+  price      Int
+  start_date DateTime
+  end_date   DateTime
+  is_expired Boolean  @default(false)
+  notification_sent Boolean  @default(false)
+  is_active  Boolean  @default(true)
+  is_deleted Boolean  @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  // Relations
+  member_id  String
+  member     Member   @relation(fields: [member_id], references: [id])
+  
+}
+
+
+// Equipment model
+model Equipment {
+  id         String  @id @default(uuid())
+  name       String
+  type       String
+  quantity   String
+  weight     String?
+  is_active  Boolean @default(true)
+  is_deleted Boolean @default(false)
+  gym_id     String
+  gym        Gym     @relation(fields: [gym_id], references: [id])
+}
+
+model Subscription {
+  id                  String                @id @default(uuid())
+  name                String
+  monthly_price       Int
+  yearly_price        Int
+  max_gyms            Int
+  max_members         Int
+  max_equipment       Int
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  User                User[]
+  SubscriptionFeature SubscriptionFeature[]
+  is_active           Boolean               @default(true)
+  is_deleted          Boolean               @default(false)
+}
+
+model SubscriptionFeature {
+  id              String       @id @default(uuid())
+  subscription_id String
+  subscription    Subscription @relation(fields: [subscription_id], references: [id])
+  feature_id      String
+  feature         Feature      @relation(fields: [feature_id], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Feature {
+  id                  String                @id @default(uuid())
+  name                String
+  description         String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  SubscriptionFeature SubscriptionFeature[]
+  is_active           Boolean               @default(true)
+  is_deleted          Boolean               @default(false)
+}
