@@ -20,17 +20,16 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env.local` file at the project root before running any commands. The application expects the following keys:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Description | Example |
+| --- | --- | --- |
+| `DATABASE_URL` | Connection string for your Postgres database used by Prisma. | `postgresql://USER:PASSWORD@localhost:5432/gym_saas` |
+| `NEXTAUTH_SECRET` | Random string used by NextAuth to sign/encrypt tokens. You can generate one with `openssl rand -base64 32`. | `your-long-random-secret` |
+| `ENV` | Simple environment flag consumed in NextAuth debug mode. Use `PROD` in production to silence debug logs. | `DEV` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> Use `.env.local` (not committed to git) or your hosting provider’s secret manager when deploying.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+After updating environment variables, restart the dev server to ensure the new values are picked up.
