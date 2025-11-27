@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { animate } from "framer-motion"
+import { Menu } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,10 +20,25 @@ const navigation = [
 
 export function LandingHeader() {
     const [isOpen, setIsOpen] = React.useState(false)
+    const handleNavigation = React.useCallback((href: string) => {
+        if (typeof window === "undefined") return
+
+        const section = document.querySelector<HTMLElement>(href)
+        if (!section) return
+
+        const y =
+            section.getBoundingClientRect().top + window.scrollY - 72 // offset sticky header
+
+        animate(window.scrollY, y, {
+            duration: 0.8,
+            ease: "easeInOut",
+            onUpdate: (latest) => window.scrollTo({ top: latest }),
+        })
+    }, [])
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-8">
+        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+            <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-8">
                 <div className="mr-4 hidden md:flex">
                     <Link href="/" className="mr-6 flex items-center space-x-2">
                         <span className="hidden font-bold sm:inline-block">
@@ -35,6 +51,10 @@ export function LandingHeader() {
                                 key={item.href}
                                 href={item.href}
                                 className="transition-colors hover:text-foreground/80 text-foreground/60"
+                                onClick={(event) => {
+                                    event.preventDefault()
+                                    handleNavigation(item.href)
+                                }}
                             >
                                 {item.name}
                             </Link>
@@ -67,7 +87,11 @@ export function LandingHeader() {
                                     key={item.href}
                                     href={item.href}
                                     className="block text-lg font-medium transition-colors hover:text-foreground/80 text-foreground/60"
-                                    onClick={() => setIsOpen(false)}
+                                    onClick={(event) => {
+                                        event.preventDefault()
+                                        setIsOpen(false)
+                                        handleNavigation(item.href)
+                                    }}
                                 >
                                     {item.name}
                                 </Link>

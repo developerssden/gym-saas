@@ -11,11 +11,21 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <LandingHeader />
       <main className="flex-1">
-        <Hero />
-        <Features />
-        <Testimonials />
-        <Pricing />
-        <CTA />
+        <section id="hero">
+          <Hero />
+        </section>
+        <section id="features">
+          <Features />
+        </section>
+        <section id="testimonials">
+          <Testimonials />
+        </section>
+        <section id="pricing">
+          <Pricing />
+        </section>
+        <section id="cta">
+          <CTA />
+        </section>
       </main>
       <Footer />
     </div>
