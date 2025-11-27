@@ -13,11 +13,11 @@ type RouteGate = {
 const ROUTE_GATES: RouteGate[] = [
   {
     routes: ['/dashboard'],
-    roles: ['SUPER_ADMIN']
+    roles: ['SUPER_ADMIN','GYM_OWNER']
   },
   {
-    routes: ['/dashboard'],
-    roles: ['SUPER_ADMIN', 'GYM_OWNER']
+    routes: ['/clients'],
+    roles: ['SUPER_ADMIN']
   }
 ];
 

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import {
     Sheet,
     SheetContent,
+    SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
 
@@ -72,6 +73,7 @@ export function LandingHeader() {
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="pr-0">
+                        <SheetTitle className="sr-only">Menu</SheetTitle>
                         <div className="px-7">
                             <Link
                                 href="/"
@@ -103,12 +105,12 @@ export function LandingHeader() {
                     <div className="w-full flex-1 md:w-auto md:flex-none">
                     </div>
                     <nav className="flex items-center gap-2">
-                        <Link href="/login">
+                        <Link href="/sign-in">
                             <Button variant="ghost" size="sm">
                                 Log in
                             </Button>
                         </Link>
-                        <Link href="/signup">
+                        <Link href="#">
                             <Button size="sm">
                                 Get Started
                             </Button>

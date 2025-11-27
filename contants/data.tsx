@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';
+import { Building, Calendar, CheckSquare, CreditCard, Home, Inbox, Map, Megaphone, Search, Settings, Users } from 'lucide-react';
 
 type Role = 'SUPER_ADMIN' | 'GYM_OWNER' | 'MEMBER';
 
@@ -18,28 +18,40 @@ export const routeItems: RouteItem[] = [
     permissions: ['SUPER_ADMIN', 'GYM_OWNER']
   },
   {
-    title: 'Inbox',
-    href: '/inbox',
-    icon: Inbox,
-    permissions: ['GYM_OWNER']
+    title: 'Clients',
+    href: '/clients',
+    icon: Users,
+    permissions: ['SUPER_ADMIN']
   },
   {
-    title: 'Calendar',
-    href: '/calendar',
-    icon: Calendar,
-    permissions: ['GYM_OWNER']
+    title: 'Gyms',
+    href: '/gyms',
+    icon: Building,
+    permissions: ['SUPER_ADMIN']
   },
   {
-    title: 'Search',
-    href: '/search',
-    icon: Search,
-    permissions: ['GYM_OWNER']
+    title: 'Locations',
+    href: '/locations',
+    icon: Map,
+    permissions: ['SUPER_ADMIN']
   },
   {
-    title: 'Settings',
-    href: '/settings',
-    icon: Settings,
-    permissions: ['GYM_OWNER']
+    title: 'Subscriptions',
+    href: '/subscriptions',
+    icon: CreditCard,
+    permissions: ['SUPER_ADMIN']
+  },
+  {
+    title: 'Features',
+    href: '/features',
+    icon: CheckSquare,
+    permissions: ['SUPER_ADMIN']
+  },
+  {
+    title: 'Announcements',
+    href: '/announcements',
+    icon: Megaphone,
+    permissions: ['SUPER_ADMIN']
   }
 ];
 
