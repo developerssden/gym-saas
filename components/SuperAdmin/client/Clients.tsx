@@ -1,11 +1,8 @@
-import { PageContainer } from '@/components/layout/page-container'
+import { PageContainer } from "@/components/layout/page-container";
+import { Session } from "next-auth";
 
-const Clients = ({ session }: { session: any }) => {
-  return (
-    <PageContainer>
-        Clients
-    </PageContainer>
-  )
-}
+const Clients = ({ session }: { session: Session }) => {
+  return <PageContainer>Clients</PageContainer>;
+};
 
-export default Clients
+export default Clients;

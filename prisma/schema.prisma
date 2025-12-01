@@ -137,28 +137,6 @@ model Subscription {
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   User                User[]
-  SubscriptionFeature SubscriptionFeature[]
-  is_active           Boolean               @default(true)
-  is_deleted          Boolean               @default(false)
-}
-
-model SubscriptionFeature {
-  id              String       @id @default(uuid())
-  subscription_id String
-  subscription    Subscription @relation(fields: [subscription_id], references: [id])
-  feature_id      String
-  feature         Feature      @relation(fields: [feature_id], references: [id])
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-}
-
-model Feature {
-  id                  String                @id @default(uuid())
-  name                String
-  description         String
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  SubscriptionFeature SubscriptionFeature[]
   is_active           Boolean               @default(true)
   is_deleted          Boolean               @default(false)
 }
