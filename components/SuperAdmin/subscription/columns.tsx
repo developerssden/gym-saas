@@ -2,24 +2,11 @@
 "use client"
 
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
+import { Subscription } from "@/types"
 import { ColumnDef } from "@tanstack/react-table"
 import { PencilIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from "lucide-react"
 
-// Type representing a Subscription row
-export type Subscription = {
-  id: string
-  name: string
-  monthly_price: number
-  yearly_price: number
-  max_gyms: number
-  max_members: number
-  max_equipment: number
-  is_active: boolean
-  is_deleted: boolean
-  createdAt: Date
-  updatedAt: Date
-  ownerSubscriptions?: any[] // optional if you want owner count
-}
+
 
 // Column definitions for TanStack table
 export const columns: ColumnDef<Subscription>[] = [
@@ -67,27 +54,6 @@ export const columns: ColumnDef<Subscription>[] = [
       <DataTableColumnHeader column={column} title="Active" />
     ),
     cell: info => (info.getValue<boolean>() ? "Yes" : "No"),
-  },
-  {
-    accessorKey: "is_deleted",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Deleted" />
-    ),
-    cell: info => (info.getValue<boolean>() ? "Yes" : "No"),
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Created At" />
-    ),
-    cell: info => new Date(info.getValue<Date>()).toLocaleDateString(),
-  },
-  {
-    accessorKey: "updatedAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Updated At" />
-    ),
-    cell: info => new Date(info.getValue<Date>()).toLocaleDateString(),
   },
   {
     id: "actions",
