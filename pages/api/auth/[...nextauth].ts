@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { verifyPassword } from '@/lib/authHelper';
 import prisma from '@/lib/prisma';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
@@ -29,7 +30,7 @@ export const options: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         try {
-          let { email, password } = req.body as {
+          const { email, password } = req.body as {
             email: string;
             password: string;
           };

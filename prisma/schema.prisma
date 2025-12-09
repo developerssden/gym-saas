@@ -13,6 +13,11 @@ enum Role {
   MEMBER
 }
 
+enum SubscriptionType {
+  MONTHLY
+  YEARLY
+}
+
 // User model
 model User {
   id                String        @id @default(uuid())
@@ -41,6 +46,8 @@ model User {
   todos             Todo[]
   gyms_owned        Gym[]         @relation("UserGyms")
   member            Member?
+
+  ownerSubscriptions owner_subscription[]
 }
 
 model Todo {
@@ -126,6 +133,26 @@ model Equipment {
   gym        Gym     @relation(fields: [gym_id], references: [id])
 }
 
+model owner_subscription {
+  id                  String        @id @default(uuid())
+  subscription_id     String
+  owner_id            String
+  type                String        // "monthly" | "yearly"
+  price               Int
+  start_date          DateTime
+  end_date            DateTime
+  is_expired          Boolean       @default(false)
+  notification_sent   Boolean       @default(false)
+  is_active           Boolean       @default(true)
+  is_deleted          Boolean       @default(false)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @default(now())
+  
+  // Relations
+  owner               User          @relation(fields: [owner_id], references: [id])
+  subscription        Subscription  @relation(fields: [subscription_id], references: [id])
+}
+
 model Subscription {
   id                  String                @id @default(uuid())
   name                String
@@ -139,4 +166,6 @@ model Subscription {
   User                User[]
   is_active           Boolean               @default(true)
   is_deleted          Boolean               @default(false)
+
+  ownerSubscriptions owner_subscription[]
 }

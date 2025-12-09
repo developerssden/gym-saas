@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SiteHeader } from "@/components/layout/header";
-import { Sidebar, SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 
 
@@ -22,6 +23,7 @@ export default function DashboardLayout({
       <main className="flex-1">
         <SiteHeader />
         {children}
+        <Toaster richColors position="top-right" />
       </main>
     </SidebarProvider>
   );
