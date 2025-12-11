@@ -390,9 +390,8 @@ export const ModelName = {
   Member: 'Member',
   membership_fee: 'membership_fee',
   Equipment: 'Equipment',
-  Subscription: 'Subscription',
-  SubscriptionFeature: 'SubscriptionFeature',
-  Feature: 'Feature'
+  owner_subscription: 'owner_subscription',
+  Subscription: 'Subscription'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -408,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "todo" | "gym" | "member" | "membership_fee" | "equipment" | "subscription" | "subscriptionFeature" | "feature"
+    modelProps: "user" | "todo" | "gym" | "member" | "membership_fee" | "equipment" | "owner_subscription" | "subscription"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -856,6 +855,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    owner_subscription: {
+      payload: Prisma.$owner_subscriptionPayload<ExtArgs>
+      fields: Prisma.owner_subscriptionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.owner_subscriptionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.owner_subscriptionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload>
+        }
+        findFirst: {
+          args: Prisma.owner_subscriptionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.owner_subscriptionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload>
+        }
+        findMany: {
+          args: Prisma.owner_subscriptionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload>[]
+        }
+        create: {
+          args: Prisma.owner_subscriptionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload>
+        }
+        createMany: {
+          args: Prisma.owner_subscriptionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.owner_subscriptionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload>[]
+        }
+        delete: {
+          args: Prisma.owner_subscriptionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload>
+        }
+        update: {
+          args: Prisma.owner_subscriptionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload>
+        }
+        deleteMany: {
+          args: Prisma.owner_subscriptionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.owner_subscriptionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.owner_subscriptionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload>[]
+        }
+        upsert: {
+          args: Prisma.owner_subscriptionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$owner_subscriptionPayload>
+        }
+        aggregate: {
+          args: Prisma.Owner_subscriptionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOwner_subscription>
+        }
+        groupBy: {
+          args: Prisma.owner_subscriptionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Owner_subscriptionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.owner_subscriptionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Owner_subscriptionCountAggregateOutputType> | number
+        }
+      }
+    }
     Subscription: {
       payload: Prisma.$SubscriptionPayload<ExtArgs>
       fields: Prisma.SubscriptionFieldRefs
@@ -927,154 +1000,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SubscriptionCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SubscriptionCountAggregateOutputType> | number
-        }
-      }
-    }
-    SubscriptionFeature: {
-      payload: Prisma.$SubscriptionFeaturePayload<ExtArgs>
-      fields: Prisma.SubscriptionFeatureFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.SubscriptionFeatureFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.SubscriptionFeatureFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload>
-        }
-        findFirst: {
-          args: Prisma.SubscriptionFeatureFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.SubscriptionFeatureFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload>
-        }
-        findMany: {
-          args: Prisma.SubscriptionFeatureFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload>[]
-        }
-        create: {
-          args: Prisma.SubscriptionFeatureCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload>
-        }
-        createMany: {
-          args: Prisma.SubscriptionFeatureCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.SubscriptionFeatureCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload>[]
-        }
-        delete: {
-          args: Prisma.SubscriptionFeatureDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload>
-        }
-        update: {
-          args: Prisma.SubscriptionFeatureUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload>
-        }
-        deleteMany: {
-          args: Prisma.SubscriptionFeatureDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.SubscriptionFeatureUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.SubscriptionFeatureUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload>[]
-        }
-        upsert: {
-          args: Prisma.SubscriptionFeatureUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFeaturePayload>
-        }
-        aggregate: {
-          args: Prisma.SubscriptionFeatureAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateSubscriptionFeature>
-        }
-        groupBy: {
-          args: Prisma.SubscriptionFeatureGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.SubscriptionFeatureGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.SubscriptionFeatureCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.SubscriptionFeatureCountAggregateOutputType> | number
-        }
-      }
-    }
-    Feature: {
-      payload: Prisma.$FeaturePayload<ExtArgs>
-      fields: Prisma.FeatureFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.FeatureFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.FeatureFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload>
-        }
-        findFirst: {
-          args: Prisma.FeatureFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.FeatureFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload>
-        }
-        findMany: {
-          args: Prisma.FeatureFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload>[]
-        }
-        create: {
-          args: Prisma.FeatureCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload>
-        }
-        createMany: {
-          args: Prisma.FeatureCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.FeatureCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload>[]
-        }
-        delete: {
-          args: Prisma.FeatureDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload>
-        }
-        update: {
-          args: Prisma.FeatureUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload>
-        }
-        deleteMany: {
-          args: Prisma.FeatureDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.FeatureUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.FeatureUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload>[]
-        }
-        upsert: {
-          args: Prisma.FeatureUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$FeaturePayload>
-        }
-        aggregate: {
-          args: Prisma.FeatureAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateFeature>
-        }
-        groupBy: {
-          args: Prisma.FeatureGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.FeatureGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.FeatureCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.FeatureCountAggregateOutputType> | number
         }
       }
     }
@@ -1220,6 +1145,25 @@ export const EquipmentScalarFieldEnum = {
 export type EquipmentScalarFieldEnum = (typeof EquipmentScalarFieldEnum)[keyof typeof EquipmentScalarFieldEnum]
 
 
+export const Owner_subscriptionScalarFieldEnum = {
+  id: 'id',
+  subscription_id: 'subscription_id',
+  owner_id: 'owner_id',
+  type: 'type',
+  price: 'price',
+  start_date: 'start_date',
+  end_date: 'end_date',
+  is_expired: 'is_expired',
+  notification_sent: 'notification_sent',
+  is_active: 'is_active',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type Owner_subscriptionScalarFieldEnum = (typeof Owner_subscriptionScalarFieldEnum)[keyof typeof Owner_subscriptionScalarFieldEnum]
+
+
 export const SubscriptionScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -1235,30 +1179,6 @@ export const SubscriptionScalarFieldEnum = {
 } as const
 
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
-
-
-export const SubscriptionFeatureScalarFieldEnum = {
-  id: 'id',
-  subscription_id: 'subscription_id',
-  feature_id: 'feature_id',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type SubscriptionFeatureScalarFieldEnum = (typeof SubscriptionFeatureScalarFieldEnum)[keyof typeof SubscriptionFeatureScalarFieldEnum]
-
-
-export const FeatureScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  is_active: 'is_active',
-  is_deleted: 'is_deleted'
-} as const
-
-export type FeatureScalarFieldEnum = (typeof FeatureScalarFieldEnum)[keyof typeof FeatureScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1466,9 +1386,8 @@ export type GlobalOmitConfig = {
   member?: Prisma.MemberOmit
   membership_fee?: Prisma.membership_feeOmit
   equipment?: Prisma.EquipmentOmit
+  owner_subscription?: Prisma.owner_subscriptionOmit
   subscription?: Prisma.SubscriptionOmit
-  subscriptionFeature?: Prisma.SubscriptionFeatureOmit
-  feature?: Prisma.FeatureOmit
 }
 
 /* Types for Logging */

@@ -32,25 +32,60 @@ export function DataTable<TData, TValue>({
     columns,
     data,
     searchableColumns = [],
-}: DataTableProps<TData, TValue>) {
+    pageCount,
+    rowCount,
+    onPaginationChange,
+    onSearchChange,
+    pagination,
+    searchValue,
+}: DataTableProps<TData, TValue> & {
+    pageCount?: number
+    rowCount?: number
+    onPaginationChange?: (pagination: { pageIndex: number; pageSize: number }) => void
+    onSearchChange?: (value: string) => void
+    pagination?: { pageIndex: number; pageSize: number }
+    searchValue?: string
+}) {
 
     const [sorting, setSorting] = React.useState<SortingState>([])
-    const [globalFilter, setGlobalFilter] = React.useState("")
+    const [internalGlobalFilter, setInternalGlobalFilter] = React.useState("")
+
+    // Use controlled or uncontrolled state
+    const globalFilter = searchValue !== undefined ? searchValue : internalGlobalFilter
+    const setGlobalFilter = onSearchChange ? onSearchChange : setInternalGlobalFilter
 
     const table = useReactTable({
         data,
         columns,
+        pageCount: pageCount ?? -1,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
+        manualPagination: !!pageCount,
+        manualFiltering: !!onSearchChange,
+        onPaginationChange: (updater) => {
+            if (typeof updater === "function") {
+                const newPagination = updater(table.getState().pagination)
+                onPaginationChange?.(newPagination)
+            } else {
+                onPaginationChange?.(updater)
+            }
+        },
         state: {
             sorting,
+            pagination,
+            globalFilter,
         },
     })
 
-    // Filter rows based on global filter across searchable columns
+    // Filter rows based on global filter - ONLY for client-side mode
     const filteredRows = React.useMemo(() => {
+        if (!!onSearchChange) {
+            // Server-side filtering, data is already filtered
+            return table.getRowModel().rows
+        }
+
         if (!globalFilter || searchableColumns.length === 0) {
             return table.getRowModel().rows
         }
@@ -64,7 +99,7 @@ export function DataTable<TData, TValue>({
                     .includes(globalFilter.toLowerCase())
             })
         })
-    }, [table, globalFilter, searchableColumns])
+    }, [table, globalFilter, searchableColumns, onSearchChange])
 
     return (
         <div className="flex flex-col gap-4">

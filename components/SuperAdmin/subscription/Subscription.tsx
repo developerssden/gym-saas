@@ -9,14 +9,25 @@ import { columns } from "./columns";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Subscription as SubscriptionType } from "@/types";
+import { useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const Subscription = ({ session }: { session: Session }) => {
-  const { data: subscriptions, isLoading, error } = useQuery({
-    queryKey: ["subscriptions"],
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const [globalFilter, setGlobalFilter] = useState("");
+  const debouncedFilter = useDebounce(globalFilter, 1000);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["subscriptions", pagination.pageIndex, pagination.pageSize, debouncedFilter],
     queryFn: async () => {
-      const response = await axios.get<SubscriptionType[]>("/api/subscription/getsubscriptions");
-      return response.data;
+      const response = await axios.post("/api/subscription/getsubscriptions", {
+        page: pagination.pageIndex + 1,
+        limit: pagination.pageSize,
+        search: debouncedFilter,
+      });
+      return response.data as { data: SubscriptionType[]; totalCount: number; pageCount: number };
     },
+    placeholderData: (previousData) => previousData, // Keep previous data while fetching new data
   });
 
   return (
@@ -28,7 +39,7 @@ const Subscription = ({ session }: { session: Session }) => {
         </Link>
       </div>
 
-      {isLoading && (
+      {isLoading && !data && (
         <div className="flex justify-center items-center h-64">
           <p>Loading subscriptions...</p>
         </div>
@@ -40,11 +51,17 @@ const Subscription = ({ session }: { session: Session }) => {
         </div>
       )}
 
-      {subscriptions && !isLoading && !error && (
+      {data && (
         <DataTable
           columns={columns}
-          data={subscriptions}
+          data={data.data}
           searchableColumns={["name", "monthly_price", "yearly_price"]}
+          pageCount={data.pageCount}
+          rowCount={data.totalCount}
+          onPaginationChange={setPagination}
+          onSearchChange={setGlobalFilter}
+          pagination={pagination}
+          searchValue={globalFilter}
         />
       )}
     </PageContainer>

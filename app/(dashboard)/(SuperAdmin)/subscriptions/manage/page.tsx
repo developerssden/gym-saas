@@ -16,24 +16,24 @@ import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { useState } from "react";
 
 const SubscriptionSchema = Yup.object({
-      name: Yup.string().required("Name is required"),
-      monthly_price: Yup.number()
-        .typeError("Must be a number")
-        .required("Monthly price is required"),
-      yearly_price: Yup.number()
-        .typeError("Must be a number")
-        .required("Yearly price is required"),
-      max_gyms: Yup.number()
-        .typeError("Must be a number")
-        .required("Max gyms is required"),
-      max_members: Yup.number()
-        .typeError("Must be a number")
-        .required("Max members is required"),
-      max_equipment: Yup.number()
-        .typeError("Must be a number")
-        .required("Max equipment is required"),
-      is_active: Yup.boolean(),
-    });
+  name: Yup.string().required("Name is required"),
+  monthly_price: Yup.number()
+    .typeError("Must be a number")
+    .required("Monthly price is required"),
+  yearly_price: Yup.number()
+    .typeError("Must be a number")
+    .required("Yearly price is required"),
+  max_gyms: Yup.number()
+    .typeError("Must be a number")
+    .required("Max gyms is required"),
+  max_members: Yup.number()
+    .typeError("Must be a number")
+    .required("Max members is required"),
+  max_equipment: Yup.number()
+    .typeError("Must be a number")
+    .required("Max equipment is required"),
+  is_active: Yup.boolean(),
+});
 
 const ManageSubscriptions = () => {
   const searchParams = useSearchParams();
@@ -44,47 +44,46 @@ const ManageSubscriptions = () => {
   const [loading, setLoading] = useState(false);
 
   const { data: subscriptionData, isLoading: fetching } = useQuery({
-  queryKey: ["subscription", subscriptionId],
-  queryFn: async () => {
-    if (!subscriptionId) return null;
-    const res = await axios.post(`/api/subscription/getsubscription`, {
-      id: subscriptionId,
-    });
-    return res.data;
-  },
-  enabled: !!subscriptionId && action !== "create", // only fetch if editing or viewing
-});
-
+    queryKey: ["subscription", subscriptionId],
+    queryFn: async () => {
+      if (!subscriptionId) return null;
+      const res = await axios.post(`/api/subscription/getsubscription`, {
+        id: subscriptionId,
+      });
+      return res.data;
+    },
+    enabled: !!subscriptionId && action !== "create", // only fetch if editing or viewing
+  });
 
   // Mutations
   const createMutation = useMutation({
-  mutationFn: (values) => axios.post("/api/subscription/createsubscription", values),
-  onSuccess: (res) => {
-    toast.success(res.data.message || "Subscription created successfully!");
-    queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
-    router.push("/subscriptions");
-  },
-  onError: (err: unknown) => {
-    toast.error(getErrorMessage(err));
-  },
-});
+    mutationFn: (values) => axios.post("/api/subscription/createsubscription", values),
+    onSuccess: (res) => {
+      toast.success(res.data.message || "Subscription created successfully!");
+      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      router.push("/subscriptions");
+    },
+    onError: (err: unknown) => {
+      toast.error(getErrorMessage(err));
+    },
+  });
 
 
   const updateMutation = useMutation({
-  mutationFn: (values) =>
-    axios.post(`/api/subscription/updatesubscription`, values),
-  onSuccess: (res) => {
-    toast.success(res.data.message || "Subscription updated successfully!");
-    queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
-    router.push("/subscriptions");
-  },
-  onError: (err: unknown) => {
-    toast.error(getErrorMessage(err));
-  },
-});
+    mutationFn: (values: any) =>
+      axios.post(`/api/subscription/updatesubscription`, { id: subscriptionId, ...values }),
+    onSuccess: (res) => {
+      toast.success(res.data.message || "Subscription updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      router.push("/subscriptions");
+    },
+    onError: (err: unknown) => {
+      toast.error(getErrorMessage(err));
+    },
+  });
 
 
-const formik = useFormik({
+  const formik = useFormik({
     initialValues: {
       name: subscriptionData?.name || "",
       monthly_price: subscriptionData?.monthly_price || "",
@@ -96,10 +95,11 @@ const formik = useFormik({
     },
 
     validationSchema: SubscriptionSchema,
+    enableReinitialize: true,
 
     onSubmit: async (values) => {
       setLoading(true);
-  try {
+      try {
         if (action === "create") {
           await createMutation.mutateAsync(values as any);
         } else if (action === "edit") {
@@ -108,7 +108,7 @@ const formik = useFormik({
       } finally {
         setLoading(false);
       }
-}
+    }
   });
 
   if (fetching) return <FullScreenLoader label="Loading subscription..." />;
@@ -117,124 +117,124 @@ const formik = useFormik({
     <PageContainer>
       {loading && <FullScreenLoader label="Saving subscription..." />}
       <div className="w-full space-y-12">
-      <h1 className="h1 text-center">
-        {action === "create"
-          ? "Create Subscription"
-          : action === "edit"
-          ? "Edit Subscription"
-          : "View Subscription"}
-      </h1>
+        <h1 className="h1 text-center">
+          {action === "create"
+            ? "Create Subscription"
+            : action === "edit"
+              ? "Edit Subscription"
+              : "View Subscription"}
+        </h1>
         <form className="max-w-2xl mx-auto" onSubmit={formik.handleSubmit}>
-      <div className=" grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-      {/* Name */}
-      <div className="space-y-1">
-        <Label>Name</Label>
-        <Input
-          name="name"
-          value={formik.values.name}
-          onChange={formik.handleChange}
-          disabled={action === "view"}
-        />
-        {formik.errors.name === "string" && (
-          <p className="text-red-500 text-sm">{formik.errors.name}</p>
-        )}
-      </div>
+          <div className=" grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+            {/* Name */}
+            <div className="space-y-1">
+              <Label>Name</Label>
+              <Input
+                name="name"
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {formik.errors.name === "string" && (
+                <p className="text-red-500 text-sm">{formik.errors.name}</p>
+              )}
+            </div>
 
-      {/* Monthly Price */}
-      <div className="space-y-1">
-        <Label>Monthly Price</Label>
-        <Input
-          name="monthly_price"
-          type="number"
-          value={formik.values.monthly_price}
-          onChange={formik.handleChange}
-          disabled={action === "view"}
-        />
-        {formik.errors.monthly_price === "string" && (
-          <p className="text-red-500 text-sm">{formik.errors.monthly_price}</p>
-        )}
-      </div>
+            {/* Monthly Price */}
+            <div className="space-y-1">
+              <Label>Monthly Price</Label>
+              <Input
+                name="monthly_price"
+                type="number"
+                value={formik.values.monthly_price}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {formik.errors.monthly_price === "string" && (
+                <p className="text-red-500 text-sm">{formik.errors.monthly_price}</p>
+              )}
+            </div>
 
-      {/* Yearly Price */}
-      <div className="space-y-1">
-        <Label>Yearly Price</Label>
-        <Input
-          name="yearly_price"
-          type="number"
-          value={formik.values.yearly_price}
-          onChange={formik.handleChange}
-          disabled={action === "view"}
-        />
-        {formik.errors.yearly_price === "string" && (
-          <p className="text-red-500 text-sm">{formik.errors.yearly_price}</p>
-        )}
-      </div>
+            {/* Yearly Price */}
+            <div className="space-y-1">
+              <Label>Yearly Price</Label>
+              <Input
+                name="yearly_price"
+                type="number"
+                value={formik.values.yearly_price}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {formik.errors.yearly_price === "string" && (
+                <p className="text-red-500 text-sm">{formik.errors.yearly_price}</p>
+              )}
+            </div>
 
-      {/* Max Gyms */}
-      <div className="space-y-1">
-        <Label>Max Gyms</Label>
-        <Input
-          name="max_gyms"
-          type="number"
-          value={formik.values.max_gyms}
-          onChange={formik.handleChange}
-          disabled={action === "view"}
-        />
-        {formik.errors.max_gyms === "string" && (
-          <p className="text-red-500 text-sm">{formik.errors.max_gyms}</p>
-        )}
-      </div>
+            {/* Max Gyms */}
+            <div className="space-y-1">
+              <Label>Max Gyms</Label>
+              <Input
+                name="max_gyms"
+                type="number"
+                value={formik.values.max_gyms}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {formik.errors.max_gyms === "string" && (
+                <p className="text-red-500 text-sm">{formik.errors.max_gyms}</p>
+              )}
+            </div>
 
-      {/* Max Members */}
-      <div className="space-y-1">
-        <Label>Max Members</Label>
-        <Input
-          name="max_members"
-          type="number"
-          value={formik.values.max_members}
-          onChange={formik.handleChange}
-          disabled={action === "view"}
-        />
-        {formik.errors.max_members === "string" && (
-          <p className="text-red-500 text-sm">{formik.errors.max_members}</p>
-        )}
-      </div>
+            {/* Max Members */}
+            <div className="space-y-1">
+              <Label>Max Members</Label>
+              <Input
+                name="max_members"
+                type="number"
+                value={formik.values.max_members}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {formik.errors.max_members === "string" && (
+                <p className="text-red-500 text-sm">{formik.errors.max_members}</p>
+              )}
+            </div>
 
-      {/* Max Equipment */}
-      <div className="space-y-1">
-        <Label>Max Equipment</Label>
-        <Input
-          name="max_equipment"
-          type="number"
-          value={formik.values.max_equipment}
-          onChange={formik.handleChange}
-          disabled={action === "view"}
-        />
-        {formik.errors.max_equipment === "string" && (
-          <p className="text-red-500 text-sm">{formik.errors.max_equipment}</p>
-        )}
-      </div>
+            {/* Max Equipment */}
+            <div className="space-y-1">
+              <Label>Max Equipment</Label>
+              <Input
+                name="max_equipment"
+                type="number"
+                value={formik.values.max_equipment}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {formik.errors.max_equipment === "string" && (
+                <p className="text-red-500 text-sm">{formik.errors.max_equipment}</p>
+              )}
+            </div>
 
-      {/* Active / Inactive */}
-      <div className="flex items-center space-x-3">
-        <Label>Active</Label>
-        <Switch
-          checked={formik.values.is_active}
-          onCheckedChange={(val) =>
-            formik.setFieldValue("is_active", val)
-          }
-          disabled={action === "view"}
-        />
-      </div>
-      </div>
+            {/* Active / Inactive */}
+            <div className="flex items-center space-x-3">
+              <Label>Active</Label>
+              <Switch
+                checked={formik.values.is_active}
+                onCheckedChange={(val) =>
+                  formik.setFieldValue("is_active", val)
+                }
+                disabled={action === "view"}
+              />
+            </div>
+          </div>
 
-      {action !== "view" && (
-        <Button type="submit" className="w-full mt-4">
-          {action === "create" ? "Create Subscription" : "Update Subscription"}
-        </Button>
-      )}
-    </form>
- 
+          {action !== "view" && (
+            <Button type="submit" className="w-full mt-4">
+              {action === "create" ? "Create Subscription" : "Update Subscription"}
+            </Button>
+          )}
+        </form>
+
       </div>
     </PageContainer>
   );

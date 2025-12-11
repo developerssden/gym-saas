@@ -57,9 +57,8 @@ export const ModelName = {
   Member: 'Member',
   membership_fee: 'membership_fee',
   Equipment: 'Equipment',
-  Subscription: 'Subscription',
-  SubscriptionFeature: 'SubscriptionFeature',
-  Feature: 'Feature'
+  owner_subscription: 'owner_subscription',
+  Subscription: 'Subscription'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -181,6 +180,25 @@ export const EquipmentScalarFieldEnum = {
 export type EquipmentScalarFieldEnum = (typeof EquipmentScalarFieldEnum)[keyof typeof EquipmentScalarFieldEnum]
 
 
+export const Owner_subscriptionScalarFieldEnum = {
+  id: 'id',
+  subscription_id: 'subscription_id',
+  owner_id: 'owner_id',
+  type: 'type',
+  price: 'price',
+  start_date: 'start_date',
+  end_date: 'end_date',
+  is_expired: 'is_expired',
+  notification_sent: 'notification_sent',
+  is_active: 'is_active',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type Owner_subscriptionScalarFieldEnum = (typeof Owner_subscriptionScalarFieldEnum)[keyof typeof Owner_subscriptionScalarFieldEnum]
+
+
 export const SubscriptionScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -196,30 +214,6 @@ export const SubscriptionScalarFieldEnum = {
 } as const
 
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
-
-
-export const SubscriptionFeatureScalarFieldEnum = {
-  id: 'id',
-  subscription_id: 'subscription_id',
-  feature_id: 'feature_id',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type SubscriptionFeatureScalarFieldEnum = (typeof SubscriptionFeatureScalarFieldEnum)[keyof typeof SubscriptionFeatureScalarFieldEnum]
-
-
-export const FeatureScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  is_active: 'is_active',
-  is_deleted: 'is_deleted'
-} as const
-
-export type FeatureScalarFieldEnum = (typeof FeatureScalarFieldEnum)[keyof typeof FeatureScalarFieldEnum]
 
 
 export const SortOrder = {

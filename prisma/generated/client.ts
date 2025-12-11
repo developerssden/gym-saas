@@ -70,17 +70,12 @@ export type membership_fee = Prisma.membership_feeModel
  */
 export type Equipment = Prisma.EquipmentModel
 /**
+ * Model owner_subscription
+ * 
+ */
+export type owner_subscription = Prisma.owner_subscriptionModel
+/**
  * Model Subscription
  * 
  */
 export type Subscription = Prisma.SubscriptionModel
-/**
- * Model SubscriptionFeature
- * 
- */
-export type SubscriptionFeature = Prisma.SubscriptionFeatureModel
-/**
- * Model Feature
- * 
- */
-export type Feature = Prisma.FeatureModel
