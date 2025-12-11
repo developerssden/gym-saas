@@ -20,9 +20,11 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="flex-1">
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <SiteHeader />
-        {children}
+        <div className="flex-1 min-h-0">
+          {children}
+        </div>
         <Toaster richColors position="top-right" />
       </main>
     </SidebarProvider>
