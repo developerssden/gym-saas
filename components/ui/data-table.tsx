@@ -33,7 +33,6 @@ export function DataTable<TData, TValue>({
     data,
     searchableColumns = [],
     pageCount,
-    rowCount,
     onPaginationChange,
     onSearchChange,
     pagination,
@@ -54,6 +53,7 @@ export function DataTable<TData, TValue>({
     const globalFilter = searchValue !== undefined ? searchValue : internalGlobalFilter
     const setGlobalFilter = onSearchChange ? onSearchChange : setInternalGlobalFilter
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         data,
         columns,
