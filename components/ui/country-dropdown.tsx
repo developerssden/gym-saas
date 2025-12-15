@@ -110,7 +110,7 @@ const CountryDropdownComponent = (
         {...props}
       >
         {selectedCountry ? (
-          <div className="flex items-center flex-grow w-0 gap-2 overflow-hidden">
+          <div className="flex items-center grow w-0 gap-2 overflow-hidden">
             <div className="inline-flex items-center justify-center w-5 h-5 shrink-0 overflow-hidden rounded-full">
               <CircleFlag
                 countryCode={selectedCountry.alpha2.toLowerCase()}
@@ -154,7 +154,7 @@ const CountryDropdownComponent = (
                     key={key}
                     onSelect={() => handleSelect(option)}
                   >
-                    <div className="flex flex-grow w-0 space-x-2 overflow-hidden">
+                    <div className="flex grow w-0 space-x-2 overflow-hidden">
                       <div className="inline-flex items-center justify-center w-5 h-5 shrink-0 overflow-hidden rounded-full">
                         <CircleFlag
                           countryCode={option.alpha2.toLowerCase()}
