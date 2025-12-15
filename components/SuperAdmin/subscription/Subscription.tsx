@@ -6,28 +6,23 @@ import { DataTable } from "@/components/ui/data-table";
 import { Session } from "next-auth";
 import Link from "next/link";
 import { columns } from "./columns";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { Subscription as SubscriptionType } from "@/types";
 import { useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
+import FullScreenLoader from "@/components/common/FullScreenLoader";
+import DataFetchError from "@/components/common/DataFetchError";
+import { useSubscriptions } from "@/hooks/use-subscription";
 
 const Subscription = ({ session }: { session: Session }) => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 1000);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["subscriptions", pagination.pageIndex, pagination.pageSize, debouncedFilter],
-    queryFn: async () => {
-      const response = await axios.post("/api/subscription/getsubscriptions", {
-        page: pagination.pageIndex + 1,
-        limit: pagination.pageSize,
-        search: debouncedFilter,
-      });
-      return response.data as { data: SubscriptionType[]; totalCount: number; pageCount: number };
-    },
-    placeholderData: (previousData) => previousData, // Keep previous data while fetching new data
+  // Use the hook
+  const { data, isLoading, error, refetch } = useSubscriptions({
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
+    search: debouncedFilter,
+    enabled: true,
   });
 
   return (
@@ -41,14 +36,16 @@ const Subscription = ({ session }: { session: Session }) => {
 
       {isLoading && !data && (
         <div className="flex justify-center items-center h-64">
-          <p>Loading subscriptions...</p>
+          <FullScreenLoader label="Loading Subscriptions..." />
         </div>
       )}
 
       {error && (
-        <div className="flex justify-center items-center h-64 text-red-500">
-          <p>Error loading subscriptions: {error instanceof Error ? error.message : "Unknown error"}</p>
-        </div>
+        <DataFetchError
+          error={error}
+          onRetry={() => refetch()}
+          message="Error loading subscriptions"
+        />
       )}
 
       {data && (

@@ -39,6 +39,12 @@ export const columns: ColumnDef<Client>[] = [
         ),
     },
     {
+        accessorKey: "email",
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Email" />
+        ),
+    },
+    {
         accessorKey: "phone_number",
         header: ({ column }) => (
             <DataTableColumnHeader column={column} title="Phone Number" />

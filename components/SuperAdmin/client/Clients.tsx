@@ -11,14 +11,16 @@ import axios from "axios";
 import { Client as ClientType } from "@/types";
 import { useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
+import FullScreenLoader from "@/components/common/FullScreenLoader";
+import DataFetchError from "@/components/common/DataFetchError";
 
 const Subscription = ({ session }: { session: Session }) => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 1000);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["subscriptions", pagination.pageIndex, pagination.pageSize, debouncedFilter],
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["clients", pagination.pageIndex, pagination.pageSize, debouncedFilter],
     queryFn: async () => {
       const response = await axios.post("/api/client/getclients", {
         page: pagination.pageIndex + 1,
@@ -41,21 +43,23 @@ const Subscription = ({ session }: { session: Session }) => {
 
       {isLoading && !data && (
         <div className="flex justify-center items-center h-64">
-          <p>Loading clients...</p>
+          <FullScreenLoader label="Loading Clients..." />
         </div>
       )}
 
       {error && (
-        <div className="flex justify-center items-center h-64 text-red-500">
-          <p>Error loading clients: {error instanceof Error ? error.message : "Unknown error"}</p>
-        </div>
+        <DataFetchError
+          error={error}
+          onRetry={() => refetch()}
+          message="Error loading clients"
+        />
       )}
 
       {data && (
         <DataTable
           columns={columns}
           data={data.data}
-          searchableColumns={["name", "monthly_price", "yearly_price"]}
+          searchableColumns={["first_name", "last_name", "email"]}
           pageCount={data.pageCount}
           rowCount={data.totalCount}
           onPaginationChange={setPagination}
