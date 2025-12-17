@@ -22,7 +22,7 @@ const Subscription = ({ session }: { session: Session }) => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["clients", pagination.pageIndex, pagination.pageSize, debouncedFilter],
     queryFn: async () => {
-      const response = await axios.post("/api/client/getclients", {
+      const response = await axios.post("/api/clients/getclients", {
         page: pagination.pageIndex + 1,
         limit: pagination.pageSize,
         search: debouncedFilter,

@@ -176,7 +176,7 @@ export type MemberWhereInput = {
   joinedAt?: Prisma.DateTimeFilter<"Member"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
-  membership_fee?: Prisma.Membership_feeListRelationFilter
+  memberSubscriptions?: Prisma.MemberSubscriptionListRelationFilter
 }
 
 export type MemberOrderByWithRelationInput = {
@@ -186,7 +186,7 @@ export type MemberOrderByWithRelationInput = {
   joinedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   gym?: Prisma.GymOrderByWithRelationInput
-  membership_fee?: Prisma.membership_feeOrderByRelationAggregateInput
+  memberSubscriptions?: Prisma.MemberSubscriptionOrderByRelationAggregateInput
 }
 
 export type MemberWhereUniqueInput = Prisma.AtLeast<{
@@ -199,7 +199,7 @@ export type MemberWhereUniqueInput = Prisma.AtLeast<{
   joinedAt?: Prisma.DateTimeFilter<"Member"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
-  membership_fee?: Prisma.Membership_feeListRelationFilter
+  memberSubscriptions?: Prisma.MemberSubscriptionListRelationFilter
 }, "id" | "user_id">
 
 export type MemberOrderByWithAggregationInput = {
@@ -227,7 +227,7 @@ export type MemberCreateInput = {
   joinedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMemberInput
   gym: Prisma.GymCreateNestedOneWithoutMembersInput
-  membership_fee?: Prisma.membership_feeCreateNestedManyWithoutMemberInput
+  memberSubscriptions?: Prisma.MemberSubscriptionCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUncheckedCreateInput = {
@@ -235,7 +235,7 @@ export type MemberUncheckedCreateInput = {
   user_id: string
   gym_id: string
   joinedAt?: Date | string
-  membership_fee?: Prisma.membership_feeUncheckedCreateNestedManyWithoutMemberInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUncheckedCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUpdateInput = {
@@ -243,7 +243,7 @@ export type MemberUpdateInput = {
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMemberNestedInput
   gym?: Prisma.GymUpdateOneRequiredWithoutMembersNestedInput
-  membership_fee?: Prisma.membership_feeUpdateManyWithoutMemberNestedInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateInput = {
@@ -251,7 +251,7 @@ export type MemberUncheckedUpdateInput = {
   user_id?: Prisma.StringFieldUpdateOperationsInput | string
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  membership_fee?: Prisma.membership_feeUncheckedUpdateManyWithoutMemberNestedInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUncheckedUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberCreateManyInput = {
@@ -388,32 +388,32 @@ export type MemberUncheckedUpdateManyWithoutGymNestedInput = {
   deleteMany?: Prisma.MemberScalarWhereInput | Prisma.MemberScalarWhereInput[]
 }
 
-export type MemberCreateNestedOneWithoutMembership_feeInput = {
-  create?: Prisma.XOR<Prisma.MemberCreateWithoutMembership_feeInput, Prisma.MemberUncheckedCreateWithoutMembership_feeInput>
-  connectOrCreate?: Prisma.MemberCreateOrConnectWithoutMembership_feeInput
+export type MemberCreateNestedOneWithoutMemberSubscriptionsInput = {
+  create?: Prisma.XOR<Prisma.MemberCreateWithoutMemberSubscriptionsInput, Prisma.MemberUncheckedCreateWithoutMemberSubscriptionsInput>
+  connectOrCreate?: Prisma.MemberCreateOrConnectWithoutMemberSubscriptionsInput
   connect?: Prisma.MemberWhereUniqueInput
 }
 
-export type MemberUpdateOneRequiredWithoutMembership_feeNestedInput = {
-  create?: Prisma.XOR<Prisma.MemberCreateWithoutMembership_feeInput, Prisma.MemberUncheckedCreateWithoutMembership_feeInput>
-  connectOrCreate?: Prisma.MemberCreateOrConnectWithoutMembership_feeInput
-  upsert?: Prisma.MemberUpsertWithoutMembership_feeInput
+export type MemberUpdateOneRequiredWithoutMemberSubscriptionsNestedInput = {
+  create?: Prisma.XOR<Prisma.MemberCreateWithoutMemberSubscriptionsInput, Prisma.MemberUncheckedCreateWithoutMemberSubscriptionsInput>
+  connectOrCreate?: Prisma.MemberCreateOrConnectWithoutMemberSubscriptionsInput
+  upsert?: Prisma.MemberUpsertWithoutMemberSubscriptionsInput
   connect?: Prisma.MemberWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.MemberUpdateToOneWithWhereWithoutMembership_feeInput, Prisma.MemberUpdateWithoutMembership_feeInput>, Prisma.MemberUncheckedUpdateWithoutMembership_feeInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MemberUpdateToOneWithWhereWithoutMemberSubscriptionsInput, Prisma.MemberUpdateWithoutMemberSubscriptionsInput>, Prisma.MemberUncheckedUpdateWithoutMemberSubscriptionsInput>
 }
 
 export type MemberCreateWithoutUserInput = {
   id?: string
   joinedAt?: Date | string
   gym: Prisma.GymCreateNestedOneWithoutMembersInput
-  membership_fee?: Prisma.membership_feeCreateNestedManyWithoutMemberInput
+  memberSubscriptions?: Prisma.MemberSubscriptionCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUncheckedCreateWithoutUserInput = {
   id?: string
   gym_id: string
   joinedAt?: Date | string
-  membership_fee?: Prisma.membership_feeUncheckedCreateNestedManyWithoutMemberInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUncheckedCreateNestedManyWithoutMemberInput
 }
 
 export type MemberCreateOrConnectWithoutUserInput = {
@@ -436,28 +436,28 @@ export type MemberUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gym?: Prisma.GymUpdateOneRequiredWithoutMembersNestedInput
-  membership_fee?: Prisma.membership_feeUpdateManyWithoutMemberNestedInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  membership_fee?: Prisma.membership_feeUncheckedUpdateManyWithoutMemberNestedInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUncheckedUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberCreateWithoutGymInput = {
   id?: string
   joinedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMemberInput
-  membership_fee?: Prisma.membership_feeCreateNestedManyWithoutMemberInput
+  memberSubscriptions?: Prisma.MemberSubscriptionCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUncheckedCreateWithoutGymInput = {
   id?: string
   user_id: string
   joinedAt?: Date | string
-  membership_fee?: Prisma.membership_feeUncheckedCreateNestedManyWithoutMemberInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUncheckedCreateNestedManyWithoutMemberInput
 }
 
 export type MemberCreateOrConnectWithoutGymInput = {
@@ -496,44 +496,44 @@ export type MemberScalarWhereInput = {
   joinedAt?: Prisma.DateTimeFilter<"Member"> | Date | string
 }
 
-export type MemberCreateWithoutMembership_feeInput = {
+export type MemberCreateWithoutMemberSubscriptionsInput = {
   id?: string
   joinedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMemberInput
   gym: Prisma.GymCreateNestedOneWithoutMembersInput
 }
 
-export type MemberUncheckedCreateWithoutMembership_feeInput = {
+export type MemberUncheckedCreateWithoutMemberSubscriptionsInput = {
   id?: string
   user_id: string
   gym_id: string
   joinedAt?: Date | string
 }
 
-export type MemberCreateOrConnectWithoutMembership_feeInput = {
+export type MemberCreateOrConnectWithoutMemberSubscriptionsInput = {
   where: Prisma.MemberWhereUniqueInput
-  create: Prisma.XOR<Prisma.MemberCreateWithoutMembership_feeInput, Prisma.MemberUncheckedCreateWithoutMembership_feeInput>
+  create: Prisma.XOR<Prisma.MemberCreateWithoutMemberSubscriptionsInput, Prisma.MemberUncheckedCreateWithoutMemberSubscriptionsInput>
 }
 
-export type MemberUpsertWithoutMembership_feeInput = {
-  update: Prisma.XOR<Prisma.MemberUpdateWithoutMembership_feeInput, Prisma.MemberUncheckedUpdateWithoutMembership_feeInput>
-  create: Prisma.XOR<Prisma.MemberCreateWithoutMembership_feeInput, Prisma.MemberUncheckedCreateWithoutMembership_feeInput>
+export type MemberUpsertWithoutMemberSubscriptionsInput = {
+  update: Prisma.XOR<Prisma.MemberUpdateWithoutMemberSubscriptionsInput, Prisma.MemberUncheckedUpdateWithoutMemberSubscriptionsInput>
+  create: Prisma.XOR<Prisma.MemberCreateWithoutMemberSubscriptionsInput, Prisma.MemberUncheckedCreateWithoutMemberSubscriptionsInput>
   where?: Prisma.MemberWhereInput
 }
 
-export type MemberUpdateToOneWithWhereWithoutMembership_feeInput = {
+export type MemberUpdateToOneWithWhereWithoutMemberSubscriptionsInput = {
   where?: Prisma.MemberWhereInput
-  data: Prisma.XOR<Prisma.MemberUpdateWithoutMembership_feeInput, Prisma.MemberUncheckedUpdateWithoutMembership_feeInput>
+  data: Prisma.XOR<Prisma.MemberUpdateWithoutMemberSubscriptionsInput, Prisma.MemberUncheckedUpdateWithoutMemberSubscriptionsInput>
 }
 
-export type MemberUpdateWithoutMembership_feeInput = {
+export type MemberUpdateWithoutMemberSubscriptionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMemberNestedInput
   gym?: Prisma.GymUpdateOneRequiredWithoutMembersNestedInput
 }
 
-export type MemberUncheckedUpdateWithoutMembership_feeInput = {
+export type MemberUncheckedUpdateWithoutMemberSubscriptionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   user_id?: Prisma.StringFieldUpdateOperationsInput | string
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
@@ -550,14 +550,14 @@ export type MemberUpdateWithoutGymInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMemberNestedInput
-  membership_fee?: Prisma.membership_feeUpdateManyWithoutMemberNestedInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateWithoutGymInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   user_id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  membership_fee?: Prisma.membership_feeUncheckedUpdateManyWithoutMemberNestedInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUncheckedUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateManyWithoutGymInput = {
@@ -572,11 +572,11 @@ export type MemberUncheckedUpdateManyWithoutGymInput = {
  */
 
 export type MemberCountOutputType = {
-  membership_fee: number
+  memberSubscriptions: number
 }
 
 export type MemberCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  membership_fee?: boolean | MemberCountOutputTypeCountMembership_feeArgs
+  memberSubscriptions?: boolean | MemberCountOutputTypeCountMemberSubscriptionsArgs
 }
 
 /**
@@ -592,8 +592,8 @@ export type MemberCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
 /**
  * MemberCountOutputType without action
  */
-export type MemberCountOutputTypeCountMembership_feeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.membership_feeWhereInput
+export type MemberCountOutputTypeCountMemberSubscriptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MemberSubscriptionWhereInput
 }
 
 
@@ -604,7 +604,7 @@ export type MemberSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   joinedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
-  membership_fee?: boolean | Prisma.Member$membership_feeArgs<ExtArgs>
+  memberSubscriptions?: boolean | Prisma.Member$memberSubscriptionsArgs<ExtArgs>
   _count?: boolean | Prisma.MemberCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["member"]>
 
@@ -637,7 +637,7 @@ export type MemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type MemberInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
-  membership_fee?: boolean | Prisma.Member$membership_feeArgs<ExtArgs>
+  memberSubscriptions?: boolean | Prisma.Member$memberSubscriptionsArgs<ExtArgs>
   _count?: boolean | Prisma.MemberCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MemberIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -654,7 +654,7 @@ export type $MemberPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
     gym: Prisma.$GymPayload<ExtArgs>
-    membership_fee: Prisma.$membership_feePayload<ExtArgs>[]
+    memberSubscriptions: Prisma.$MemberSubscriptionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1057,7 +1057,7 @@ export interface Prisma__MemberClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   gym<T extends Prisma.GymDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GymDefaultArgs<ExtArgs>>): Prisma.Prisma__GymClient<runtime.Types.Result.GetResult<Prisma.$GymPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  membership_fee<T extends Prisma.Member$membership_feeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Member$membership_feeArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$membership_feePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  memberSubscriptions<T extends Prisma.Member$memberSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Member$memberSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MemberSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1487,27 +1487,27 @@ export type MemberDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 /**
- * Member.membership_fee
+ * Member.memberSubscriptions
  */
-export type Member$membership_feeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Member$memberSubscriptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the membership_fee
+   * Select specific fields to fetch from the MemberSubscription
    */
-  select?: Prisma.membership_feeSelect<ExtArgs> | null
+  select?: Prisma.MemberSubscriptionSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the membership_fee
+   * Omit specific fields from the MemberSubscription
    */
-  omit?: Prisma.membership_feeOmit<ExtArgs> | null
+  omit?: Prisma.MemberSubscriptionOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.membership_feeInclude<ExtArgs> | null
-  where?: Prisma.membership_feeWhereInput
-  orderBy?: Prisma.membership_feeOrderByWithRelationInput | Prisma.membership_feeOrderByWithRelationInput[]
-  cursor?: Prisma.membership_feeWhereUniqueInput
+  include?: Prisma.MemberSubscriptionInclude<ExtArgs> | null
+  where?: Prisma.MemberSubscriptionWhereInput
+  orderBy?: Prisma.MemberSubscriptionOrderByWithRelationInput | Prisma.MemberSubscriptionOrderByWithRelationInput[]
+  cursor?: Prisma.MemberSubscriptionWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.Membership_feeScalarFieldEnum | Prisma.Membership_feeScalarFieldEnum[]
+  distinct?: Prisma.MemberSubscriptionScalarFieldEnum | Prisma.MemberSubscriptionScalarFieldEnum[]
 }
 
 /**

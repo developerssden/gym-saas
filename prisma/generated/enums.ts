@@ -26,6 +26,22 @@ export const SubscriptionType = {
 export type SubscriptionType = (typeof SubscriptionType)[keyof typeof SubscriptionType]
 
 
+export const PaymentMethod = {
+  CASH: 'CASH',
+  BANK_TRANSFER: 'BANK_TRANSFER'
+} as const
+
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
+
+
+export const SubscriptionTypeEnum = {
+  OWNER: 'OWNER',
+  MEMBER: 'MEMBER'
+} as const
+
+export type SubscriptionTypeEnum = (typeof SubscriptionTypeEnum)[keyof typeof SubscriptionTypeEnum]
+
+
 export const BillingModel = {
   MONTHLY: 'MONTHLY',
   YEARLY: 'YEARLY'

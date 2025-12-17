@@ -1,5 +1,5 @@
-// Type representing a Subscription row
-export type Subscription = {
+// Type representing a Plan row
+export type Plan = {
     id: string
     name: string
     monthly_price: number
@@ -11,7 +11,58 @@ export type Subscription = {
     is_deleted: boolean
     createdAt: Date
     updatedAt: Date
-    ownerSubscriptions?: any[] // optional if you want owner count
+    ownerSubscriptions?: OwnerSubscription[] // optional if you want owner count
+}
+
+export type OwnerSubscription = {
+    id: string
+    owner_id: string
+    plan_id: string
+    billing_model: string // BillingModel enum
+    start_date: Date
+    end_date: Date
+    is_expired: boolean
+    notification_sent: boolean
+    is_active: boolean
+    is_deleted: boolean
+    createdAt: Date
+    updatedAt: Date
+    owner?: Client
+    plan?: Plan
+    payments?: Payment[]
+}
+
+export type MemberSubscription = {
+    id: string
+    member_id: string
+    price: number
+    billing_model: string // BillingModel enum
+    start_date: Date
+    end_date: Date
+    is_expired: boolean
+    notification_sent: boolean
+    is_active: boolean
+    is_deleted: boolean
+    createdAt: Date
+    updatedAt: Date
+    member?: any
+    payments?: Payment[]
+}
+
+export type Payment = {
+    id: string
+    owner_subscription_id?: string | null
+    member_subscription_id?: string | null
+    subscription_type: string // SubscriptionTypeEnum
+    amount: number
+    payment_method: string // PaymentMethod enum
+    transaction_id?: string | null
+    payment_date: Date
+    notes?: string | null
+    createdAt: Date
+    updatedAt: Date
+    ownerSubscription?: OwnerSubscription
+    memberSubscription?: MemberSubscription
 }
 
 export type Client = {
@@ -30,15 +81,11 @@ export type Client = {
     email?: string | null;
     password?: string | null;
     role: string; // or Role enum if you're importing Role from Prisma
-    subscription_id?: string | null;
-    billing_model?: string | null; // or BillingModel enum if imported
-    next_payment_date?: Date | null;
     is_active: boolean;
     is_deleted: boolean;
     createdAt: Date;
     updatedAt: Date;
 
     // relations
-    subscription?: Subscription | null;
-    ownerSubscriptions?: any[];
+    ownerSubscriptions?: OwnerSubscription[];
 };

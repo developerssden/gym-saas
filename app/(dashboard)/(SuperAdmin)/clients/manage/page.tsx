@@ -36,11 +36,26 @@ import { cn } from "@/lib/utils";
 const ClientSchema = Yup.object({
   first_name: Yup.string().required("First name is required"),
   last_name: Yup.string().required("Last name is required"),
-  phone_number: Yup.string(),
-  is_active: Yup.boolean(),
+  email: Yup.string().email("Invalid email").required("Email is required"),
+  phone_number: Yup.string().required("Phone number is required"),
+  date_of_birth: Yup.date().required("Date of birth is required"),
+  address: Yup.string().required("Address is required"),
+  city: Yup.string().required("City is required"),
+  state: Yup.string().required("State is required"),
+  country: Yup.string().required("Country is required"),
+  zip_code: Yup.string().required("Zip code is required"),
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .when("action", {
+      is: "create",
+      then: (schema) => schema.required("Password is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+  planId: Yup.string(),
+  billingModel: Yup.string().oneOf(["MONTHLY", "YEARLY"]),
 });
 
-const ManageSubscriptions = () => {
+const ManageClient = () => {
   const searchParams = useSearchParams();
   const action = searchParams?.get("action") as "create" | "edit" | "view";
   const clientId = searchParams?.get("id") || null;
@@ -91,16 +106,21 @@ const ManageSubscriptions = () => {
   const formik = useFormik({
     initialValues: {
       first_name: clientData?.first_name || "",
-      last_name: clientData?.monthly_price || "",
-      email: clientData?.max_gyms || "",
-      phone_number: clientData?.yearly_price || "",
-      date_of_birth: clientData?.max_equipment || "",
-      address: clientData?.max_members || "",
-      city: clientData?.max_equipment || "",
-      state: clientData?.max_equipment || "",
-      country: clientData?.max_equipment || "",
-      subscriptionId: clientData?.subscriptionId,
-      subscriptionType: clientData?.SubscriptionType,
+      last_name: clientData?.last_name || "",
+      email: clientData?.email || "",
+      phone_number: clientData?.phone_number || "",
+      date_of_birth: clientData?.date_of_birth 
+        ? new Date(clientData.date_of_birth) 
+        : undefined,
+      address: clientData?.address || "",
+      city: clientData?.city || "",
+      state: clientData?.state || "",
+      country: clientData?.country || "",
+      zip_code: clientData?.zip_code || "",
+      cnic: clientData?.cnic || "",
+      password: "",
+      planId: clientData?.activeSubscription?.plan?.id || "",
+      billingModel: clientData?.activeSubscription?.billing_model || clientData?.subscriptionType || "",
     },
 
     validationSchema: ClientSchema,
@@ -109,11 +129,16 @@ const ManageSubscriptions = () => {
     onSubmit: async (values) => {
       setLoading(true);
       try {
+        // Only include password if it's provided (for updates)
+        const submitValues: any = { ...values };
+        if (action === "edit" && !submitValues.password) {
+          submitValues.password = undefined;
+        }
+        
         if (action === "create") {
-          console.log("create client values", values);
-          await createMutation.mutateAsync(values as any);
+          await createMutation.mutateAsync(submitValues);
         } else if (action === "edit") {
-          await updateMutation.mutateAsync(values as any);
+          await updateMutation.mutateAsync(submitValues);
         }
       } finally {
         setLoading(false);
@@ -129,10 +154,10 @@ const ManageSubscriptions = () => {
       <div className="w-full space-y-12">
         <h1 className="h1 text-center">
           {action === "create"
-            ? "Create Subscription"
+            ? "Create Client"
             : action === "edit"
-            ? "Edit Subscription"
-            : "View Subscription"}
+            ? "Edit Client"
+            : "View Client"}
         </h1>
         <form className="max-w-2xl mx-auto" onSubmit={formik.handleSubmit}>
           <div className=" grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
@@ -145,9 +170,9 @@ const ManageSubscriptions = () => {
                 onChange={formik.handleChange}
                 disabled={action === "view"}
               />
-              {formik.errors.first_name === "string" && (
+              {formik.touched.first_name && formik.errors.first_name && (
                 <p className="text-red-500 text-sm">
-                  {formik.errors.first_name}
+                  {String(formik.errors.first_name)}
                 </p>
               )}
             </div>
@@ -161,26 +186,62 @@ const ManageSubscriptions = () => {
                 onChange={formik.handleChange}
                 disabled={action === "view"}
               />
-              {formik.errors.last_name === "string" && (
+              {formik.touched.last_name && formik.errors.last_name && (
                 <p className="text-red-500 text-sm">
-                  {formik.errors.last_name}
+                  {String(formik.errors.last_name)}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label>email</Label>
+              <Label>Email</Label>
               <Input
                 name="email"
+                type="email"
                 placeholder="Enter email"
                 value={formik.values.email}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 disabled={action === "view"}
               />
-              {formik.errors.email === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.email}</p>
+              {formik.touched.email && formik.errors.email && (
+                <p className="text-red-500 text-sm">{String(formik.errors.email)}</p>
               )}
             </div>
+
+            {action === "create" && (
+              <div className="space-y-2">
+                <Label>Password</Label>
+                <Input
+                  name="password"
+                  type="password"
+                  placeholder="Enter password"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.password && formik.errors.password && (
+                  <p className="text-red-500 text-sm">{String(formik.errors.password)}</p>
+                )}
+              </div>
+            )}
+
+            {action === "edit" && (
+              <div className="space-y-2">
+                <Label>New Password (leave blank to keep current)</Label>
+                <Input
+                  name="password"
+                  type="password"
+                  placeholder="Enter new password"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.password && formik.errors.password && (
+                  <p className="text-red-500 text-sm">{String(formik.errors.password)}</p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Phone Number</Label>
@@ -196,12 +257,11 @@ const ManageSubscriptions = () => {
                 international
               />
 
-              {formik.touched.phone_number &&
-                typeof formik.errors.phone_number === "string" && (
-                  <p className="text-red-500 text-sm">
-                    {formik.errors.phone_number}
-                  </p>
-                )}
+              {formik.touched.phone_number && formik.errors.phone_number && (
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.phone_number)}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-3">
@@ -238,14 +298,23 @@ const ManageSubscriptions = () => {
                 </PopoverContent>
               </Popover>
 
-              {formik.touched.date_of_birth &&
-                typeof formik.errors.date_of_birth === "string" && (
-                  <p className="text-red-500 text-sm">
-                    {formik.errors.date_of_birth}
-                  </p>
-                )}
+              {formik.touched.date_of_birth && formik.errors.date_of_birth && (
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.date_of_birth)}
+                </p>
+              )}
             </div>
-            {/* Max Members */}
+            <div className="space-y-2">
+              <Label>CNIC (Optional)</Label>
+              <Input
+                name="cnic"
+                placeholder="Enter CNIC"
+                value={formik.values.cnic}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label>Address</Label>
               <Input
@@ -253,10 +322,11 @@ const ManageSubscriptions = () => {
                 placeholder="Enter address"
                 value={formik.values.address}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 disabled={action === "view"}
               />
-              {formik.errors.address === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.address}</p>
+              {formik.touched.address && formik.errors.address && (
+                <p className="text-red-500 text-sm">{String(formik.errors.address)}</p>
               )}
             </div>
 
@@ -267,10 +337,11 @@ const ManageSubscriptions = () => {
                 placeholder="Enter city"
                 value={formik.values.city}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 disabled={action === "view"}
               />
-              {formik.errors.city === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.city}</p>
+              {formik.touched.city && formik.errors.city && (
+                <p className="text-red-500 text-sm">{String(formik.errors.city)}</p>
               )}
             </div>
 
@@ -281,10 +352,26 @@ const ManageSubscriptions = () => {
                 placeholder="Enter state"
                 value={formik.values.state}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 disabled={action === "view"}
               />
-              {formik.errors.state === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.state}</p>
+              {formik.touched.state && formik.errors.state && (
+                <p className="text-red-500 text-sm">{String(formik.errors.state)}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Zip Code</Label>
+              <Input
+                name="zip_code"
+                placeholder="Enter zip code"
+                value={formik.values.zip_code}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                disabled={action === "view"}
+              />
+              {formik.touched.zip_code && formik.errors.zip_code && (
+                <p className="text-red-500 text-sm">{String(formik.errors.zip_code)}</p>
               )}
             </div>
 
@@ -301,60 +388,58 @@ const ManageSubscriptions = () => {
                 }}
               />
 
-              {formik.touched.country &&
-                typeof formik.errors.country === "string" && (
-                  <p className="text-red-500 text-sm">
-                    {formik.errors.country}
-                  </p>
-                )}
+              {formik.touched.country && formik.errors.country && (
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.country)}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="subscriptionId">Subscription</Label>
+              <Label htmlFor="planId">Plan</Label>
 
               <Select
-                name="subscriptionId"
-                value={formik.values.subscriptionId || ""}
+                name="planId"
+                value={formik.values.planId || ""}
                 onValueChange={(val) =>
-                  formik.setFieldValue("subscriptionId", val)
+                  formik.setFieldValue("planId", val)
                 }
                 disabled={isLoading}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue
                     placeholder={
-                      isLoading ? "Loading..." : "Select subscription"
+                      isLoading ? "Loading..." : "Select plan"
                     }
                   />
                 </SelectTrigger>
                 <SelectContent className="w-full">
                   {data?.data.map((sub: SubscriptionType) => (
                     <SelectItem key={sub.id} value={sub.id}>
-                      {sub.name} (${sub.monthly_price}/{sub.yearly_price})
+                      {sub.name} - Monthly: ${sub.monthly_price} / Yearly: ${sub.yearly_price}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {formik.touched.subscriptionId &&
-                typeof formik.errors.subscriptionId === "string" && (
-                  <p className="text-red-500 text-sm">
-                    {formik.errors.subscriptionId}
-                  </p>
-                )}
+              {formik.touched.planId && formik.errors.planId && (
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.planId)}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="subscriptionType">Subscription Type</Label>
+              <Label htmlFor="billingModel">Billing Model</Label>
 
               <Select
-                name="subscriptionType"
-                value={formik.values.subscriptionType || ""}
+                name="billingModel"
+                value={formik.values.billingModel || ""}
                 onValueChange={(val) =>
-                  formik.setFieldValue("subscriptionType", val)
+                  formik.setFieldValue("billingModel", val)
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select subscription type" />
+                  <SelectValue placeholder="Select billing model" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="MONTHLY">Monthly</SelectItem>
@@ -362,22 +447,42 @@ const ManageSubscriptions = () => {
                 </SelectContent>
               </Select>
 
-              {formik.touched.subscriptionType &&
-                formik.errors.subscriptionType &&
-                typeof formik.errors.subscriptionType === "string" && (
-                  <p className="text-red-500 text-sm">
-                    {formik.errors.subscriptionType}
-                  </p>
-                )}
+              {formik.touched.billingModel && formik.errors.billingModel && (
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.billingModel)}
+                </p>
+              )}
             </div>
           </div>
 
           {action !== "view" && (
-            <Button type="submit" className="w-full mt-4">
-              {action === "create"
-                ? "Create Subscription"
-                : "Update Subscription"}
-            </Button>
+            <div className="flex gap-4 mt-4">
+              <Button type="submit" className="flex-1">
+                {action === "create"
+                  ? "Create Client"
+                  : "Update Client"}
+              </Button>
+              {action === "edit" && formik.values.planId && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      await updateMutation.mutateAsync({
+                        ...formik.values,
+                        isRenewal: true,
+                      } as any);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  Renew Subscription
+                </Button>
+              )}
+            </div>
           )}
         </form>
       </div>
@@ -385,4 +490,4 @@ const ManageSubscriptions = () => {
   );
 };
 
-export default ManageSubscriptions;
+export default ManageClient;

@@ -38,22 +38,27 @@ export type Gym = Prisma.GymModel
  */
 export type Member = Prisma.MemberModel
 /**
- * Model membership_fee
- * 
- */
-export type membership_fee = Prisma.membership_feeModel
-/**
  * Model Equipment
  * 
  */
 export type Equipment = Prisma.EquipmentModel
 /**
- * Model owner_subscription
+ * Model Plan
  * 
  */
-export type owner_subscription = Prisma.owner_subscriptionModel
+export type Plan = Prisma.PlanModel
 /**
- * Model Subscription
+ * Model OwnerSubscription
  * 
  */
-export type Subscription = Prisma.SubscriptionModel
+export type OwnerSubscription = Prisma.OwnerSubscriptionModel
+/**
+ * Model MemberSubscription
+ * 
+ */
+export type MemberSubscription = Prisma.MemberSubscriptionModel
+/**
+ * Model Payment
+ * 
+ */
+export type Payment = Prisma.PaymentModel

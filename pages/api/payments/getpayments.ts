@@ -1,9 +1,9 @@
-// pages/api/clients/getclients.ts
+// pages/api/payments/getpayments.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireSuperAdmin } from "@/lib/adminsessioncheck";
-import { Prisma } from "@/prisma/generated/client";
+import { SubscriptionTypeEnum } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -13,53 +13,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) return;
 
   try {
-    const { page = 1, limit = 10, search = "" } = req.body;
+    const {
+      owner_subscription_id,
+      member_subscription_id,
+      subscription_type,
+      page = 1,
+      limit = 10,
+    } = req.body;
+
     const skip = (page - 1) * limit;
 
-    const or: Prisma.UserWhereInput[] = [];
+    // Build where clause
+    const where: any = {};
 
-    if (search) {
-      or.push(
-        { first_name: { contains: search, mode: "insensitive" } },
-        { last_name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { phone_number: { contains: search, mode: "insensitive" } }
-      );
+    if (subscription_type === SubscriptionTypeEnum.OWNER && owner_subscription_id) {
+      where.owner_subscription_id = owner_subscription_id;
+    } else if (subscription_type === SubscriptionTypeEnum.MEMBER && member_subscription_id) {
+      where.member_subscription_id = member_subscription_id;
     }
 
-    const whereClause: Prisma.UserWhereInput = {
-      is_deleted: false,
-      role: "GYM_OWNER",
-      OR: or.length > 0 ? or : undefined,
-    };
-
-    const [clients, totalCount] = await Promise.all([
-      prisma.user.findMany({
-        where: whereClause,
+    const [payments, totalCount] = await Promise.all([
+      prisma.payment.findMany({
+        where,
         include: {
-          ownerSubscriptions: {
-            where: {
-              is_deleted: false,
-              is_active: true,
-            },
+          ownerSubscription: {
             include: {
               plan: true,
+              owner: true,
             },
-            orderBy: {
-              createdAt: "desc",
+          },
+          memberSubscription: {
+            include: {
+              member: {
+                include: {
+                  user: true,
+                },
+              },
             },
-            take: 1,
           },
         },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
-      prisma.user.count({ where: whereClause }),
+      prisma.payment.count({ where }),
     ]);
 
     return res.status(StatusCodes.OK).json({
-      data: clients,
+      data: payments,
       totalCount,
       pageCount: Math.ceil(totalCount / limit),
     });
@@ -70,3 +71,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .json({ error: message });
   }
 }
+
+

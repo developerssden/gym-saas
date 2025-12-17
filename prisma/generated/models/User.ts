@@ -40,9 +40,6 @@ export type UserMinAggregateOutputType = {
   email: string | null
   password: string | null
   role: $Enums.Role | null
-  subscription_id: string | null
-  billing_model: $Enums.BillingModel | null
-  next_payment_date: Date | null
   is_active: boolean | null
   is_deleted: boolean | null
   createdAt: Date | null
@@ -65,9 +62,6 @@ export type UserMaxAggregateOutputType = {
   email: string | null
   password: string | null
   role: $Enums.Role | null
-  subscription_id: string | null
-  billing_model: $Enums.BillingModel | null
-  next_payment_date: Date | null
   is_active: boolean | null
   is_deleted: boolean | null
   createdAt: Date | null
@@ -90,9 +84,6 @@ export type UserCountAggregateOutputType = {
   email: number
   password: number
   role: number
-  subscription_id: number
-  billing_model: number
-  next_payment_date: number
   is_active: number
   is_deleted: number
   createdAt: number
@@ -117,9 +108,6 @@ export type UserMinAggregateInputType = {
   email?: true
   password?: true
   role?: true
-  subscription_id?: true
-  billing_model?: true
-  next_payment_date?: true
   is_active?: true
   is_deleted?: true
   createdAt?: true
@@ -142,9 +130,6 @@ export type UserMaxAggregateInputType = {
   email?: true
   password?: true
   role?: true
-  subscription_id?: true
-  billing_model?: true
-  next_payment_date?: true
   is_active?: true
   is_deleted?: true
   createdAt?: true
@@ -167,9 +152,6 @@ export type UserCountAggregateInputType = {
   email?: true
   password?: true
   role?: true
-  subscription_id?: true
-  billing_model?: true
-  next_payment_date?: true
   is_active?: true
   is_deleted?: true
   createdAt?: true
@@ -265,9 +247,6 @@ export type UserGroupByOutputType = {
   email: string | null
   password: string | null
   role: $Enums.Role
-  subscription_id: string | null
-  billing_model: $Enums.BillingModel | null
-  next_payment_date: Date | null
   is_active: boolean
   is_deleted: boolean
   createdAt: Date
@@ -311,18 +290,14 @@ export type UserWhereInput = {
   email?: Prisma.StringNullableFilter<"User"> | string | null
   password?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
-  subscription_id?: Prisma.StringNullableFilter<"User"> | string | null
-  billing_model?: Prisma.EnumBillingModelNullableFilter<"User"> | $Enums.BillingModel | null
-  next_payment_date?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   is_active?: Prisma.BoolFilter<"User"> | boolean
   is_deleted?: Prisma.BoolFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
   todos?: Prisma.TodoListRelationFilter
   gyms_owned?: Prisma.GymListRelationFilter
   member?: Prisma.XOR<Prisma.MemberNullableScalarRelationFilter, Prisma.MemberWhereInput> | null
-  ownerSubscriptions?: Prisma.Owner_subscriptionListRelationFilter
+  ownerSubscriptions?: Prisma.OwnerSubscriptionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -341,18 +316,14 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
-  subscription_id?: Prisma.SortOrderInput | Prisma.SortOrder
-  billing_model?: Prisma.SortOrderInput | Prisma.SortOrder
-  next_payment_date?: Prisma.SortOrderInput | Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  subscription?: Prisma.SubscriptionOrderByWithRelationInput
   todos?: Prisma.TodoOrderByRelationAggregateInput
   gyms_owned?: Prisma.GymOrderByRelationAggregateInput
   member?: Prisma.MemberOrderByWithRelationInput
-  ownerSubscriptions?: Prisma.owner_subscriptionOrderByRelationAggregateInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -374,18 +345,14 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   email?: Prisma.StringNullableFilter<"User"> | string | null
   password?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
-  subscription_id?: Prisma.StringNullableFilter<"User"> | string | null
-  billing_model?: Prisma.EnumBillingModelNullableFilter<"User"> | $Enums.BillingModel | null
-  next_payment_date?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   is_active?: Prisma.BoolFilter<"User"> | boolean
   is_deleted?: Prisma.BoolFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
   todos?: Prisma.TodoListRelationFilter
   gyms_owned?: Prisma.GymListRelationFilter
   member?: Prisma.XOR<Prisma.MemberNullableScalarRelationFilter, Prisma.MemberWhereInput> | null
-  ownerSubscriptions?: Prisma.Owner_subscriptionListRelationFilter
+  ownerSubscriptions?: Prisma.OwnerSubscriptionListRelationFilter
 }, "id">
 
 export type UserOrderByWithAggregationInput = {
@@ -404,9 +371,6 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
-  subscription_id?: Prisma.SortOrderInput | Prisma.SortOrder
-  billing_model?: Prisma.SortOrderInput | Prisma.SortOrder
-  next_payment_date?: Prisma.SortOrderInput | Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -435,9 +399,6 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   password?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   role?: Prisma.EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
-  subscription_id?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
-  billing_model?: Prisma.EnumBillingModelNullableWithAggregatesFilter<"User"> | $Enums.BillingModel | null
-  next_payment_date?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   is_active?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   is_deleted?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -460,17 +421,14 @@ export type UserCreateInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
-  ownerSubscriptions?: Prisma.owner_subscriptionCreateNestedManyWithoutOwnerInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -489,9 +447,6 @@ export type UserUncheckedCreateInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  subscription_id?: string | null
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
@@ -499,7 +454,7 @@ export type UserUncheckedCreateInput = {
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUpdateInput = {
@@ -518,17 +473,14 @@ export type UserUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUpdateManyWithoutOwnerNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -547,9 +499,6 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  subscription_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -557,7 +506,7 @@ export type UserUncheckedUpdateInput = {
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -576,9 +525,6 @@ export type UserCreateManyInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  subscription_id?: string | null
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
@@ -601,8 +547,6 @@ export type UserUpdateManyMutationInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -625,9 +569,6 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  subscription_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -650,9 +591,6 @@ export type UserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
-  subscription_id?: Prisma.SortOrder
-  billing_model?: Prisma.SortOrder
-  next_payment_date?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -675,9 +613,6 @@ export type UserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
-  subscription_id?: Prisma.SortOrder
-  billing_model?: Prisma.SortOrder
-  next_payment_date?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -700,9 +635,6 @@ export type UserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
-  subscription_id?: Prisma.SortOrder
-  billing_model?: Prisma.SortOrder
-  next_payment_date?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -712,16 +644,6 @@ export type UserMinOrderByAggregateInput = {
 export type UserScalarRelationFilter = {
   is?: Prisma.UserWhereInput
   isNot?: Prisma.UserWhereInput
-}
-
-export type UserListRelationFilter = {
-  every?: Prisma.UserWhereInput
-  some?: Prisma.UserWhereInput
-  none?: Prisma.UserWhereInput
-}
-
-export type UserOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -738,14 +660,6 @@ export type NullableStringFieldUpdateOperationsInput = {
 
 export type EnumRoleFieldUpdateOperationsInput = {
   set?: $Enums.Role
-}
-
-export type NullableEnumBillingModelFieldUpdateOperationsInput = {
-  set?: $Enums.BillingModel | null
-}
-
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
 }
 
 export type BoolFieldUpdateOperationsInput = {
@@ -808,48 +722,6 @@ export type UserUpdateOneRequiredWithoutOwnerSubscriptionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOwnerSubscriptionsInput, Prisma.UserUpdateWithoutOwnerSubscriptionsInput>, Prisma.UserUncheckedUpdateWithoutOwnerSubscriptionsInput>
 }
 
-export type UserCreateNestedManyWithoutSubscriptionInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutSubscriptionInput, Prisma.UserUncheckedCreateWithoutSubscriptionInput> | Prisma.UserCreateWithoutSubscriptionInput[] | Prisma.UserUncheckedCreateWithoutSubscriptionInput[]
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSubscriptionInput | Prisma.UserCreateOrConnectWithoutSubscriptionInput[]
-  createMany?: Prisma.UserCreateManySubscriptionInputEnvelope
-  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-}
-
-export type UserUncheckedCreateNestedManyWithoutSubscriptionInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutSubscriptionInput, Prisma.UserUncheckedCreateWithoutSubscriptionInput> | Prisma.UserCreateWithoutSubscriptionInput[] | Prisma.UserUncheckedCreateWithoutSubscriptionInput[]
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSubscriptionInput | Prisma.UserCreateOrConnectWithoutSubscriptionInput[]
-  createMany?: Prisma.UserCreateManySubscriptionInputEnvelope
-  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-}
-
-export type UserUpdateManyWithoutSubscriptionNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutSubscriptionInput, Prisma.UserUncheckedCreateWithoutSubscriptionInput> | Prisma.UserCreateWithoutSubscriptionInput[] | Prisma.UserUncheckedCreateWithoutSubscriptionInput[]
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSubscriptionInput | Prisma.UserCreateOrConnectWithoutSubscriptionInput[]
-  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutSubscriptionInput | Prisma.UserUpsertWithWhereUniqueWithoutSubscriptionInput[]
-  createMany?: Prisma.UserCreateManySubscriptionInputEnvelope
-  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-  update?: Prisma.UserUpdateWithWhereUniqueWithoutSubscriptionInput | Prisma.UserUpdateWithWhereUniqueWithoutSubscriptionInput[]
-  updateMany?: Prisma.UserUpdateManyWithWhereWithoutSubscriptionInput | Prisma.UserUpdateManyWithWhereWithoutSubscriptionInput[]
-  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
-}
-
-export type UserUncheckedUpdateManyWithoutSubscriptionNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutSubscriptionInput, Prisma.UserUncheckedCreateWithoutSubscriptionInput> | Prisma.UserCreateWithoutSubscriptionInput[] | Prisma.UserUncheckedCreateWithoutSubscriptionInput[]
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSubscriptionInput | Prisma.UserCreateOrConnectWithoutSubscriptionInput[]
-  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutSubscriptionInput | Prisma.UserUpsertWithWhereUniqueWithoutSubscriptionInput[]
-  createMany?: Prisma.UserCreateManySubscriptionInputEnvelope
-  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
-  update?: Prisma.UserUpdateWithWhereUniqueWithoutSubscriptionInput | Prisma.UserUpdateWithWhereUniqueWithoutSubscriptionInput[]
-  updateMany?: Prisma.UserUpdateManyWithWhereWithoutSubscriptionInput | Prisma.UserUpdateManyWithWhereWithoutSubscriptionInput[]
-  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
-}
-
 export type UserCreateWithoutTodosInput = {
   id?: string
   first_name: string
@@ -866,16 +738,13 @@ export type UserCreateWithoutTodosInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
-  ownerSubscriptions?: Prisma.owner_subscriptionCreateNestedManyWithoutOwnerInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateWithoutTodosInput = {
@@ -894,16 +763,13 @@ export type UserUncheckedCreateWithoutTodosInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  subscription_id?: string | null
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserCreateOrConnectWithoutTodosInput = {
@@ -938,16 +804,13 @@ export type UserUpdateWithoutTodosInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUpdateManyWithoutOwnerNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTodosInput = {
@@ -966,16 +829,13 @@ export type UserUncheckedUpdateWithoutTodosInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  subscription_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserCreateWithoutGyms_ownedInput = {
@@ -994,16 +854,13 @@ export type UserCreateWithoutGyms_ownedInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
-  ownerSubscriptions?: Prisma.owner_subscriptionCreateNestedManyWithoutOwnerInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateWithoutGyms_ownedInput = {
@@ -1022,16 +879,13 @@ export type UserUncheckedCreateWithoutGyms_ownedInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  subscription_id?: string | null
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserCreateOrConnectWithoutGyms_ownedInput = {
@@ -1066,16 +920,13 @@ export type UserUpdateWithoutGyms_ownedInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUpdateManyWithoutOwnerNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGyms_ownedInput = {
@@ -1094,16 +945,13 @@ export type UserUncheckedUpdateWithoutGyms_ownedInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  subscription_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserCreateWithoutMemberInput = {
@@ -1122,16 +970,13 @@ export type UserCreateWithoutMemberInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
-  ownerSubscriptions?: Prisma.owner_subscriptionCreateNestedManyWithoutOwnerInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateWithoutMemberInput = {
@@ -1150,16 +995,13 @@ export type UserUncheckedCreateWithoutMemberInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  subscription_id?: string | null
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserCreateOrConnectWithoutMemberInput = {
@@ -1194,16 +1036,13 @@ export type UserUpdateWithoutMemberInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUpdateManyWithoutOwnerNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMemberInput = {
@@ -1222,16 +1061,13 @@ export type UserUncheckedUpdateWithoutMemberInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  subscription_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserCreateWithoutOwnerSubscriptionsInput = {
@@ -1250,13 +1086,10 @@ export type UserCreateWithoutOwnerSubscriptionsInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
@@ -1278,9 +1111,6 @@ export type UserUncheckedCreateWithoutOwnerSubscriptionsInput = {
   email?: string | null
   password?: string | null
   role?: $Enums.Role
-  subscription_id?: string | null
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: Date | string
@@ -1322,13 +1152,10 @@ export type UserUpdateWithoutOwnerSubscriptionsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
@@ -1350,9 +1177,6 @@ export type UserUncheckedUpdateWithoutOwnerSubscriptionsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  subscription_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1360,220 +1184,6 @@ export type UserUncheckedUpdateWithoutOwnerSubscriptionsInput = {
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
-}
-
-export type UserCreateWithoutSubscriptionInput = {
-  id?: string
-  first_name: string
-  last_name: string
-  phone_number: string
-  address: string
-  city: string
-  state: string
-  zip_code: string
-  country: string
-  date_of_birth: Date | string
-  cnic?: string | null
-  profile_picture?: string | null
-  email?: string | null
-  password?: string | null
-  role?: $Enums.Role
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
-  is_active?: boolean
-  is_deleted?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
-  gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
-  member?: Prisma.MemberCreateNestedOneWithoutUserInput
-  ownerSubscriptions?: Prisma.owner_subscriptionCreateNestedManyWithoutOwnerInput
-}
-
-export type UserUncheckedCreateWithoutSubscriptionInput = {
-  id?: string
-  first_name: string
-  last_name: string
-  phone_number: string
-  address: string
-  city: string
-  state: string
-  zip_code: string
-  country: string
-  date_of_birth: Date | string
-  cnic?: string | null
-  profile_picture?: string | null
-  email?: string | null
-  password?: string | null
-  role?: $Enums.Role
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
-  is_active?: boolean
-  is_deleted?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
-  gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
-  member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedCreateNestedManyWithoutOwnerInput
-}
-
-export type UserCreateOrConnectWithoutSubscriptionInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutSubscriptionInput, Prisma.UserUncheckedCreateWithoutSubscriptionInput>
-}
-
-export type UserCreateManySubscriptionInputEnvelope = {
-  data: Prisma.UserCreateManySubscriptionInput | Prisma.UserCreateManySubscriptionInput[]
-  skipDuplicates?: boolean
-}
-
-export type UserUpsertWithWhereUniqueWithoutSubscriptionInput = {
-  where: Prisma.UserWhereUniqueInput
-  update: Prisma.XOR<Prisma.UserUpdateWithoutSubscriptionInput, Prisma.UserUncheckedUpdateWithoutSubscriptionInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutSubscriptionInput, Prisma.UserUncheckedCreateWithoutSubscriptionInput>
-}
-
-export type UserUpdateWithWhereUniqueWithoutSubscriptionInput = {
-  where: Prisma.UserWhereUniqueInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutSubscriptionInput, Prisma.UserUncheckedUpdateWithoutSubscriptionInput>
-}
-
-export type UserUpdateManyWithWhereWithoutSubscriptionInput = {
-  where: Prisma.UserScalarWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateManyMutationInput, Prisma.UserUncheckedUpdateManyWithoutSubscriptionInput>
-}
-
-export type UserScalarWhereInput = {
-  AND?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
-  OR?: Prisma.UserScalarWhereInput[]
-  NOT?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
-  id?: Prisma.StringFilter<"User"> | string
-  first_name?: Prisma.StringFilter<"User"> | string
-  last_name?: Prisma.StringFilter<"User"> | string
-  phone_number?: Prisma.StringFilter<"User"> | string
-  address?: Prisma.StringFilter<"User"> | string
-  city?: Prisma.StringFilter<"User"> | string
-  state?: Prisma.StringFilter<"User"> | string
-  zip_code?: Prisma.StringFilter<"User"> | string
-  country?: Prisma.StringFilter<"User"> | string
-  date_of_birth?: Prisma.DateTimeFilter<"User"> | Date | string
-  cnic?: Prisma.StringNullableFilter<"User"> | string | null
-  profile_picture?: Prisma.StringNullableFilter<"User"> | string | null
-  email?: Prisma.StringNullableFilter<"User"> | string | null
-  password?: Prisma.StringNullableFilter<"User"> | string | null
-  role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
-  subscription_id?: Prisma.StringNullableFilter<"User"> | string | null
-  billing_model?: Prisma.EnumBillingModelNullableFilter<"User"> | $Enums.BillingModel | null
-  next_payment_date?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
-  is_active?: Prisma.BoolFilter<"User"> | boolean
-  is_deleted?: Prisma.BoolFilter<"User"> | boolean
-  createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
-}
-
-export type UserCreateManySubscriptionInput = {
-  id?: string
-  first_name: string
-  last_name: string
-  phone_number: string
-  address: string
-  city: string
-  state: string
-  zip_code: string
-  country: string
-  date_of_birth: Date | string
-  cnic?: string | null
-  profile_picture?: string | null
-  email?: string | null
-  password?: string | null
-  role?: $Enums.Role
-  billing_model?: $Enums.BillingModel | null
-  next_payment_date?: Date | string | null
-  is_active?: boolean
-  is_deleted?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type UserUpdateWithoutSubscriptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  first_name?: Prisma.StringFieldUpdateOperationsInput | string
-  last_name?: Prisma.StringFieldUpdateOperationsInput | string
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  zip_code?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  date_of_birth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
-  gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
-  member?: Prisma.MemberUpdateOneWithoutUserNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUpdateManyWithoutOwnerNestedInput
-}
-
-export type UserUncheckedUpdateWithoutSubscriptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  first_name?: Prisma.StringFieldUpdateOperationsInput | string
-  last_name?: Prisma.StringFieldUpdateOperationsInput | string
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  zip_code?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  date_of_birth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
-  gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
-  member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
-  ownerSubscriptions?: Prisma.owner_subscriptionUncheckedUpdateManyWithoutOwnerNestedInput
-}
-
-export type UserUncheckedUpdateManyWithoutSubscriptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  first_name?: Prisma.StringFieldUpdateOperationsInput | string
-  last_name?: Prisma.StringFieldUpdateOperationsInput | string
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  zip_code?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  date_of_birth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
-  billing_model?: Prisma.NullableEnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel | null
-  next_payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -1621,7 +1231,7 @@ export type UserCountOutputTypeCountGyms_ownedArgs<ExtArgs extends runtime.Types
  * UserCountOutputType without action
  */
 export type UserCountOutputTypeCountOwnerSubscriptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.owner_subscriptionWhereInput
+  where?: Prisma.OwnerSubscriptionWhereInput
 }
 
 
@@ -1641,14 +1251,10 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   password?: boolean
   role?: boolean
-  subscription_id?: boolean
-  billing_model?: boolean
-  next_payment_date?: boolean
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  subscription?: boolean | Prisma.User$subscriptionArgs<ExtArgs>
   todos?: boolean | Prisma.User$todosArgs<ExtArgs>
   gyms_owned?: boolean | Prisma.User$gyms_ownedArgs<ExtArgs>
   member?: boolean | Prisma.User$memberArgs<ExtArgs>
@@ -1672,14 +1278,10 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   role?: boolean
-  subscription_id?: boolean
-  billing_model?: boolean
-  next_payment_date?: boolean
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  subscription?: boolean | Prisma.User$subscriptionArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1698,14 +1300,10 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   password?: boolean
   role?: boolean
-  subscription_id?: boolean
-  billing_model?: boolean
-  next_payment_date?: boolean
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  subscription?: boolean | Prisma.User$subscriptionArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -1724,39 +1322,30 @@ export type UserSelectScalar = {
   email?: boolean
   password?: boolean
   role?: boolean
-  subscription_id?: boolean
-  billing_model?: boolean
-  next_payment_date?: boolean
   is_active?: boolean
   is_deleted?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "first_name" | "last_name" | "phone_number" | "address" | "city" | "state" | "zip_code" | "country" | "date_of_birth" | "cnic" | "profile_picture" | "email" | "password" | "role" | "subscription_id" | "billing_model" | "next_payment_date" | "is_active" | "is_deleted" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "first_name" | "last_name" | "phone_number" | "address" | "city" | "state" | "zip_code" | "country" | "date_of_birth" | "cnic" | "profile_picture" | "email" | "password" | "role" | "is_active" | "is_deleted" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  subscription?: boolean | Prisma.User$subscriptionArgs<ExtArgs>
   todos?: boolean | Prisma.User$todosArgs<ExtArgs>
   gyms_owned?: boolean | Prisma.User$gyms_ownedArgs<ExtArgs>
   member?: boolean | Prisma.User$memberArgs<ExtArgs>
   ownerSubscriptions?: boolean | Prisma.User$ownerSubscriptionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  subscription?: boolean | Prisma.User$subscriptionArgs<ExtArgs>
-}
-export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  subscription?: boolean | Prisma.User$subscriptionArgs<ExtArgs>
-}
+export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
   objects: {
-    subscription: Prisma.$SubscriptionPayload<ExtArgs> | null
     todos: Prisma.$TodoPayload<ExtArgs>[]
     gyms_owned: Prisma.$GymPayload<ExtArgs>[]
     member: Prisma.$MemberPayload<ExtArgs> | null
-    ownerSubscriptions: Prisma.$owner_subscriptionPayload<ExtArgs>[]
+    ownerSubscriptions: Prisma.$OwnerSubscriptionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1774,9 +1363,6 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string | null
     password: string | null
     role: $Enums.Role
-    subscription_id: string | null
-    billing_model: $Enums.BillingModel | null
-    next_payment_date: Date | null
     is_active: boolean
     is_deleted: boolean
     createdAt: Date
@@ -2175,11 +1761,10 @@ readonly fields: UserFieldRefs;
  */
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  subscription<T extends Prisma.User$subscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$subscriptionArgs<ExtArgs>>): Prisma.Prisma__SubscriptionClient<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   todos<T extends Prisma.User$todosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$todosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   gyms_owned<T extends Prisma.User$gyms_ownedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$gyms_ownedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GymPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   member<T extends Prisma.User$memberArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$memberArgs<ExtArgs>>): Prisma.Prisma__MemberClient<runtime.Types.Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  ownerSubscriptions<T extends Prisma.User$ownerSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownerSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$owner_subscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ownerSubscriptions<T extends Prisma.User$ownerSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownerSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OwnerSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2224,9 +1809,6 @@ export interface UserFieldRefs {
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'Role'>
-  readonly subscription_id: Prisma.FieldRef<"User", 'String'>
-  readonly billing_model: Prisma.FieldRef<"User", 'BillingModel'>
-  readonly next_payment_date: Prisma.FieldRef<"User", 'DateTime'>
   readonly is_active: Prisma.FieldRef<"User", 'Boolean'>
   readonly is_deleted: Prisma.FieldRef<"User", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
@@ -2480,10 +2062,6 @@ export type UserCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    */
   data: Prisma.UserCreateManyInput | Prisma.UserCreateManyInput[]
   skipDuplicates?: boolean
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UserIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -2554,10 +2132,6 @@ export type UserUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many Users to update.
    */
   limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UserIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -2624,25 +2198,6 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Limit how many Users to delete.
    */
   limit?: number
-}
-
-/**
- * User.subscription
- */
-export type User$subscriptionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Subscription
-   */
-  select?: Prisma.SubscriptionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Subscription
-   */
-  omit?: Prisma.SubscriptionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SubscriptionInclude<ExtArgs> | null
-  where?: Prisma.SubscriptionWhereInput
 }
 
 /**
@@ -2717,23 +2272,23 @@ export type User$memberArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
  */
 export type User$ownerSubscriptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the owner_subscription
+   * Select specific fields to fetch from the OwnerSubscription
    */
-  select?: Prisma.owner_subscriptionSelect<ExtArgs> | null
+  select?: Prisma.OwnerSubscriptionSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the owner_subscription
+   * Omit specific fields from the OwnerSubscription
    */
-  omit?: Prisma.owner_subscriptionOmit<ExtArgs> | null
+  omit?: Prisma.OwnerSubscriptionOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.owner_subscriptionInclude<ExtArgs> | null
-  where?: Prisma.owner_subscriptionWhereInput
-  orderBy?: Prisma.owner_subscriptionOrderByWithRelationInput | Prisma.owner_subscriptionOrderByWithRelationInput[]
-  cursor?: Prisma.owner_subscriptionWhereUniqueInput
+  include?: Prisma.OwnerSubscriptionInclude<ExtArgs> | null
+  where?: Prisma.OwnerSubscriptionWhereInput
+  orderBy?: Prisma.OwnerSubscriptionOrderByWithRelationInput | Prisma.OwnerSubscriptionOrderByWithRelationInput[]
+  cursor?: Prisma.OwnerSubscriptionWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.Owner_subscriptionScalarFieldEnum | Prisma.Owner_subscriptionScalarFieldEnum[]
+  distinct?: Prisma.OwnerSubscriptionScalarFieldEnum | Prisma.OwnerSubscriptionScalarFieldEnum[]
 }
 
 /**

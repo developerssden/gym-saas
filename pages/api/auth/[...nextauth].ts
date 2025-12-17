@@ -102,7 +102,19 @@ export const options: NextAuthOptions = {
           is_active: true
         },
         include: {
-          subscription: true
+          ownerSubscriptions: {
+            where: {
+              is_deleted: false,
+              is_active: true,
+            },
+            include: {
+              plan: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: 1,
+          },
         }
       });
       // Add role and other user data to session
@@ -112,9 +124,14 @@ export const options: NextAuthOptions = {
         session.user.first_name = userData.first_name;
         session.user.last_name = userData.last_name;
         session.user.selected_location_id = token.selected_location_id;
-        session.user.max_gyms = userData.subscription?.max_gyms;
-        session.user.max_members = userData.subscription?.max_members;
-        session.user.max_equipment = userData.subscription?.max_equipment;
+        
+        // Get plan from active owner subscription
+        const activeSubscription = userData.ownerSubscriptions?.[0];
+        if (activeSubscription?.plan) {
+          session.user.max_gyms = activeSubscription.plan.max_gyms;
+          session.user.max_members = activeSubscription.plan.max_members;
+          session.user.max_equipment = activeSubscription.plan.max_equipment;
+        }
       }
 
       return session;

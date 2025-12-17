@@ -55,10 +55,11 @@ export const ModelName = {
   Todo: 'Todo',
   Gym: 'Gym',
   Member: 'Member',
-  membership_fee: 'membership_fee',
   Equipment: 'Equipment',
-  owner_subscription: 'owner_subscription',
-  Subscription: 'Subscription'
+  Plan: 'Plan',
+  OwnerSubscription: 'OwnerSubscription',
+  MemberSubscription: 'MemberSubscription',
+  Payment: 'Payment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -93,9 +94,6 @@ export const UserScalarFieldEnum = {
   email: 'email',
   password: 'password',
   role: 'role',
-  subscription_id: 'subscription_id',
-  billing_model: 'billing_model',
-  next_payment_date: 'next_payment_date',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
   createdAt: 'createdAt',
@@ -149,23 +147,6 @@ export const MemberScalarFieldEnum = {
 export type MemberScalarFieldEnum = (typeof MemberScalarFieldEnum)[keyof typeof MemberScalarFieldEnum]
 
 
-export const Membership_feeScalarFieldEnum = {
-  id: 'id',
-  price: 'price',
-  start_date: 'start_date',
-  end_date: 'end_date',
-  is_expired: 'is_expired',
-  notification_sent: 'notification_sent',
-  is_active: 'is_active',
-  is_deleted: 'is_deleted',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  member_id: 'member_id'
-} as const
-
-export type Membership_feeScalarFieldEnum = (typeof Membership_feeScalarFieldEnum)[keyof typeof Membership_feeScalarFieldEnum]
-
-
 export const EquipmentScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -180,26 +161,7 @@ export const EquipmentScalarFieldEnum = {
 export type EquipmentScalarFieldEnum = (typeof EquipmentScalarFieldEnum)[keyof typeof EquipmentScalarFieldEnum]
 
 
-export const Owner_subscriptionScalarFieldEnum = {
-  id: 'id',
-  subscription_id: 'subscription_id',
-  owner_id: 'owner_id',
-  type: 'type',
-  price: 'price',
-  start_date: 'start_date',
-  end_date: 'end_date',
-  is_expired: 'is_expired',
-  notification_sent: 'notification_sent',
-  is_active: 'is_active',
-  is_deleted: 'is_deleted',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type Owner_subscriptionScalarFieldEnum = (typeof Owner_subscriptionScalarFieldEnum)[keyof typeof Owner_subscriptionScalarFieldEnum]
-
-
-export const SubscriptionScalarFieldEnum = {
+export const PlanScalarFieldEnum = {
   id: 'id',
   name: 'name',
   monthly_price: 'monthly_price',
@@ -213,7 +175,60 @@ export const SubscriptionScalarFieldEnum = {
   is_deleted: 'is_deleted'
 } as const
 
-export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
+export type PlanScalarFieldEnum = (typeof PlanScalarFieldEnum)[keyof typeof PlanScalarFieldEnum]
+
+
+export const OwnerSubscriptionScalarFieldEnum = {
+  id: 'id',
+  owner_id: 'owner_id',
+  plan_id: 'plan_id',
+  billing_model: 'billing_model',
+  start_date: 'start_date',
+  end_date: 'end_date',
+  is_expired: 'is_expired',
+  notification_sent: 'notification_sent',
+  is_active: 'is_active',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OwnerSubscriptionScalarFieldEnum = (typeof OwnerSubscriptionScalarFieldEnum)[keyof typeof OwnerSubscriptionScalarFieldEnum]
+
+
+export const MemberSubscriptionScalarFieldEnum = {
+  id: 'id',
+  member_id: 'member_id',
+  price: 'price',
+  billing_model: 'billing_model',
+  start_date: 'start_date',
+  end_date: 'end_date',
+  is_expired: 'is_expired',
+  notification_sent: 'notification_sent',
+  is_active: 'is_active',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MemberSubscriptionScalarFieldEnum = (typeof MemberSubscriptionScalarFieldEnum)[keyof typeof MemberSubscriptionScalarFieldEnum]
+
+
+export const PaymentScalarFieldEnum = {
+  id: 'id',
+  owner_subscription_id: 'owner_subscription_id',
+  member_subscription_id: 'member_subscription_id',
+  subscription_type: 'subscription_type',
+  amount: 'amount',
+  payment_method: 'payment_method',
+  transaction_id: 'transaction_id',
+  payment_date: 'payment_date',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
 export const SortOrder = {

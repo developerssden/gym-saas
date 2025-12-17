@@ -18,6 +18,16 @@ enum SubscriptionType {
   YEARLY
 }
 
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+}
+
+enum SubscriptionTypeEnum {
+  OWNER
+  MEMBER
+}
+
 // User model
 model User {
   id                String        @id @default(uuid())
@@ -35,19 +45,15 @@ model User {
   email             String?
   password          String?
   role              Role          @default(MEMBER)
-  subscription_id   String?
-  billing_model     BillingModel?
-  next_payment_date DateTime?
   is_active         Boolean       @default(true)
   is_deleted        Boolean       @default(false)
-  subscription      Subscription? @relation(fields: [subscription_id], references: [id])
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   todos             Todo[]
   gyms_owned        Gym[]         @relation("UserGyms")
   member            Member?
 
-  ownerSubscriptions owner_subscription[]
+  ownerSubscriptions OwnerSubscription[]
 }
 
 model Todo {
@@ -99,24 +105,7 @@ model Member {
   // Relations
   user       User         @relation(fields: [user_id], references: [id])
   gym        Gym          @relation(fields: [gym_id], references: [id])
-  membership_fee membership_fee[]
-}
-
-model membership_fee {
-  id         String   @id @default(uuid())
-  price      Int
-  start_date DateTime
-  end_date   DateTime
-  is_expired Boolean  @default(false)
-  notification_sent Boolean  @default(false)
-  is_active  Boolean  @default(true)
-  is_deleted Boolean  @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
-  // Relations
-  member_id  String
-  member     Member   @relation(fields: [member_id], references: [id])
-  
+  memberSubscriptions MemberSubscription[]
 }
 
 
@@ -133,27 +122,7 @@ model Equipment {
   gym        Gym     @relation(fields: [gym_id], references: [id])
 }
 
-model owner_subscription {
-  id                  String        @id @default(uuid())
-  subscription_id     String
-  owner_id            String
-  type                String        // "monthly" | "yearly"
-  price               Int
-  start_date          DateTime
-  end_date            DateTime
-  is_expired          Boolean       @default(false)
-  notification_sent   Boolean       @default(false)
-  is_active           Boolean       @default(true)
-  is_deleted          Boolean       @default(false)
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @default(now())
-  
-  // Relations
-  owner               User          @relation(fields: [owner_id], references: [id])
-  subscription        Subscription  @relation(fields: [subscription_id], references: [id])
-}
-
-model Subscription {
+model Plan {
   id                  String                @id @default(uuid())
   name                String
   monthly_price       Int
@@ -163,9 +132,65 @@ model Subscription {
   max_equipment       Int
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
-  User                User[]
   is_active           Boolean               @default(true)
   is_deleted          Boolean               @default(false)
 
-  ownerSubscriptions owner_subscription[]
+  ownerSubscriptions OwnerSubscription[]
+}
+
+model OwnerSubscription {
+  id                  String        @id @default(uuid())
+  owner_id            String
+  plan_id             String
+  billing_model       BillingModel
+  start_date          DateTime
+  end_date            DateTime
+  is_expired          Boolean       @default(false)
+  notification_sent   Boolean       @default(false)
+  is_active           Boolean       @default(true)
+  is_deleted          Boolean       @default(false)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  
+  // Relations
+  owner               User          @relation(fields: [owner_id], references: [id])
+  plan                Plan          @relation(fields: [plan_id], references: [id])
+  payments            Payment[]
+}
+
+model MemberSubscription {
+  id                  String        @id @default(uuid())
+  member_id           String
+  price               Int
+  billing_model       BillingModel
+  start_date          DateTime
+  end_date            DateTime
+  is_expired          Boolean       @default(false)
+  notification_sent    Boolean       @default(false)
+  is_active           Boolean       @default(true)
+  is_deleted          Boolean       @default(false)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  
+  // Relations
+  member              Member        @relation(fields: [member_id], references: [id])
+  payments            Payment[]
+}
+
+model Payment {
+  id                      String              @id @default(uuid())
+  owner_subscription_id   String?
+  member_subscription_id  String?
+  subscription_type       SubscriptionTypeEnum
+  amount                  Int
+  payment_method          PaymentMethod
+  transaction_id          String?
+  payment_date            DateTime
+  notes                   String?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+  
+  // Relations
+  ownerSubscription       OwnerSubscription?  @relation(fields: [owner_subscription_id], references: [id])
+  memberSubscription     MemberSubscription? @relation(fields: [member_subscription_id], references: [id])
 }

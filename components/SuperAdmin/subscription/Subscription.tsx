@@ -12,7 +12,7 @@ import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
 import { useSubscriptions } from "@/hooks/use-subscription";
 
-const Subscription = ({ session }: { session: Session }) => {
+const Plans = ({ session }: { session: Session }) => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 1000);
@@ -28,15 +28,15 @@ const Subscription = ({ session }: { session: Session }) => {
   return (
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Subscriptions</h1>
+        <h1 className="h1">Plans</h1>
         <Link href={`/subscriptions/manage?action=create`}>
-          <Button>Create Subscription</Button>
+          <Button>Create Plan</Button>
         </Link>
       </div>
 
       {isLoading && !data && (
         <div className="flex justify-center items-center h-64">
-          <FullScreenLoader label="Loading Subscriptions..." />
+          <FullScreenLoader label="Loading Plans..." />
         </div>
       )}
 
@@ -44,7 +44,7 @@ const Subscription = ({ session }: { session: Session }) => {
         <DataFetchError
           error={error}
           onRetry={() => refetch()}
-          message="Error loading subscriptions"
+          message="Error loading plans"
         />
       )}
 
@@ -65,4 +65,4 @@ const Subscription = ({ session }: { session: Session }) => {
   );
 };
 
-export default Subscription;
+export default Plans;

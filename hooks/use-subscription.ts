@@ -30,9 +30,9 @@ interface UseSubscriptionsParams {
 
 export const useSubscriptions = ({ page, limit, search, enabled = true }: UseSubscriptionsParams = {}) =>
     useQuery<SubscriptionsResponse, Error>({
-      queryKey: ["subscriptions", page, limit, search],
+      queryKey: ["plans", page, limit, search],
       queryFn: async () => {
-        const res = await axios.post<SubscriptionsResponse>("/api/subscription/getsubscriptions", {
+        const res = await axios.post<SubscriptionsResponse>("/api/plans/getplans", {
           page,
           limit,
           search,

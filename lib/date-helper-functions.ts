@@ -1,6 +1,6 @@
 export const toDate = (value?: string) =>
     value ? new Date(value) : undefined;
   
-export  const formatDate = (value?: string) =>
+export const formatDate = (value?: string | Date) =>
     value ? new Date(value).toLocaleDateString() : "Select date";
   

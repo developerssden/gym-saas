@@ -44,10 +44,10 @@ const ManageSubscriptions = () => {
   const [loading, setLoading] = useState(false);
 
   const { data: subscriptionData, isLoading: fetching } = useQuery({
-    queryKey: ["subscription", subscriptionId],
+    queryKey: ["plan", subscriptionId],
     queryFn: async () => {
       if (!subscriptionId) return null;
-      const res = await axios.post(`/api/subscription/getsubscription`, {
+      const res = await axios.post(`/api/plans/getplan`, {
         id: subscriptionId,
       });
       return res.data;
@@ -57,10 +57,10 @@ const ManageSubscriptions = () => {
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (values) => axios.post("/api/subscription/createsubscription", values),
+    mutationFn: (values) => axios.post("/api/plans/createplan", values),
     onSuccess: (res) => {
-      toast.success(res.data.message || "Subscription created successfully!");
-      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      toast.success(res.data.message || "Plan created successfully!");
+      queryClient.invalidateQueries({ queryKey: ["plans"] });
       router.push("/subscriptions");
     },
     onError: (err: unknown) => {
@@ -71,10 +71,10 @@ const ManageSubscriptions = () => {
 
   const updateMutation = useMutation({
     mutationFn: (values: any) =>
-      axios.post(`/api/subscription/updatesubscription`, { id: subscriptionId, ...values }),
+      axios.post(`/api/plans/updateplan`, { id: subscriptionId, ...values }),
     onSuccess: (res) => {
-      toast.success(res.data.message || "Subscription updated successfully!");
-      queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      toast.success(res.data.message || "Plan updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["plans"] });
       router.push("/subscriptions");
     },
     onError: (err: unknown) => {
@@ -111,18 +111,18 @@ const ManageSubscriptions = () => {
     }
   });
 
-  if (fetching) return <FullScreenLoader label="Loading subscription..." />;
+  if (fetching) return <FullScreenLoader label="Loading plan..." />;
 
   return (
     <PageContainer>
-      {loading && <FullScreenLoader label="Saving subscription..." />}
+      {loading && <FullScreenLoader label="Saving plan..." />}
       <div className="w-full space-y-12">
         <h1 className="h1 text-center">
           {action === "create"
-            ? "Create Subscription"
+            ? "Create Plan"
             : action === "edit"
-              ? "Edit Subscription"
-              : "View Subscription"}
+              ? "Edit Plan"
+              : "View Plan"}
         </h1>
         <form className="max-w-2xl mx-auto" onSubmit={formik.handleSubmit}>
           <div className=" grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
@@ -230,7 +230,7 @@ const ManageSubscriptions = () => {
 
           {action !== "view" && (
             <Button type="submit" className="w-full mt-4">
-              {action === "create" ? "Create Subscription" : "Update Subscription"}
+              {action === "create" ? "Create Plan" : "Update Plan"}
             </Button>
           )}
         </form>

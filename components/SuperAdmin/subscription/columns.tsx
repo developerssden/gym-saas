@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
-import { Subscription } from "@/types"
+import { Plan } from "@/types"
 import { ColumnDef } from "@tanstack/react-table"
 import { PencilIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from "lucide-react"
 import Link from "next/link"
@@ -25,7 +25,7 @@ import {
 
 
 // Column definitions for TanStack table
-export const columns: ColumnDef<Subscription>[] = [
+export const columns: ColumnDef<Plan>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -78,35 +78,35 @@ export const columns: ColumnDef<Subscription>[] = [
   },
 ]
 
-const ActionCell = ({ subscription }: { subscription: Subscription }) => {
+const ActionCell = ({ subscription }: { subscription: Plan }) => {
   const queryClient = useQueryClient()
 
   const { mutate: deleteSubscription } = useMutation({
     mutationFn: async () => {
-      await axios.post("/api/subscription/deletesubscription", { id: subscription.id })
+      await axios.post("/api/plans/deleteplan", { id: subscription.id })
     },
     onSuccess: () => {
-      toast.success("Subscription deleted successfully")
-      queryClient.invalidateQueries({ queryKey: ["subscriptions"] })
+      toast.success("Plan deleted successfully")
+      queryClient.invalidateQueries({ queryKey: ["plans"] })
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to delete subscription")
+      toast.error(error.response?.data?.message || "Failed to delete plan")
     },
   })
 
   const { mutate: toggleActive } = useMutation({
     mutationFn: async () => {
-      await axios.post("/api/subscription/activesubscription", { id: subscription.id })
+      await axios.post("/api/plans/activeplan", { id: subscription.id })
     },
     onSuccess: (data: any) => { // data is response from axios? No, axios returns object. mutationFn returns void above, wait.
       // Let's fix mutationFn to return data so we can use it, or just use message from toast.
       // actually axios.post returns a promise that resolves to response.
-      // Let's check api response. "message" and "subscription".
-      toast.success("Subscription status updated")
-      queryClient.invalidateQueries({ queryKey: ["subscriptions"] })
+      // Let's check api response. "message" and "plan".
+      toast.success("Plan status updated")
+      queryClient.invalidateQueries({ queryKey: ["plans"] })
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to update subscription status")
+      toast.error(error.response?.data?.message || "Failed to update plan status")
     },
   })
 
@@ -138,7 +138,7 @@ const ActionCell = ({ subscription }: { subscription: Subscription }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the subscription "{subscription.name}".
+              This action cannot be undone. This will permanently delete the plan "{subscription.name}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
