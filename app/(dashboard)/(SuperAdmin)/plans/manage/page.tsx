@@ -26,6 +26,9 @@ const SubscriptionSchema = Yup.object({
   max_gyms: Yup.number()
     .typeError("Must be a number")
     .required("Max gyms is required"),
+  max_locations: Yup.number()
+    .typeError("Must be a number")
+    .required("Max locations is required"),
   max_members: Yup.number()
     .typeError("Must be a number")
     .required("Max members is required"),
@@ -61,13 +64,12 @@ const ManageSubscriptions = () => {
     onSuccess: (res) => {
       toast.success(res.data.message || "Plan created successfully!");
       queryClient.invalidateQueries({ queryKey: ["plans"] });
-      router.push("/subscriptions");
+      router.push("/plans");
     },
     onError: (err: unknown) => {
       toast.error(getErrorMessage(err));
     },
   });
-
 
   const updateMutation = useMutation({
     mutationFn: (values: any) =>
@@ -75,13 +77,12 @@ const ManageSubscriptions = () => {
     onSuccess: (res) => {
       toast.success(res.data.message || "Plan updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["plans"] });
-      router.push("/subscriptions");
+      router.push("/plans");
     },
     onError: (err: unknown) => {
       toast.error(getErrorMessage(err));
     },
   });
-
 
   const formik = useFormik({
     initialValues: {
@@ -89,6 +90,7 @@ const ManageSubscriptions = () => {
       monthly_price: subscriptionData?.monthly_price || "",
       yearly_price: subscriptionData?.yearly_price || "",
       max_gyms: subscriptionData?.max_gyms || "",
+      max_locations: subscriptionData?.max_locations || "",
       max_members: subscriptionData?.max_members || "",
       max_equipment: subscriptionData?.max_equipment || "",
       is_active: subscriptionData?.is_active || true,
@@ -108,7 +110,7 @@ const ManageSubscriptions = () => {
       } finally {
         setLoading(false);
       }
-    }
+    },
   });
 
   if (fetching) return <FullScreenLoader label="Loading plan..." />;
@@ -121,8 +123,8 @@ const ManageSubscriptions = () => {
           {action === "create"
             ? "Create Plan"
             : action === "edit"
-              ? "Edit Plan"
-              : "View Plan"}
+            ? "Edit Plan"
+            : "View Plan"}
         </h1>
         <form className="max-w-2xl mx-auto" onSubmit={formik.handleSubmit}>
           <div className=" grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
@@ -151,7 +153,9 @@ const ManageSubscriptions = () => {
                 disabled={action === "view"}
               />
               {formik.errors.monthly_price === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.monthly_price}</p>
+                <p className="text-red-500 text-sm">
+                  {formik.errors.monthly_price}
+                </p>
               )}
             </div>
 
@@ -166,7 +170,9 @@ const ManageSubscriptions = () => {
                 disabled={action === "view"}
               />
               {formik.errors.yearly_price === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.yearly_price}</p>
+                <p className="text-red-500 text-sm">
+                  {formik.errors.yearly_price}
+                </p>
               )}
             </div>
 
@@ -196,7 +202,24 @@ const ManageSubscriptions = () => {
                 disabled={action === "view"}
               />
               {formik.errors.max_members === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.max_members}</p>
+                <p className="text-red-500 text-sm">
+                  {formik.errors.max_members}
+                </p>
+              )}
+            </div>
+
+            {/* Max Locations */}
+            <div className="space-y-1">
+              <Label>Max Locations</Label>
+              <Input
+                name="max_locations"
+                type="number"
+                value={formik.values.max_locations}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {formik.errors.max_locations === "string" && (
+                <p className="text-red-500 text-sm">{formik.errors.max_locations}</p>
               )}
             </div>
 
@@ -211,7 +234,9 @@ const ManageSubscriptions = () => {
                 disabled={action === "view"}
               />
               {formik.errors.max_equipment === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.max_equipment}</p>
+                <p className="text-red-500 text-sm">
+                  {formik.errors.max_equipment}
+                </p>
               )}
             </div>
 
@@ -233,8 +258,27 @@ const ManageSubscriptions = () => {
               {action === "create" ? "Create Plan" : "Update Plan"}
             </Button>
           )}
+          {(action === "edit" || action === "create") && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-4"
+              onClick={() => router.push("/plans")}
+            >
+              Cancel
+            </Button>
+          )}
+          {action === "view" && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-4"
+              onClick={() => router.push("/plans")}
+            >
+              Back
+            </Button>
+          )}
         </form>
-
       </div>
     </PageContainer>
   );

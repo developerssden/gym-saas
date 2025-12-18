@@ -19,19 +19,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { formatDate, toDate } from "@/lib/date-helper-functions";
-import { CalendarIcon, ChevronDownIcon } from "lucide-react";
+import { formatDate } from "@/lib/date-helper-functions";
+import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { CountryDropdown } from "@/components/ui/country-dropdown";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { PlanType, usePlans } from "@/hooks/use-plans";
 
 const ClientSchema = Yup.object({
   first_name: Yup.string().required("First name is required"),
@@ -51,8 +43,6 @@ const ClientSchema = Yup.object({
       then: (schema) => schema.required("Password is required"),
       otherwise: (schema) => schema.notRequired(),
     }),
-  planId: Yup.string(),
-  billingModel: Yup.string().oneOf(["MONTHLY", "YEARLY"]),
 });
 
 const ManageClient = () => {
@@ -74,8 +64,6 @@ const ManageClient = () => {
     },
     enabled: !!clientId && action !== "create", // only fetch if editing or viewing
   });
-
-  const { data: plansData, isLoading: plansLoading } = usePlans({ enabled: true });
 
   // Mutations
   const createMutation = useMutation({
@@ -109,8 +97,8 @@ const ManageClient = () => {
       last_name: clientData?.last_name || "",
       email: clientData?.email || "",
       phone_number: clientData?.phone_number || "",
-      date_of_birth: clientData?.date_of_birth 
-        ? new Date(clientData.date_of_birth) 
+      date_of_birth: clientData?.date_of_birth
+        ? new Date(clientData.date_of_birth)
         : undefined,
       address: clientData?.address || "",
       city: clientData?.city || "",
@@ -119,8 +107,6 @@ const ManageClient = () => {
       zip_code: clientData?.zip_code || "",
       cnic: clientData?.cnic || "",
       password: "",
-      planId: clientData?.activeSubscription?.plan?.id || "",
-      billingModel: clientData?.activeSubscription?.billing_model || clientData?.subscriptionType || "",
     },
 
     validationSchema: ClientSchema,
@@ -134,7 +120,7 @@ const ManageClient = () => {
         if (action === "edit" && !submitValues.password) {
           submitValues.password = undefined;
         }
-        
+
         if (action === "create") {
           await createMutation.mutateAsync(submitValues);
         } else if (action === "edit") {
@@ -205,7 +191,9 @@ const ManageClient = () => {
                 disabled={action === "view"}
               />
               {formik.touched.email && formik.errors.email && (
-                <p className="text-red-500 text-sm">{String(formik.errors.email)}</p>
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.email)}
+                </p>
               )}
             </div>
 
@@ -221,7 +209,9 @@ const ManageClient = () => {
                   onBlur={formik.handleBlur}
                 />
                 {formik.touched.password && formik.errors.password && (
-                  <p className="text-red-500 text-sm">{String(formik.errors.password)}</p>
+                  <p className="text-red-500 text-sm">
+                    {String(formik.errors.password)}
+                  </p>
                 )}
               </div>
             )}
@@ -238,7 +228,9 @@ const ManageClient = () => {
                   onBlur={formik.handleBlur}
                 />
                 {formik.touched.password && formik.errors.password && (
-                  <p className="text-red-500 text-sm">{String(formik.errors.password)}</p>
+                  <p className="text-red-500 text-sm">
+                    {String(formik.errors.password)}
+                  </p>
                 )}
               </div>
             )}
@@ -288,7 +280,7 @@ const ManageClient = () => {
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0" align="start">
                   <Calendar
-                  className="w-full"
+                    className="w-full"
                     mode="single"
                     selected={formik.values.date_of_birth}
                     onSelect={(date) =>
@@ -327,7 +319,9 @@ const ManageClient = () => {
                 disabled={action === "view"}
               />
               {formik.touched.address && formik.errors.address && (
-                <p className="text-red-500 text-sm">{String(formik.errors.address)}</p>
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.address)}
+                </p>
               )}
             </div>
 
@@ -342,7 +336,9 @@ const ManageClient = () => {
                 disabled={action === "view"}
               />
               {formik.touched.city && formik.errors.city && (
-                <p className="text-red-500 text-sm">{String(formik.errors.city)}</p>
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.city)}
+                </p>
               )}
             </div>
 
@@ -357,7 +353,9 @@ const ManageClient = () => {
                 disabled={action === "view"}
               />
               {formik.touched.state && formik.errors.state && (
-                <p className="text-red-500 text-sm">{String(formik.errors.state)}</p>
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.state)}
+                </p>
               )}
             </div>
 
@@ -372,7 +370,9 @@ const ManageClient = () => {
                 disabled={action === "view"}
               />
               {formik.touched.zip_code && formik.errors.zip_code && (
-                <p className="text-red-500 text-sm">{String(formik.errors.zip_code)}</p>
+                <p className="text-red-500 text-sm">
+                  {String(formik.errors.zip_code)}
+                </p>
               )}
             </div>
 
@@ -395,94 +395,13 @@ const ManageClient = () => {
                 </p>
               )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="planId">Plan</Label>
-
-              <Select
-                name="planId"
-                value={formik.values.planId || ""}
-                onValueChange={(val) =>
-                  formik.setFieldValue("planId", val)
-                }
-                disabled={plansLoading}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={
-                      plansLoading ? "Loading..." : "Select plan"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent className="w-full">
-                  {plansData?.data.map((sub: PlanType) => (
-                    <SelectItem key={sub.id} value={sub.id}>
-                      {sub.name} - Monthly: ${sub.monthly_price} / Yearly: ${sub.yearly_price}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {formik.touched.planId && formik.errors.planId && (
-                <p className="text-red-500 text-sm">
-                  {String(formik.errors.planId)}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="billingModel">Billing Model</Label>
-
-              <Select
-                name="billingModel"
-                value={formik.values.billingModel || ""}
-                onValueChange={(val) =>
-                  formik.setFieldValue("billingModel", val)
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select billing model" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="MONTHLY">Monthly</SelectItem>
-                  <SelectItem value="YEARLY">Yearly</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {formik.touched.billingModel && formik.errors.billingModel && (
-                <p className="text-red-500 text-sm">
-                  {String(formik.errors.billingModel)}
-                </p>
-              )}
-            </div>
           </div>
 
           {action !== "view" && (
             <div className="flex gap-4 mt-4">
               <Button type="submit" className="flex-1">
-                {action === "create"
-                  ? "Create Client"
-                  : "Update Client"}
+                {action === "create" ? "Create Client" : "Update Client"}
               </Button>
-              {action === "edit" && formik.values.planId && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={async () => {
-                    setLoading(true);
-                    try {
-                      await updateMutation.mutateAsync({
-                        ...formik.values,
-                        isRenewal: true,
-                      } as any);
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                >
-                  Renew Subscription
-                </Button>
-              )}
               <Button
                 type="button"
                 variant="outline"

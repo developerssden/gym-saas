@@ -106,10 +106,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .font("Helvetica")
       .text(`Invoice #: ${payment.id.substring(0, 8).toUpperCase()}`, 50, invoiceDetailsY)
       .text(`Date: ${formatDate(payment.payment_date)}`, 50, invoiceDetailsY + 15)
-      .text(`Payment Method: ${payment.payment_method === "CASH" ? "Cash" : "Bank Transfer"}`, 50, invoiceDetailsY + 30);
+      .text(`Payment Method: ${payment.payment_method === "CASH" ? "Cash" : "Bank Transfer"}`, 50, invoiceDetailsY + 30)
+      .text(
+        `Subscription Period: ${formatDate(sub.start_date)} - ${formatDate(sub.end_date)}`,
+        50,
+        invoiceDetailsY + 45
+      );
 
     if (payment.transaction_id) {
-      doc.text(`Transaction ID: ${payment.transaction_id}`, 50, invoiceDetailsY + 45);
+      doc.text(`Transaction ID: ${payment.transaction_id}`, 50, invoiceDetailsY + 60);
     }
 
     // Company/Business Info (right side)
@@ -125,7 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .text("United States", 400, companyY + 45, { align: "right" });
 
     // Bill To section
-    const billToY = invoiceDetailsY + 80;
+    const billToY = invoiceDetailsY + 95;
     doc
       .fontSize(11)
       .font("Helvetica-Bold")
@@ -150,35 +155,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       doc.text(line, 50, billToY + 65 + index * 15);
     });
 
-    // Items table
+    // Items table (subscriptions are single charges; quantity/unit price aren't meaningful here)
     const tableTop = billToY + 140;
-    const itemHeight = 30;
+    const rowHeight = 30;
+    const tableX = 50;
     const tableWidth = 500;
+
+    // Column layout (prevents text overlap)
+    const descWidth = 360;
+    const amountWidth = tableWidth - descWidth;
+
+    const descX = tableX + 10;
+    const amountX = tableX + descWidth;
 
     // Table header
     doc
       .fontSize(10)
       .font("Helvetica-Bold")
-      .rect(50, tableTop, tableWidth, itemHeight)
-      .stroke()
-      .text("Description", 60, tableTop + 10)
-      .text("Quantity", 300, tableTop + 10)
-      .text("Unit Price", 380, tableTop + 10)
-      .text("Amount", 460, tableTop + 10);
+      .rect(tableX, tableTop, tableWidth, rowHeight)
+      .stroke();
+
+    doc.text("Description", descX, tableTop + 10, { width: descWidth - 10 });
+    doc.text("Amount", amountX, tableTop + 10, { width: amountWidth - 10, align: "right" });
 
     // Table row
-    const rowY = tableTop + itemHeight;
+    const rowY = tableTop + rowHeight;
     doc
       .font("Helvetica")
-      .rect(50, rowY, tableWidth, itemHeight)
-      .stroke()
-      .text(`${plan.name} - ${sub.billing_model} Subscription`, 60, rowY + 10)
-      .text("1", 300, rowY + 10)
-      .text(formatCurrency(payment.amount), 380, rowY + 10)
-      .text(formatCurrency(payment.amount), 460, rowY + 10);
+      .rect(tableX, rowY, tableWidth, rowHeight)
+      .stroke();
+
+    // Keep the line-item description short; the subscription period is already displayed above.
+    doc.text(`${plan.name} - ${sub.billing_model} Subscription`, descX, rowY + 10, {
+      width: descWidth - 10,
+      ellipsis: true,
+    });
+    doc.text(formatCurrency(payment.amount), amountX, rowY + 10, { width: amountWidth - 10, align: "right" });
 
     // Notes section (if exists)
-    let notesY = rowY + itemHeight + 20;
+    let notesY = rowY + rowHeight + 20;
     if (payment.notes) {
       doc
         .fontSize(10)

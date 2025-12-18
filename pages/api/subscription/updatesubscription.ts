@@ -3,8 +3,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireSuperAdmin } from "@/lib/adminsessioncheck";
-import { BillingModel } from "@/prisma/generated/client";
-import { calculateEndDate } from "@/lib/subscription-helpers";
+import { BillingModel, PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
+import { calculateEndDate, getPlanPrice } from "@/lib/subscription-helpers";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -23,6 +23,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       is_active,
       is_expired,
       is_deleted,
+      // Optional: if provided, we will also create a new payment record linked to this subscription.
+      amount,
+      payment_method,
+      transaction_id,
+      payment_date,
+      notes,
     } = req.body;
 
     if (!id) {
@@ -31,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const existing = await prisma.ownerSubscription.findUnique({
       where: { id: id as string },
+      include: { plan: true },
     });
 
     if (!existing || existing.is_deleted) {
@@ -82,6 +89,72 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       (updateData.billing_model ?? existing.billing_model) as BillingModel;
     if ((start_date !== undefined || billing_model !== undefined) && end_date === undefined) {
       updateData.end_date = calculateEndDate(nextStartDate, nextBillingModel);
+    }
+
+    const shouldRecordPayment = payment_method !== undefined || amount !== undefined;
+
+    // If payment fields are present, validate upfront and then do update+payment atomically.
+    if (shouldRecordPayment) {
+      if (!payment_method) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          error: "payment_method is required when recording a payment",
+        });
+      }
+
+      if (payment_method !== "CASH" && payment_method !== "BANK_TRANSFER") {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          error: "Invalid payment_method. Must be CASH or BANK_TRANSFER",
+        });
+      }
+
+      const method = payment_method as PaymentMethod;
+
+      const updated = await prisma.$transaction(async (tx) => {
+        const sub = await tx.ownerSubscription.update({
+          where: { id: id as string },
+          data: updateData,
+          include: { plan: true, owner: true },
+        });
+
+        // Amount: if not provided, default to current plan price for current billing model
+        const computedAmount =
+          amount !== undefined && amount !== null && String(amount).trim() !== ""
+            ? parseInt(amount)
+            : getPlanPrice(sub.plan, sub.billing_model as BillingModel);
+
+        if (!Number.isFinite(computedAmount) || computedAmount <= 0) {
+          throw new Error("Invalid amount");
+        }
+
+        // Transaction rules:
+        // - BANK_TRANSFER requires transaction_id
+        // - CASH can auto-generate one if missing
+        const txId =
+          method === "BANK_TRANSFER"
+            ? transaction_id
+            : transaction_id ||
+              `CASH-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+        if (method === "BANK_TRANSFER" && !txId) {
+          throw new Error("transaction_id is required for BANK_TRANSFER");
+        }
+
+        await tx.payment.create({
+          data: {
+            owner_subscription_id: sub.id,
+            subscription_type: SubscriptionTypeEnum.OWNER,
+            amount: computedAmount,
+            payment_method: method,
+            transaction_id: txId || null,
+            payment_date: payment_date ? new Date(payment_date) : new Date(),
+            notes: notes || null,
+          },
+        });
+
+        return sub;
+      });
+
+      return res.status(StatusCodes.OK).json(updated);
     }
 
     const updated = await prisma.ownerSubscription.update({

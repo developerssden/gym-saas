@@ -33,6 +33,11 @@ export type Todo = Prisma.TodoModel
  */
 export type Gym = Prisma.GymModel
 /**
+ * Model Location
+ * 
+ */
+export type Location = Prisma.LocationModel
+/**
  * Model Member
  * 
  */
@@ -47,6 +52,11 @@ export type Equipment = Prisma.EquipmentModel
  * 
  */
 export type Plan = Prisma.PlanModel
+/**
+ * Model Announcement
+ * 
+ */
+export type Announcement = Prisma.AnnouncementModel
 /**
  * Model OwnerSubscription
  * 

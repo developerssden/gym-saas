@@ -17,6 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       monthly_price,
       yearly_price,
       max_gyms,
+      max_locations,
       max_members,
       max_equipment,
     } = req.body;
@@ -27,6 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         monthly_price,
         yearly_price,
         max_gyms,
+        max_locations,
         max_members,
         max_equipment,
       },

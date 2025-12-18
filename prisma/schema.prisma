@@ -28,6 +28,12 @@ enum SubscriptionTypeEnum {
   MEMBER
 }
 
+enum AnnouncementAudience {
+  ALL
+  GYM_OWNER
+  MEMBER
+}
+
 // User model
 model User {
   id                String        @id @default(uuid())
@@ -93,6 +99,25 @@ model Gym {
   owner        User         @relation("UserGyms", fields: [owner_id], references: [id])
   members      Member[]
   equipment    Equipment[]
+  locations    Location[]
+}
+
+model Location {
+  id           String   @id @default(uuid())
+  gym_id       String
+  name         String
+  address      String?
+  city         String?
+  state        String?
+  zip_code     String?
+  country      String?
+  phone_number String?
+  is_active    Boolean  @default(true)
+  is_deleted   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  gym          Gym      @relation(fields: [gym_id], references: [id])
 }
 
 // Member model
@@ -128,6 +153,7 @@ model Plan {
   monthly_price       Int
   yearly_price        Int
   max_gyms            Int
+  max_locations       Int                   @default(0)
   max_members         Int
   max_equipment       Int
   createdAt           DateTime              @default(now())
@@ -136,6 +162,17 @@ model Plan {
   is_deleted          Boolean               @default(false)
 
   ownerSubscriptions OwnerSubscription[]
+}
+
+model Announcement {
+  id         String               @id @default(uuid())
+  title      String
+  message    String
+  audience   AnnouncementAudience @default(ALL)
+  is_active  Boolean              @default(true)
+  is_deleted Boolean              @default(false)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
 }
 
 model OwnerSubscription {

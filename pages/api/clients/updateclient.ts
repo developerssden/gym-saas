@@ -37,6 +37,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       planId,
       billingModel,
       isRenewal,
+      /**
+       * Historically this endpoint would also create/renew an OwnerSubscription if planId+billingModel were provided.
+       * That made "Edit Client" behave like "Manage Subscription".
+       * We now require an explicit flag to mutate subscriptions in this endpoint.
+       */
+      update_subscription,
       // Payment fields
       amount,
       payment_method,
@@ -98,7 +104,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       // Handle subscription update/renewal
-      if (planId && billingModel) {
+      const shouldUpdateSubscription = Boolean(update_subscription);
+      if (shouldUpdateSubscription && planId && billingModel) {
         // Validate plan exists
         const plan = await tx.plan.findUnique({
           where: {
@@ -155,13 +162,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Create payment record if payment details provided
         if (amount && payment_method) {
+          // Transaction rules:
+          // - BANK_TRANSFER requires transaction_id
+          // - CASH can auto-generate one if missing
+          const method = payment_method as PaymentMethod;
+          const txId =
+            method === "BANK_TRANSFER"
+              ? transaction_id
+              : transaction_id || `CASH-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+          if (method === "BANK_TRANSFER" && !txId) {
+            throw new Error("transaction_id is required for BANK_TRANSFER");
+          }
+
           await tx.payment.create({
             data: {
               owner_subscription_id: ownerSubscription.id,
               subscription_type: SubscriptionTypeEnum.OWNER,
               amount: parseInt(amount),
               payment_method: payment_method as PaymentMethod,
-              transaction_id: transaction_id || null,
+              transaction_id: txId || null,
               payment_date: payment_date ? new Date(payment_date) : new Date(),
               notes: notes || null,
             },

@@ -42,6 +42,15 @@ export const SubscriptionTypeEnum = {
 export type SubscriptionTypeEnum = (typeof SubscriptionTypeEnum)[keyof typeof SubscriptionTypeEnum]
 
 
+export const AnnouncementAudience = {
+  ALL: 'ALL',
+  GYM_OWNER: 'GYM_OWNER',
+  MEMBER: 'MEMBER'
+} as const
+
+export type AnnouncementAudience = (typeof AnnouncementAudience)[keyof typeof AnnouncementAudience]
+
+
 export const BillingModel = {
   MONTHLY: 'MONTHLY',
   YEARLY: 'YEARLY'

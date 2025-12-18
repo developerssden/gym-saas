@@ -8,8 +8,9 @@ import {
   calculateEndDateWithRemainingDays,
   calculateRemainingDaysFromEndDate,
   deactivateOwnerSubscriptions,
+  getPlanPrice,
 } from "@/lib/subscription-helpers";
-import { BillingModel } from "@/prisma/generated/client";
+import { BillingModel, PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
 
 /**
  * Renew an OWNER subscription using the same owner + plan.
@@ -28,11 +29,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) return;
 
   try {
-    const { owner_id, subscription_id, renew_date, billing_model } = req.body as {
+    const {
+      owner_id,
+      subscription_id,
+      renew_date,
+      billing_model,
+      // Payment fields (required for renew)
+      amount,
+      payment_method,
+      transaction_id,
+      payment_date,
+      notes,
+    } = req.body as {
       owner_id?: string;
       subscription_id?: string;
       renew_date?: string | Date;
       billing_model?: BillingModel | "MONTHLY" | "YEARLY";
+      amount?: string | number;
+      payment_method?: PaymentMethod | "CASH" | "BANK_TRANSFER";
+      transaction_id?: string;
+      payment_date?: string | Date;
+      notes?: string;
     };
 
     if (!owner_id && !subscription_id) {
@@ -44,6 +61,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (billing_model !== undefined && billing_model !== "MONTHLY" && billing_model !== "YEARLY") {
       return res.status(StatusCodes.BAD_REQUEST).json({
         error: "Invalid billing_model. Must be MONTHLY or YEARLY",
+      });
+    }
+
+    if (!payment_method) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "Missing required field: payment_method",
+      });
+    }
+
+    if (payment_method !== "CASH" && payment_method !== "BANK_TRANSFER") {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "Invalid payment_method. Must be CASH or BANK_TRANSFER",
       });
     }
 
@@ -94,7 +123,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const created = await prisma.$transaction(async (tx) => {
       await deactivateOwnerSubscriptions(tx, existingSubscription.owner_id);
 
-      return tx.ownerSubscription.create({
+      const subscription = await tx.ownerSubscription.create({
         data: {
           owner_id: existingSubscription.owner_id,
           plan_id: existingSubscription.plan_id,
@@ -109,6 +138,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           plan: true,
         },
       });
+
+      const computedAmount =
+        amount !== undefined && amount !== null && String(amount).trim() !== ""
+          ? parseInt(amount as any)
+          : getPlanPrice(existingSubscription.plan, billingModelEnum);
+
+      if (!Number.isFinite(computedAmount) || computedAmount <= 0) {
+        throw new Error("Invalid amount");
+      }
+
+      const method = payment_method as PaymentMethod;
+      const txId =
+        method === "BANK_TRANSFER"
+          ? transaction_id
+          : transaction_id || `CASH-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+      if (method === "BANK_TRANSFER" && !txId) {
+        throw new Error("transaction_id is required for BANK_TRANSFER");
+      }
+
+      await tx.payment.create({
+        data: {
+          owner_subscription_id: subscription.id,
+          subscription_type: SubscriptionTypeEnum.OWNER,
+          amount: computedAmount,
+          payment_method: method,
+          transaction_id: txId || null,
+          payment_date: payment_date ? new Date(payment_date) : new Date(),
+          notes: notes || null,
+        },
+      });
+
+      return subscription;
     });
 
     return res.status(StatusCodes.CREATED).json({

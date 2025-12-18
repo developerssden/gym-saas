@@ -7,6 +7,7 @@ export type Plan = {
     monthly_price: number
     yearly_price: number
     max_gyms: number
+    max_locations: number
     max_members: number
     max_equipment: number
     is_active: boolean
@@ -90,4 +91,50 @@ export type Client = {
 
     // relations
     ownerSubscriptions?: OwnerSubscription[];
+};
+
+export type Gym = {
+    id: string;
+    name: string;
+    owner_id: string;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zip_code?: string | null;
+    country?: string | null;
+    phone_number?: string | null;
+    is_active: boolean;
+    is_deleted: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    owner?: Client;
+    locations?: Location[];
+};
+
+export type Location = {
+    id: string;
+    gym_id: string;
+    name: string;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zip_code?: string | null;
+    country?: string | null;
+    phone_number?: string | null;
+    is_active: boolean;
+    is_deleted: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    gym?: Gym;
+};
+
+export type Announcement = {
+    id: string;
+    title: string;
+    message: string;
+    audience: string; // AnnouncementAudience enum
+    is_active: boolean;
+    is_deleted: boolean;
+    createdAt: Date;
+    updatedAt: Date;
 };

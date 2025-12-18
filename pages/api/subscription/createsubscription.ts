@@ -8,8 +8,9 @@ import {
   calculateEndDateWithRemainingDays,
   calculateRemainingDaysFromEndDate,
   deactivateOwnerSubscriptions,
+  getPlanPrice,
 } from "@/lib/subscription-helpers";
-import { BillingModel } from "@/prisma/generated/client";
+import { BillingModel, PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -25,6 +26,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       billing_model,
       start_date,
       end_date,
+      // Payment fields (required for subscription creation)
+      amount,
+      payment_method,
+      transaction_id,
+      payment_date,
+      notes,
     } = req.body;
 
     if (!plan_id || !owner_id || !billing_model) {
@@ -62,12 +69,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         is_deleted: false,
         is_active: true,
       },
-      select: { id: true },
+      select: { id: true, name: true, monthly_price: true, yearly_price: true },
     });
 
     if (!plan) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         error: "Invalid plan_id",
+      });
+    }
+
+    // Validate payment details
+    if (!payment_method) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "Missing required field: payment_method",
+      });
+    }
+
+    if (payment_method !== "CASH" && payment_method !== "BANK_TRANSFER") {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "Invalid payment_method. Must be CASH or BANK_TRANSFER",
       });
     }
 
@@ -108,7 +128,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await deactivateOwnerSubscriptions(tx, owner_id as string);
       }
 
-      return tx.ownerSubscription.create({
+      const subscription = await tx.ownerSubscription.create({
         data: {
           plan_id: plan_id as string,
           owner_id: owner_id as string,
@@ -123,6 +143,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           owner: true,
         },
       });
+
+      // If amount is not provided, default to plan price for that billing model
+      const computedAmount =
+        amount !== undefined && amount !== null && String(amount).trim() !== ""
+          ? parseInt(amount)
+          : getPlanPrice(plan, billingModelEnum);
+
+      if (!Number.isFinite(computedAmount) || computedAmount <= 0) {
+        throw new Error("Invalid amount");
+      }
+
+      // Transaction rules:
+      // - BANK_TRANSFER requires transaction_id
+      // - CASH can auto-generate one if missing
+      const method = payment_method as PaymentMethod;
+      const txId =
+        method === "BANK_TRANSFER"
+          ? transaction_id
+          : transaction_id || `CASH-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+      if (method === "BANK_TRANSFER" && !txId) {
+        throw new Error("transaction_id is required for BANK_TRANSFER");
+      }
+
+      await tx.payment.create({
+        data: {
+          owner_subscription_id: subscription.id,
+          subscription_type: SubscriptionTypeEnum.OWNER,
+          amount: computedAmount,
+          payment_method: method,
+          transaction_id: txId || null,
+          payment_date: payment_date ? new Date(payment_date) : new Date(),
+          notes: notes || null,
+        },
+      });
+
+      return subscription;
     });
 
     return res.status(StatusCodes.CREATED).json(created);

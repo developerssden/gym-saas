@@ -54,9 +54,11 @@ export const ModelName = {
   User: 'User',
   Todo: 'Todo',
   Gym: 'Gym',
+  Location: 'Location',
   Member: 'Member',
   Equipment: 'Equipment',
   Plan: 'Plan',
+  Announcement: 'Announcement',
   OwnerSubscription: 'OwnerSubscription',
   MemberSubscription: 'MemberSubscription',
   Payment: 'Payment'
@@ -137,6 +139,25 @@ export const GymScalarFieldEnum = {
 export type GymScalarFieldEnum = (typeof GymScalarFieldEnum)[keyof typeof GymScalarFieldEnum]
 
 
+export const LocationScalarFieldEnum = {
+  id: 'id',
+  gym_id: 'gym_id',
+  name: 'name',
+  address: 'address',
+  city: 'city',
+  state: 'state',
+  zip_code: 'zip_code',
+  country: 'country',
+  phone_number: 'phone_number',
+  is_active: 'is_active',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LocationScalarFieldEnum = (typeof LocationScalarFieldEnum)[keyof typeof LocationScalarFieldEnum]
+
+
 export const MemberScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -167,6 +188,7 @@ export const PlanScalarFieldEnum = {
   monthly_price: 'monthly_price',
   yearly_price: 'yearly_price',
   max_gyms: 'max_gyms',
+  max_locations: 'max_locations',
   max_members: 'max_members',
   max_equipment: 'max_equipment',
   createdAt: 'createdAt',
@@ -176,6 +198,20 @@ export const PlanScalarFieldEnum = {
 } as const
 
 export type PlanScalarFieldEnum = (typeof PlanScalarFieldEnum)[keyof typeof PlanScalarFieldEnum]
+
+
+export const AnnouncementScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  message: 'message',
+  audience: 'audience',
+  is_active: 'is_active',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AnnouncementScalarFieldEnum = (typeof AnnouncementScalarFieldEnum)[keyof typeof AnnouncementScalarFieldEnum]
 
 
 export const OwnerSubscriptionScalarFieldEnum = {

@@ -33,7 +33,7 @@ export * from "./enums"
  * const users = await prisma.user.findMany()
  * ```
  * 
- * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
+ * Read more in our [docs](https://pris.ly/d/client).
  */
 export const PrismaClient = $Class.getPrismaClientClass()
 export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts extends Prisma.PrismaClientOptions["omit"] = Prisma.PrismaClientOptions["omit"], ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = $Class.PrismaClient<LogOpts, OmitOpts, ExtArgs>
@@ -55,6 +55,11 @@ export type Todo = Prisma.TodoModel
  */
 export type Gym = Prisma.GymModel
 /**
+ * Model Location
+ * 
+ */
+export type Location = Prisma.LocationModel
+/**
  * Model Member
  * 
  */
@@ -69,6 +74,11 @@ export type Equipment = Prisma.EquipmentModel
  * 
  */
 export type Plan = Prisma.PlanModel
+/**
+ * Model Announcement
+ * 
+ */
+export type Announcement = Prisma.AnnouncementModel
 /**
  * Model OwnerSubscription
  * 

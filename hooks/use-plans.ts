@@ -7,6 +7,7 @@ export interface PlanType {
     monthly_price: number
     yearly_price: number
     max_gyms: number
+    max_locations: number
     max_members: number
     max_equipment: number
     is_active: boolean

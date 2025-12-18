@@ -12,12 +12,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) return;
 
   try {
-    const { id } = req.body;
-    const body = req.body;
+    const { id, ...data } = req.body;
 
     const updated = await prisma.plan.update({
       where: { id: id as string },
-      data: body,
+      data,
     });
 
     return res.status(StatusCodes.OK).json(updated);
