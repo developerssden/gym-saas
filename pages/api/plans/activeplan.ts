@@ -14,6 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
   const { id } = req.body;
 
+  if (!id) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Plan id is required" });
+  }
+
   // Get current plan
   const plan = await prisma.plan.findUnique({
     where: { id: id as string },
@@ -24,6 +28,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Plan not found" });
+  }
+
+  // If this request would deactivate the plan, block it when there are active subscriptions
+  if (plan.is_active) {
+    const activeSubsCount = await prisma.ownerSubscription.count({
+      where: {
+        plan_id: id as string,
+        is_deleted: false,
+        is_active: true,
+        is_expired: false,
+      },
+    });
+
+    if (activeSubsCount > 0) {
+      return res.status(StatusCodes.CONFLICT).json({
+        message: "Plan cannot be deactivated because it has active subscriptions",
+      });
+    }
   }
 
   // Toggle the status

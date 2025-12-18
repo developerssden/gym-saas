@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireSuperAdmin } from "@/lib/adminsessioncheck";
+import { deactivateOwnerSubscriptions } from "@/lib/subscription-helpers";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -13,25 +14,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
   const { id } = req.body;
+  if (!id) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: "Subscription ID is required" });
+  }
 
   // Get current subscription
-  const subscription = await prisma.subscription.findUnique({
+  const subscription = await prisma.ownerSubscription.findUnique({
     where: { id: id as string },
-    select: { is_active: true },
+    select: { id: true, is_active: true, owner_id: true, is_deleted: true },
   });
 
-  if (!subscription) {
+  if (!subscription || subscription.is_deleted) {
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Subscription not found" });
   }
 
-  // Toggle the status
-  const updated = await prisma.subscription.update({
-    where: { id: id as string },
-    data: {
-      is_active: !subscription.is_active,
-    },
+  const updated = await prisma.$transaction(async (tx) => {
+    const nextActive = !subscription.is_active;
+
+    // If activating one, deactivate all other active subscriptions for this owner first
+    if (nextActive) {
+      await deactivateOwnerSubscriptions(tx, subscription.owner_id);
+    }
+
+    return tx.ownerSubscription.update({
+      where: { id: id as string },
+      data: { is_active: nextActive },
+    });
   });
 
   return res.status(StatusCodes.OK).json({

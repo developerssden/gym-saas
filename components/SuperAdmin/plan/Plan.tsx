@@ -5,20 +5,20 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Session } from "next-auth";
 import Link from "next/link";
+import { columns } from "./columns";
 import { useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
-import { useOwnerSubscriptions } from "@/hooks/use-owner-subscriptions";
-import { columns } from "./columns";
+import { usePlans } from "@/hooks/use-plans";
 
-const Subscriptions = ({ session }: { session: Session }) => {
+const Plans = ({ session }: { session: Session }) => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 1000);
 
   // Use the hook
-  const { data, isLoading, error, refetch } = useOwnerSubscriptions({
+  const { data, isLoading, error, refetch } = usePlans({
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
     search: debouncedFilter,
@@ -28,15 +28,15 @@ const Subscriptions = ({ session }: { session: Session }) => {
   return (
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Owner Subscriptions</h1>
-        <Link href={`/subscriptions/manage?action=create`}>
-          <Button>Create Subscription</Button>
+        <h1 className="h1">Plans</h1>
+        <Link href={`/plans/manage?action=create`}>
+          <Button>Create Plan</Button>
         </Link>
       </div>
 
       {isLoading && !data && (
         <div className="flex justify-center items-center h-64">
-          <FullScreenLoader label="Loading Subscriptions..." />
+          <FullScreenLoader label="Loading Plans..." />
         </div>
       )}
 
@@ -44,7 +44,7 @@ const Subscriptions = ({ session }: { session: Session }) => {
         <DataFetchError
           error={error}
           onRetry={() => refetch()}
-          message="Error loading subscriptions"
+          message="Error loading plans"
         />
       )}
 
@@ -52,7 +52,7 @@ const Subscriptions = ({ session }: { session: Session }) => {
         <DataTable
           columns={columns}
           data={data.data}
-          searchableColumns={["owner.first_name", "owner.last_name", "plan.name"]}
+          searchableColumns={["name", "monthly_price", "yearly_price"]}
           pageCount={data.pageCount}
           rowCount={data.totalCount}
           onPaginationChange={setPagination}
@@ -65,4 +65,4 @@ const Subscriptions = ({ session }: { session: Session }) => {
   );
 };
 
-export default Subscriptions;
+export default Plans;

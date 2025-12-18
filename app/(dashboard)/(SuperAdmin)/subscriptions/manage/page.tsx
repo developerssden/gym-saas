@@ -1,243 +1,266 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
+import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { PageContainer } from "@/components/layout/page-container";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
-import axios from "axios";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { usePlans } from "@/hooks/use-plans";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import FullScreenLoader from "@/components/common/FullScreenLoader";
-import { useState } from "react";
+import axios from "axios";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
-const SubscriptionSchema = Yup.object({
-  name: Yup.string().required("Name is required"),
-  monthly_price: Yup.number()
-    .typeError("Must be a number")
-    .required("Monthly price is required"),
-  yearly_price: Yup.number()
-    .typeError("Must be a number")
-    .required("Yearly price is required"),
-  max_gyms: Yup.number()
-    .typeError("Must be a number")
-    .required("Max gyms is required"),
-  max_members: Yup.number()
-    .typeError("Must be a number")
-    .required("Max members is required"),
-  max_equipment: Yup.number()
-    .typeError("Must be a number")
-    .required("Max equipment is required"),
-  is_active: Yup.boolean(),
+type ClientOption = { id: string; first_name: string; last_name: string; email?: string | null };
+
+const ManageOwnerSubscriptionSchema = Yup.object({
+  owner_id: Yup.string().required("Owner is required"),
+  plan_id: Yup.string().required("Plan is required"),
+  billing_model: Yup.string().oneOf(["MONTHLY", "YEARLY"]).required("Billing model is required"),
+  start_date: Yup.string().notRequired(),
 });
 
-const ManageSubscriptions = () => {
-  const searchParams = useSearchParams();
-  const action = searchParams?.get("action") as "create" | "edit" | "view";
-  const subscriptionId = searchParams?.get("id") || null;
+const ManageOwnerSubscriptionPage = () => {
+  const { data: session, status } = useSession({ required: true });
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
 
-  const { data: subscriptionData, isLoading: fetching } = useQuery({
-    queryKey: ["plan", subscriptionId],
+  const action = (searchParams?.get("action") as "create" | "edit" | "view") || "create";
+  const subscriptionId = searchParams?.get("id") || null;
+
+  const [saving, setSaving] = useState(false);
+
+  if (status === "loading") return <FullScreenLoader />;
+  if (session?.user?.role !== "SUPER_ADMIN") return redirect("/unauthorized");
+
+  const { data: subscriptionData, isLoading: fetchingSubscription } = useQuery({
+    queryKey: ["ownerSubscription", subscriptionId],
     queryFn: async () => {
       if (!subscriptionId) return null;
-      const res = await axios.post(`/api/plans/getplan`, {
-        id: subscriptionId,
-      });
+      const res = await axios.post("/api/subscription/getsubscription", { id: subscriptionId });
       return res.data;
     },
-    enabled: !!subscriptionId && action !== "create", // only fetch if editing or viewing
+    enabled: !!subscriptionId && action !== "create",
   });
 
-  // Mutations
+  const { data: plansData, isLoading: plansLoading } = usePlans({ enabled: true });
+
+  // Owners dropdown: reuse clients API (GYM_OWNER users)
+  const { data: ownersData, isLoading: ownersLoading } = useQuery({
+    queryKey: ["ownersDropdown"],
+    queryFn: async () => {
+      const res = await axios.post("/api/clients/getclients", { page: 1, limit: 200, search: "" });
+      return res.data as { data: ClientOption[] };
+    },
+  });
+
+  const owners = ownersData?.data ?? [];
+
+  const ownerLabelById = useMemo(() => {
+    const map = new Map<string, string>();
+    owners.forEach((o) => {
+      map.set(o.id, `${o.first_name} ${o.last_name}`.trim() + (o.email ? ` (${o.email})` : ""));
+    });
+    return map;
+  }, [owners]);
+
   const createMutation = useMutation({
-    mutationFn: (values) => axios.post("/api/plans/createplan", values),
-    onSuccess: (res) => {
-      toast.success(res.data.message || "Plan created successfully!");
-      queryClient.invalidateQueries({ queryKey: ["plans"] });
+    mutationFn: (values: any) => axios.post("/api/subscription/createsubscription", values),
+    onSuccess: () => {
+      toast.success("Subscription created successfully");
+      queryClient.invalidateQueries({ queryKey: ["ownerSubscriptions"] });
       router.push("/subscriptions");
     },
-    onError: (err: unknown) => {
-      toast.error(getErrorMessage(err));
-    },
+    onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
-
 
   const updateMutation = useMutation({
     mutationFn: (values: any) =>
-      axios.post(`/api/plans/updateplan`, { id: subscriptionId, ...values }),
-    onSuccess: (res) => {
-      toast.success(res.data.message || "Plan updated successfully!");
-      queryClient.invalidateQueries({ queryKey: ["plans"] });
+      axios.post("/api/subscription/updatesubscription", { id: subscriptionId, ...values }),
+    onSuccess: () => {
+      toast.success("Subscription updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["ownerSubscriptions"] });
       router.push("/subscriptions");
     },
-    onError: (err: unknown) => {
-      toast.error(getErrorMessage(err));
-    },
+    onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
-
 
   const formik = useFormik({
     initialValues: {
-      name: subscriptionData?.name || "",
-      monthly_price: subscriptionData?.monthly_price || "",
-      yearly_price: subscriptionData?.yearly_price || "",
-      max_gyms: subscriptionData?.max_gyms || "",
-      max_members: subscriptionData?.max_members || "",
-      max_equipment: subscriptionData?.max_equipment || "",
-      is_active: subscriptionData?.is_active || true,
+      owner_id: subscriptionData?.owner_id || "",
+      plan_id: subscriptionData?.plan_id || "",
+      billing_model: subscriptionData?.billing_model || "",
+      start_date: subscriptionData?.start_date
+        ? new Date(subscriptionData.start_date).toISOString().slice(0, 10)
+        : "",
     },
-
-    validationSchema: SubscriptionSchema,
+    validationSchema: ManageOwnerSubscriptionSchema,
     enableReinitialize: true,
-
     onSubmit: async (values) => {
-      setLoading(true);
+      setSaving(true);
       try {
+        const payload: any = {
+          owner_id: values.owner_id,
+          plan_id: values.plan_id,
+          billing_model: values.billing_model,
+        };
+        if (values.start_date) {
+          // send ISO string so API can parse reliably
+          payload.start_date = new Date(values.start_date).toISOString();
+        }
+
         if (action === "create") {
-          await createMutation.mutateAsync(values as any);
+          await createMutation.mutateAsync(payload);
         } else if (action === "edit") {
-          await updateMutation.mutateAsync(values as any);
+          await updateMutation.mutateAsync(payload);
         }
       } finally {
-        setLoading(false);
+        setSaving(false);
       }
-    }
+    },
   });
 
-  if (fetching) return <FullScreenLoader label="Loading plan..." />;
+  if (fetchingSubscription) return <FullScreenLoader label="Loading subscription..." />;
 
   return (
     <PageContainer>
-      {loading && <FullScreenLoader label="Saving plan..." />}
+      {saving && <FullScreenLoader label="Saving subscription..." />}
       <div className="w-full space-y-12">
         <h1 className="h1 text-center">
           {action === "create"
-            ? "Create Plan"
+            ? "Create Subscription"
             : action === "edit"
-              ? "Edit Plan"
-              : "View Plan"}
+              ? "Edit Subscription"
+              : "View Subscription"}
         </h1>
+
         <form className="max-w-2xl mx-auto" onSubmit={formik.handleSubmit}>
-          <div className=" grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-            {/* Name */}
-            <div className="space-y-1">
-              <Label>Name</Label>
-              <Input
-                name="name"
-                value={formik.values.name}
-                onChange={formik.handleChange}
-                disabled={action === "view"}
-              />
-              {formik.errors.name === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.name}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+            <div className="space-y-2">
+              <Label>Owner</Label>
+              <Select
+                value={formik.values.owner_id || ""}
+                onValueChange={(val) => formik.setFieldValue("owner_id", val)}
+                disabled={action === "view" || ownersLoading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={ownersLoading ? "Loading..." : "Select owner"} />
+                </SelectTrigger>
+                <SelectContent className="w-full">
+                  {owners.map((o) => (
+                    <SelectItem key={o.id} value={o.id}>
+                      {ownerLabelById.get(o.id) || o.id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {formik.touched.owner_id && formik.errors.owner_id && (
+                <p className="text-red-500 text-sm">{String(formik.errors.owner_id)}</p>
               )}
             </div>
 
-            {/* Monthly Price */}
-            <div className="space-y-1">
-              <Label>Monthly Price</Label>
-              <Input
-                name="monthly_price"
-                type="number"
-                value={formik.values.monthly_price}
-                onChange={formik.handleChange}
-                disabled={action === "view"}
-              />
-              {formik.errors.monthly_price === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.monthly_price}</p>
+            <div className="space-y-2">
+              <Label>Plan</Label>
+              <Select
+                value={formik.values.plan_id || ""}
+                onValueChange={(val) => formik.setFieldValue("plan_id", val)}
+                disabled={action === "view" || plansLoading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={plansLoading ? "Loading..." : "Select plan"} />
+                </SelectTrigger>
+                <SelectContent className="w-full">
+                  {plansData?.data.map((p: any) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name} — Monthly: ${p.monthly_price} / Yearly: ${p.yearly_price}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {formik.touched.plan_id && formik.errors.plan_id && (
+                <p className="text-red-500 text-sm">{String(formik.errors.plan_id)}</p>
               )}
             </div>
 
-            {/* Yearly Price */}
-            <div className="space-y-1">
-              <Label>Yearly Price</Label>
-              <Input
-                name="yearly_price"
-                type="number"
-                value={formik.values.yearly_price}
-                onChange={formik.handleChange}
+            <div className="space-y-2">
+              <Label>Billing Model</Label>
+              <Select
+                value={formik.values.billing_model || ""}
+                onValueChange={(val) => formik.setFieldValue("billing_model", val)}
                 disabled={action === "view"}
-              />
-              {formik.errors.yearly_price === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.yearly_price}</p>
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select billing model" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MONTHLY">Monthly</SelectItem>
+                  <SelectItem value="YEARLY">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+              {formik.touched.billing_model && formik.errors.billing_model && (
+                <p className="text-red-500 text-sm">{String(formik.errors.billing_model)}</p>
               )}
             </div>
 
-            {/* Max Gyms */}
-            <div className="space-y-1">
-              <Label>Max Gyms</Label>
+            <div className="space-y-2">
+              <Label>Start Date (optional)</Label>
               <Input
-                name="max_gyms"
-                type="number"
-                value={formik.values.max_gyms}
+                type="date"
+                name="start_date"
+                value={formik.values.start_date}
                 onChange={formik.handleChange}
                 disabled={action === "view"}
               />
-              {formik.errors.max_gyms === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.max_gyms}</p>
+              {formik.touched.start_date && formik.errors.start_date && (
+                <p className="text-red-500 text-sm">{String(formik.errors.start_date)}</p>
               )}
-            </div>
-
-            {/* Max Members */}
-            <div className="space-y-1">
-              <Label>Max Members</Label>
-              <Input
-                name="max_members"
-                type="number"
-                value={formik.values.max_members}
-                onChange={formik.handleChange}
-                disabled={action === "view"}
-              />
-              {formik.errors.max_members === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.max_members}</p>
-              )}
-            </div>
-
-            {/* Max Equipment */}
-            <div className="space-y-1">
-              <Label>Max Equipment</Label>
-              <Input
-                name="max_equipment"
-                type="number"
-                value={formik.values.max_equipment}
-                onChange={formik.handleChange}
-                disabled={action === "view"}
-              />
-              {formik.errors.max_equipment === "string" && (
-                <p className="text-red-500 text-sm">{formik.errors.max_equipment}</p>
-              )}
-            </div>
-
-            {/* Active / Inactive */}
-            <div className="flex items-center space-x-3">
-              <Label>Active</Label>
-              <Switch
-                checked={formik.values.is_active}
-                onCheckedChange={(val) =>
-                  formik.setFieldValue("is_active", val)
-                }
-                disabled={action === "view"}
-              />
             </div>
           </div>
 
-          {action !== "view" && (
-            <Button type="submit" className="w-full mt-4">
-              {action === "create" ? "Create Plan" : "Update Plan"}
-            </Button>
-          )}
+          <div className="flex gap-4 mt-6">
+            {action !== "view" ? (
+              <>
+                <Button type="submit" className="flex-1">
+                  {action === "create" ? "Create Subscription" : "Update Subscription"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => router.push("/subscriptions")}
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push("/subscriptions")}
+              >
+                Back
+              </Button>
+            )}
+          </div>
         </form>
-
       </div>
     </PageContainer>
   );
 };
 
-export default ManageSubscriptions;
+export default ManageOwnerSubscriptionPage;

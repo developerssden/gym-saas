@@ -3,6 +3,7 @@ import {
   Building,
   CreditCard,
   Home,
+  List,
   Map,
   Megaphone,
   Users,
@@ -31,6 +32,18 @@ export const routeItems: RouteItem[] = [
     permissions: ["SUPER_ADMIN"],
   },
   {
+    title: "Subscriptions",
+    href: "/subscriptions",
+    icon: CreditCard,
+    permissions: ["SUPER_ADMIN"],
+  },
+  {
+    title: "Payments",
+    href: "/payments",
+    icon: CreditCard,
+    permissions: ["SUPER_ADMIN"],
+  },
+  {
     title: "Gyms",
     href: "/gyms",
     icon: Building,
@@ -42,13 +55,13 @@ export const routeItems: RouteItem[] = [
     icon: Map,
     permissions: ["SUPER_ADMIN"],
   },
+  
   {
-    title: "Subscriptions",
-    href: "/subscriptions",
-    icon: CreditCard,
+    title: "Plans",
+    href: "/plans",
+    icon: List,
     permissions: ["SUPER_ADMIN"],
   },
-
   {
     title: "Announcements",
     href: "/announcements",

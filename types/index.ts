@@ -1,3 +1,5 @@
+import { BillingModel } from "@/prisma/generated/client"
+
 // Type representing a Plan row
 export type Plan = {
     id: string
@@ -18,7 +20,7 @@ export type OwnerSubscription = {
     id: string
     owner_id: string
     plan_id: string
-    billing_model: string // BillingModel enum
+    billing_model: BillingModel // BillingModel enum
     start_date: Date
     end_date: Date
     is_expired: boolean

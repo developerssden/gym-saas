@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
-import { Plan } from "@/types"
-import { ColumnDef } from "@tanstack/react-table"
-import { PencilIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from "lucide-react"
-import Link from "next/link"
-import axios from "axios"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
+import { Button } from "@/components/ui/button";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import type { OwnerSubscription } from "@/types";
+import { ColumnDef } from "@tanstack/react-table";
+import { TrashIcon, CheckCircleIcon, XCircleIcon, RotateCwIcon } from "lucide-react";
+import axios from "axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,116 +19,133 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
-
+const formatDate = (value: unknown) => {
+  const d = value instanceof Date ? value : new Date(value as any);
+  return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
+};
 
 // Column definitions for TanStack table
-export const columns: ColumnDef<Plan>[] = [
+export const columns: ColumnDef<OwnerSubscription>[] = [
   {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
-    ),
+    id: "owner",
+    accessorFn: (row) => `${row.owner?.first_name ?? ""} ${row.owner?.last_name ?? ""}`.trim(),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Owner" />,
+    cell: ({ row }) => {
+      const o = row.original.owner;
+      return (
+        <div className="flex flex-col">
+          <span className="font-medium">
+            {(o?.first_name || o?.last_name) ? `${o?.first_name ?? ""} ${o?.last_name ?? ""}`.trim() : "-"}
+          </span>
+          <span className="text-xs text-muted-foreground">{o?.email ?? ""}</span>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "monthly_price",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Monthly Price" />
-    ),
-    cell: info => `$${info.getValue<number>()}`,
+    id: "plan",
+    accessorFn: (row) => row.plan?.name ?? "",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Plan" />,
+    cell: ({ row }) => row.original.plan?.name ?? "-",
   },
   {
-    accessorKey: "yearly_price",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Yearly Price" />
-    ),
-    cell: info => `$${info.getValue<number>()}`,
+    accessorKey: "billing_model",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Billing" />,
+    cell: ({ row }) => row.original.billing_model,
   },
   {
-    accessorKey: "max_gyms",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Max Gyms" />
-    ),
+    accessorKey: "start_date",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Start" />,
+    cell: ({ row }) => formatDate(row.original.start_date),
   },
   {
-    accessorKey: "max_members",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Max Members" />
-    ),
+    accessorKey: "end_date",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="End" />,
+    cell: ({ row }) => formatDate(row.original.end_date),
   },
   {
-    accessorKey: "max_equipment",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Max Equipment" />
-    ),
+    accessorKey: "is_expired",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Expired" />,
+    cell: ({ row }) => (row.original.is_expired ? "Yes" : "No"),
   },
   {
     accessorKey: "is_active",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Active" />
-    ),
-    cell: info => (info.getValue<boolean>() ? "Yes" : "No"),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Active" />,
+    cell: ({ row }) => (row.original.is_active ? "Yes" : "No"),
   },
   {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => <ActionCell subscription={row.original} />,
   },
-]
+];
 
-const ActionCell = ({ subscription }: { subscription: Plan }) => {
-  const queryClient = useQueryClient()
+const ActionCell = ({ subscription }: { subscription: OwnerSubscription }) => {
+  const queryClient = useQueryClient();
 
-  const { mutate: deleteSubscription } = useMutation({
-    mutationFn: async () => {
-      await axios.post("/api/plans/deleteplan", { id: subscription.id })
-    },
+  const { mutate: renewSubscription, isPending: isRenewing } = useMutation({
+    mutationFn: async () =>
+      axios.post("/api/subscription/renewsubscription", {
+        subscription_id: subscription.id,
+      }),
     onSuccess: () => {
-      toast.success("Plan deleted successfully")
-      queryClient.invalidateQueries({ queryKey: ["plans"] })
+      toast.success("Subscription renewed successfully");
+      queryClient.invalidateQueries({ queryKey: ["ownerSubscriptions"] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to delete plan")
+      toast.error(error.response?.data?.message || "Failed to renew subscription");
     },
-  })
+  });
 
-  const { mutate: toggleActive } = useMutation({
-    mutationFn: async () => {
-      await axios.post("/api/plans/activeplan", { id: subscription.id })
-    },
-    onSuccess: (data: any) => { // data is response from axios? No, axios returns object. mutationFn returns void above, wait.
-      // Let's fix mutationFn to return data so we can use it, or just use message from toast.
-      // actually axios.post returns a promise that resolves to response.
-      // Let's check api response. "message" and "plan".
-      toast.success("Plan status updated")
-      queryClient.invalidateQueries({ queryKey: ["plans"] })
+  const { mutate: deleteSubscription, isPending: isDeleting } = useMutation({
+    mutationFn: async () => axios.post("/api/subscription/deletesubscription", { id: subscription.id }),
+    onSuccess: () => {
+      toast.success("Subscription deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["ownerSubscriptions"] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to update plan status")
+      toast.error(error.response?.data?.message || "Failed to delete subscription");
     },
-  })
+  });
+
+  const { mutate: toggleActive, isPending: isToggling } = useMutation({
+    mutationFn: async () => axios.post("/api/subscription/activesubscription", { id: subscription.id }),
+    onSuccess: () => {
+      toast.success("Subscription status updated");
+      queryClient.invalidateQueries({ queryKey: ["ownerSubscriptions"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update subscription status");
+    },
+  });
 
   return (
     <div className="flex gap-2">
-      {/* Edit Button */}
-      <Link href={`/subscriptions/manage?action=edit&id=${subscription.id}`}>
-        <Button
-          size="icon"
-          variant="outline"
-          className="rounded text-blue-600"
-        >
-          <PencilIcon size={16} />
-        </Button>
-      </Link>
+      <Button
+        size="icon"
+        variant="outline"
+        onClick={() => renewSubscription()}
+        disabled={!subscription.is_expired || isRenewing}
+        className="rounded text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+        title={
+          subscription.is_expired
+            ? "Renew (start/end updated from today based on billing model)"
+            : "Renew is available only when subscription is expired"
+        }
+      >
+        <RotateCwIcon size={16} />
+      </Button>
 
-      {/* Delete Button */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button
             size="icon"
             variant="outline"
             className="rounded text-red-600 hover:text-red-700 hover:bg-red-50"
+            disabled={isDeleting}
+            title="Delete"
           >
             <TrashIcon size={16} />
           </Button>
@@ -138,29 +154,38 @@ const ActionCell = ({ subscription }: { subscription: Plan }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the plan "{subscription.name}".
+              This action cannot be undone. This will delete the subscription for{" "}
+              <span className="font-medium">
+                {subscription.owner?.first_name} {subscription.owner?.last_name}
+              </span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteSubscription()} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction
+              onClick={() => deleteSubscription()}
+              className="bg-red-600 hover:bg-red-700"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Toggle Active */}
       <Button
         size="icon"
         variant="outline"
         onClick={() => toggleActive()}
-        className={`rounded ${subscription.is_active ? "text-green-500 hover:text-green-600 hover:bg-green-50" : "text-gray-400 hover:text-green-500 hover:bg-gray-50"
-          }`}
+        disabled={isToggling}
+        className={`rounded ${
+          subscription.is_active
+            ? "text-green-500 hover:text-green-600 hover:bg-green-50"
+            : "text-gray-400 hover:text-green-500 hover:bg-gray-50"
+        }`}
         title={subscription.is_active ? "Deactivate" : "Activate"}
       >
         {subscription.is_active ? <CheckCircleIcon size={16} /> : <XCircleIcon size={16} />}
       </Button>
     </div>
-  )
-}
+  );
+};

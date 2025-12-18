@@ -14,9 +14,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { id } = req.body;
 
-    const deleted = await prisma.subscription.update({
+    if (!id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: "Subscription ID is required" });
+    }
+
+    const deleted = await prisma.ownerSubscription.update({
       where: { id: id as string },
-      data: { is_deleted: true },
+      data: { is_deleted: true, is_active: false },
     });
 
     return res.status(StatusCodes.OK).json({

@@ -23,7 +23,6 @@ import { formatDate, toDate } from "@/lib/date-helper-functions";
 import { CalendarIcon, ChevronDownIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { CountryDropdown } from "@/components/ui/country-dropdown";
-import { SubscriptionType, useSubscriptions } from "@/hooks/use-subscription";
 import {
   Select,
   SelectContent,
@@ -32,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { PlanType, usePlans } from "@/hooks/use-plans";
 
 const ClientSchema = Yup.object({
   first_name: Yup.string().required("First name is required"),
@@ -75,7 +75,7 @@ const ManageClient = () => {
     enabled: !!clientId && action !== "create", // only fetch if editing or viewing
   });
 
-  const { data, isLoading } = useSubscriptions({ enabled: true });
+  const { data: plansData, isLoading: plansLoading } = usePlans({ enabled: true });
 
   // Mutations
   const createMutation = useMutation({
@@ -270,11 +270,11 @@ const ManageClient = () => {
               </Label>
 
               <Popover>
-                <PopoverTrigger asChild>
+                <PopoverTrigger className="w-full" asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-[240px] justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal",
                       !formik.values.date_of_birth && "text-muted-foreground"
                     )}
                   >
@@ -286,8 +286,9 @@ const ManageClient = () => {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-full p-0" align="start">
                   <Calendar
+                  className="w-full"
                     mode="single"
                     selected={formik.values.date_of_birth}
                     onSelect={(date) =>
@@ -404,17 +405,17 @@ const ManageClient = () => {
                 onValueChange={(val) =>
                   formik.setFieldValue("planId", val)
                 }
-                disabled={isLoading}
+                disabled={plansLoading}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue
                     placeholder={
-                      isLoading ? "Loading..." : "Select plan"
+                      plansLoading ? "Loading..." : "Select plan"
                     }
                   />
                 </SelectTrigger>
                 <SelectContent className="w-full">
-                  {data?.data.map((sub: SubscriptionType) => (
+                  {plansData?.data.map((sub: PlanType) => (
                     <SelectItem key={sub.id} value={sub.id}>
                       {sub.name} - Monthly: ${sub.monthly_price} / Yearly: ${sub.yearly_price}
                     </SelectItem>
@@ -482,6 +483,27 @@ const ManageClient = () => {
                   Renew Subscription
                 </Button>
               )}
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => router.push("/clients")}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+
+          {action === "view" && (
+            <div className="mt-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => router.push("/clients")}
+              >
+                Back
+              </Button>
             </div>
           )}
         </form>

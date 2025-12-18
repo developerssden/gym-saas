@@ -23,29 +23,39 @@ export default async function handler(
       page,
       limit,
       search,
+      owner_id,
     }: {
       page?: number;
       limit?: number;
       search?: string;
+      owner_id?: string;
     } = req.body;
 
     const hasPagination = typeof page === "number" && typeof limit === "number";
     const hasSearch = typeof search === "string" && search.trim() !== "";
 
-    const or: Prisma.SubscriptionWhereInput[] = [];
+    const or: Prisma.OwnerSubscriptionWhereInput[] = [];
 
     if (hasSearch) {
-      or.push({ name: { contains: search!, mode: "insensitive" } });
-
-      const numericSearch = Number(search);
-      if (!isNaN(numericSearch)) {
-        or.push({ monthly_price: numericSearch });
-        or.push({ yearly_price: numericSearch });
-      }
+      // Search by owner name/email or plan name
+      or.push({
+        owner: {
+          OR: [
+            { first_name: { contains: search!, mode: "insensitive" } },
+            { last_name: { contains: search!, mode: "insensitive" } },
+            { email: { contains: search!, mode: "insensitive" } },
+            { phone_number: { contains: search!, mode: "insensitive" } },
+          ],
+        },
+      });
+      or.push({
+        plan: { name: { contains: search!, mode: "insensitive" } },
+      });
     }
 
-    const whereClause: Prisma.SubscriptionWhereInput = {
+    const whereClause: Prisma.OwnerSubscriptionWhereInput = {
       is_deleted: false,
+      owner_id: owner_id ? owner_id : undefined,
       OR: or.length ? or : undefined,
     };
 
@@ -53,9 +63,13 @@ export default async function handler(
        Dropdown Mode (No Pagination)
     ============================== */
     if (!hasPagination && !hasSearch) {
-      const subscriptions = await prisma.subscription.findMany({
+      const subscriptions = await prisma.ownerSubscription.findMany({
         where: whereClause,
-        orderBy: { createdAt: "asc" },
+        include: {
+          plan: true,
+          owner: true,
+        },
+        orderBy: { createdAt: "desc" },
       });
 
       return res.status(StatusCodes.OK).json({
@@ -73,13 +87,17 @@ export default async function handler(
     const skip = (currentPage - 1) * pageLimit;
 
     const [subscriptions, totalCount] = await Promise.all([
-      prisma.subscription.findMany({
+      prisma.ownerSubscription.findMany({
         where: whereClause,
+        include: {
+          plan: true,
+          owner: true,
+        },
         orderBy: { createdAt: "desc" },
         skip,
         take: pageLimit,
       }),
-      prisma.subscription.count({ where: whereClause }),
+      prisma.ownerSubscription.count({ where: whereClause }),
     ]);
 
     return res.status(StatusCodes.OK).json({

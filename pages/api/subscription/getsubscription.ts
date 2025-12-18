@@ -14,9 +14,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { id } = req.body;
 
-    const subscription = await prisma.subscription.findUnique({
+    if (!id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: "Subscription ID is required" });
+    }
+
+    const subscription = await prisma.ownerSubscription.findUnique({
       where: { id: id as string },
+      include: {
+        plan: true,
+        owner: true,
+        payments: {
+          orderBy: { createdAt: "desc" },
+        },
+      },
     });
+
+    if (!subscription || subscription.is_deleted) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: "Subscription not found" });
+    }
 
     return res.status(StatusCodes.OK).json(subscription);
   } catch (err: unknown) {

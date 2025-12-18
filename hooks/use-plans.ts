@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-export interface SubscriptionType {
+export interface PlanType {
     id: string
     name: string
     monthly_price: number
@@ -15,24 +15,24 @@ export interface SubscriptionType {
     updatedAt: Date
 }
 
-export interface SubscriptionsResponse {
-  data: SubscriptionType[];
+export interface PlansResponse {
+  data: PlanType[];
   totalCount: number;
   pageCount: number;
 }
 
-interface UseSubscriptionsParams {
+interface UsePlansParams {
   page?: number;
   limit?: number;
   search?: string;
   enabled?: boolean;
 }
 
-export const useSubscriptions = ({ page, limit, search, enabled = true }: UseSubscriptionsParams = {}) =>
-    useQuery<SubscriptionsResponse, Error>({
+export const usePlans = ({ page, limit, search, enabled = true }: UsePlansParams = {}) =>
+    useQuery<PlansResponse, Error>({
       queryKey: ["plans", page, limit, search],
       queryFn: async () => {
-        const res = await axios.post<SubscriptionsResponse>("/api/plans/getplans", {
+        const res = await axios.post<PlansResponse>("/api/plans/getplans", {
           page,
           limit,
           search,

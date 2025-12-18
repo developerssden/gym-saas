@@ -18,6 +18,22 @@ const ROUTE_GATES: RouteGate[] = [
   {
     routes: ['/clients'],
     roles: ['SUPER_ADMIN']
+  },
+  {
+    routes: ['/subscriptions'],
+    roles: ['SUPER_ADMIN']
+  },
+  {
+    routes: ['/plans'],
+    roles: ['SUPER_ADMIN']
+  },
+  {
+    routes: ['/payments'],
+    roles: ['SUPER_ADMIN', 'GYM_OWNER']
+  },
+  {
+    routes: ['/announcements'],
+    roles: ['SUPER_ADMIN', 'GYM_OWNER']
   }
 ];
 
@@ -43,13 +59,20 @@ export default withAuth(
       return NextResponse.next();
     }
 
+    const gate = findGate(pathname);
+    // Only routes explicitly listed in ROUTE_GATES are protected.
+    // Everything else should be accessible without authentication.
+    if (!gate) {
+      return NextResponse.next();
+    }
+
+    // Protected route: require auth
     if (!token) {
       const url = req.nextUrl.clone();
       url.pathname = '/sign-in';
       return NextResponse.redirect(url);
     }
 
-    const gate = findGate(pathname);
     if (gate && !gate.roles.includes(token.role as Role)) {
       const url = req.nextUrl.clone();
       url.pathname = '/unauthorized';
@@ -63,6 +86,9 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
         if (isPublic(pathname)) return true;
+        // Only require auth if the pathname matches a protected route.
+        const gate = findGate(pathname);
+        if (!gate) return true;
         return !!token;
       }
     }
