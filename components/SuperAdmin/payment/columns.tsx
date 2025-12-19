@@ -15,10 +15,12 @@ const formatDate = (value: unknown) => {
 };
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
+  const safe = Number.isFinite(amount) ? amount : 0;
+  return new Intl.NumberFormat("en-PK", {
     style: "currency",
-    currency: "USD",
-  }).format(amount);
+    currency: "PKR",
+    maximumFractionDigits: 0,
+  }).format(safe);
 };
 
 // Column definitions for TanStack table

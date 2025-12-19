@@ -40,7 +40,7 @@ export function Pricing() {
                         </CardHeader>
                         <CardContent className="grid gap-4">
                             <div className="text-4xl font-bold">
-                                $50
+                                PKR 50
                                 <span className="text-lg font-normal text-muted-foreground">
                                     /month
                                 </span>

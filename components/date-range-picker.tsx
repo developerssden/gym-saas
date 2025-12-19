@@ -15,11 +15,34 @@ import { type DateRange } from "react-day-picker"
 
 export default function DateRangePicker({
   className,
-}: React.HTMLAttributes<HTMLDivElement>) {
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: addDays(new Date(), -20),
-    to: new Date(),
-  })
+  value,
+  defaultValue,
+  onRangeChange,
+  numberOfMonths = 2,
+  buttonClassName,
+}: Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> & {
+  value?: DateRange
+  defaultValue?: DateRange
+  onRangeChange?: (range?: DateRange) => void
+  numberOfMonths?: number
+  buttonClassName?: string
+}) {
+  const [internalDate, setInternalDate] = React.useState<DateRange | undefined>(
+    defaultValue ?? {
+      from: addDays(new Date(), -20),
+      to: new Date(),
+    }
+  )
+
+  const date = value ?? internalDate
+
+  const setDate = React.useCallback(
+    (next?: DateRange) => {
+      onRangeChange?.(next)
+      if (value === undefined) setInternalDate(next)
+    },
+    [onRangeChange, value]
+  )
 
   return (
     <div className={cn("grid gap-2", className)}>
@@ -30,7 +53,8 @@ export default function DateRangePicker({
             variant="outline"
             className={cn(
               "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              !date && "text-muted-foreground",
+              buttonClassName
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -55,7 +79,7 @@ export default function DateRangePicker({
             defaultMonth={date?.from}
             selected={date}
             onSelect={setDate}
-            numberOfMonths={2}
+            numberOfMonths={numberOfMonths}
           />
         </PopoverContent>
       </Popover>
