@@ -7,6 +7,8 @@ import {
   Map,
   Megaphone,
   Users,
+  CheckSquare,
+  Package,
 } from "lucide-react";
 
 type Role = "SUPER_ADMIN" | "GYM_OWNER" | "MEMBER";
@@ -38,24 +40,35 @@ export const routeItems: RouteItem[] = [
     permissions: ["SUPER_ADMIN"],
   },
   {
-    title: "Payments",
-    href: "/payments",
-    icon: CreditCard,
-    permissions: ["SUPER_ADMIN"],
-  },
-  {
     title: "Gyms",
     href: "/gyms",
     icon: Building,
-    permissions: ["SUPER_ADMIN"],
+    permissions: ["SUPER_ADMIN","GYM_OWNER"],
   },
   {
     title: "Locations",
     href: "/locations",
     icon: Map,
-    permissions: ["SUPER_ADMIN"],
+    permissions: ["SUPER_ADMIN","GYM_OWNER"],
   },
-  
+  {
+    title: "Members",
+    href: "/members",
+    icon: Users,
+    permissions: ["GYM_OWNER"],
+  },
+  {
+    title: "Member Subscriptions",
+    href: "/membersubscriptions",
+    icon: CreditCard,
+    permissions: ["GYM_OWNER"],
+  },
+  {
+    title: "Payments",
+    href: "/payments",
+    icon: CreditCard,
+    permissions: ["SUPER_ADMIN","GYM_OWNER"],
+  },
   {
     title: "Plans",
     href: "/plans",
@@ -66,6 +79,18 @@ export const routeItems: RouteItem[] = [
     title: "Announcements",
     href: "/announcements",
     icon: Megaphone,
-    permissions: ["SUPER_ADMIN"],
+    permissions: ["SUPER_ADMIN", "GYM_OWNER"],
+  },
+  {
+    title: "Todos",
+    href: "/todos",
+    icon: CheckSquare,
+    permissions: ["GYM_OWNER"],
+  },
+  {
+    title: "Equipment",
+    href: "/equipment",
+    icon: Package,
+    permissions: ["GYM_OWNER"],
   },
 ];

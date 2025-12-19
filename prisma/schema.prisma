@@ -117,34 +117,40 @@ model Location {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  gym          Gym      @relation(fields: [gym_id], references: [id])
+  gym          Gym        @relation(fields: [gym_id], references: [id])
+  members      Member[]
+  equipment    Equipment[]
 }
 
 // Member model
 model Member {
-  id       String   @id @default(uuid())
-  user_id  String   @unique
-  gym_id   String
-  joinedAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  user_id     String   @unique
+  gym_id      String
+  location_id String
+  joinedAt    DateTime @default(now())
 
   // Relations
-  user       User         @relation(fields: [user_id], references: [id])
-  gym        Gym          @relation(fields: [gym_id], references: [id])
+  user         User         @relation(fields: [user_id], references: [id])
+  gym          Gym          @relation(fields: [gym_id], references: [id])
+  location     Location     @relation(fields: [location_id], references: [id])
   memberSubscriptions MemberSubscription[]
 }
 
 
 // Equipment model
 model Equipment {
-  id         String  @id @default(uuid())
-  name       String
-  type       String
-  quantity   String
-  weight     String?
-  is_active  Boolean @default(true)
-  is_deleted Boolean @default(false)
-  gym_id     String
-  gym        Gym     @relation(fields: [gym_id], references: [id])
+  id          String  @id @default(uuid())
+  name        String
+  type        String
+  quantity    String
+  weight      String?
+  is_active   Boolean @default(true)
+  is_deleted  Boolean @default(false)
+  gym_id      String
+  location_id String?
+  gym         Gym     @relation(fields: [gym_id], references: [id])
+  location    Location? @relation(fields: [location_id], references: [id])
 }
 
 model Plan {

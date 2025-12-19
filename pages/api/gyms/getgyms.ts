@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireSuperAdmin } from "@/lib/adminsessioncheck";
+import { requireAdminOrOwner } from "@/lib/sessioncheck";
 import { Prisma } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,8 +10,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  const session = await requireSuperAdmin(req, res);
+  const session = await requireAdminOrOwner(req, res);
   if (!session) return;
+
+  const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
     const {
@@ -47,7 +49,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const whereClause: Prisma.GymWhereInput = {
       is_deleted: false,
-      owner_id: owner_id ? owner_id : undefined,
+      // For GYM_OWNER: only show their own gyms
+      // For SUPER_ADMIN: show all gyms or filter by owner_id if provided
+      owner_id: isGymOwner ? session.user.id : owner_id ? owner_id : undefined,
       OR: or.length ? or : undefined,
     };
 

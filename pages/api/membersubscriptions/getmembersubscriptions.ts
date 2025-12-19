@@ -2,14 +2,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireSuperAdmin } from "@/lib/adminsessioncheck";
+import { requireAdminOrOwner } from "@/lib/sessioncheck";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireSuperAdmin(req, res);
+  const session = await requireAdminOrOwner(req, res);
   if (!session) return;
+
+  const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
     const {
@@ -27,6 +29,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (member_id) {
       where.member_id = member_id;
+    }
+
+    // For GYM_OWNER: only show subscriptions for their members
+    if (isGymOwner) {
+      where.member = {
+        gym: {
+          owner_id: session.user.id,
+          is_deleted: false,
+        },
+      };
     }
 
     const [subscriptions, totalCount] = await Promise.all([

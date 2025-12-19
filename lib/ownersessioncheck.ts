@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// lib/checkAdminSession.ts
+// lib/ownersessioncheck.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { options } from "@/pages/api/auth/[...nextauth]";
 import { StatusCodes } from "http-status-codes";
+import type { Session } from "next-auth";
 
-export async function requireSuperAdmin(
+export async function requireGymOwner(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
@@ -34,4 +35,14 @@ export async function requireSuperAdmin(
     });
     return null;
   }
+}
+
+/**
+ * Extract gym owner ID from session
+ */
+export function getGymOwnerId(session: Session | null): string | null {
+  if (!session?.user?.id) {
+    return null;
+  }
+  return session.user.id;
 }

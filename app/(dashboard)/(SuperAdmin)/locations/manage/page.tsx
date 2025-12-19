@@ -22,6 +22,8 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
+import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 
 type GymOption = {
   id: string;
@@ -51,8 +53,19 @@ const ManageLocationPage = () => {
   const locationId = searchParams?.get("id") || null;
 
   const [saving, setSaving] = useState(false);
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+  const [limitInfo, setLimitInfo] = useState<any>(null);
+
   const isSuperAdmin =
     status === "authenticated" && session?.user?.role === "SUPER_ADMIN";
+  const isGymOwner = status === "authenticated" && session?.user?.role === "GYM_OWNER";
+  const isAuthorized = isSuperAdmin || isGymOwner;
+
+  const { isSubscriptionActive, subscriptionExpired, subscriptionLimits } =
+    useSubscriptionValidation();
+
+  if (status === "loading") return <FullScreenLoader />;
+  if (!isAuthorized) return redirect("/unauthorized");
 
   const { data: locationData, isLoading: fetchingLocation } = useQuery({
     queryKey: ["location", locationId],
@@ -63,20 +76,27 @@ const ManageLocationPage = () => {
       });
       return res.data;
     },
-    enabled: isSuperAdmin && !!locationId && action !== "create",
+    enabled: isAuthorized && !!locationId && action !== "create",
   });
 
-  // Gym dropdown
+  // Gym dropdown - filter by owner for GYM_OWNER
   const { data: gymsData, isLoading: gymsLoading } = useQuery({
     queryKey: ["gymsDropdown"],
     queryFn: async () => {
       const res = await axios.post("/api/gyms/getgyms", {});
       return res.data as { data: GymOption[] };
     },
-    enabled: isSuperAdmin,
+    enabled: isAuthorized,
   });
 
-  const gyms = useMemo(() => gymsData?.data ?? [], [gymsData]);
+  // Filter gyms for GYM_OWNER (only show their gyms)
+  const gyms = useMemo(() => {
+    const allGyms = gymsData?.data ?? [];
+    if (isGymOwner) {
+      return allGyms.filter((g: any) => g.owner_id === session?.user?.id);
+    }
+    return allGyms;
+  }, [gymsData, isGymOwner, session?.user?.id]);
 
   const gymLabelById = useMemo(() => {
     const map = new Map<string, string>();
@@ -133,6 +153,34 @@ const ManageLocationPage = () => {
     validationSchema: LocationSchema,
     enableReinitialize: true,
     onSubmit: async (values) => {
+      // Check subscription for GYM_OWNER
+      if (isGymOwner) {
+        if (!isSubscriptionActive) {
+          toast.error("Your subscription is expired. Please renew to continue.");
+          return;
+        }
+
+        // Check limit before creating
+        if (action === "create") {
+          const currentLocations = subscriptionLimits.max_locations
+            ? await axios
+                .post("/api/locations/getlocations", { page: 1, limit: 1000 })
+                .then((res) => res.data.data.length)
+                .catch(() => 0)
+            : 0;
+
+          if (currentLocations >= subscriptionLimits.max_locations) {
+            setLimitInfo({
+              current: currentLocations,
+              max: subscriptionLimits.max_locations,
+              resourceType: "location",
+            });
+            setLimitModalOpen(true);
+            return;
+          }
+        }
+      }
+
       setSaving(true);
       try {
         if (action === "create") {
@@ -140,14 +188,20 @@ const ManageLocationPage = () => {
         } else if (action === "edit") {
           await updateMutation.mutateAsync(values);
         }
+      } catch (error: any) {
+        // Handle limit exceeded error from API
+        if (error?.response?.data?.error === "LIMIT_EXCEEDED") {
+          setLimitInfo(error.response.data);
+          setLimitModalOpen(true);
+        } else if (error?.response?.data?.error === "SUBSCRIPTION_EXPIRED") {
+          toast.error("Your subscription is expired. Please renew to continue.");
+        }
       } finally {
         setSaving(false);
       }
     },
   });
 
-  if (status === "loading") return <FullScreenLoader />;
-  if (!isSuperAdmin) return redirect("/unauthorized");
   if (fetchingLocation) return <FullScreenLoader label="Loading location..." />;
 
   return (
@@ -277,7 +331,14 @@ const ManageLocationPage = () => {
           <div className="flex gap-4 mt-6">
             {action !== "view" ? (
               <>
-                <Button type="submit" className="flex-1">
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={
+                    action === "view" ||
+                    (isGymOwner && (!isSubscriptionActive || subscriptionExpired))
+                  }
+                >
                   {action === "create" ? "Create Location" : "Update Location"}
                 </Button>
                 <Button
@@ -302,6 +363,14 @@ const ManageLocationPage = () => {
           </div>
         </form>
       </div>
+      {limitInfo && (
+        <SubscriptionLimitModal
+          open={limitModalOpen}
+          onClose={() => setLimitModalOpen(false)}
+          limitInfo={limitInfo}
+          planName={session?.user?.subscription_limits ? "Current Plan" : undefined}
+        />
+      )}
     </PageContainer>
   );
 };

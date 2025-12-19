@@ -2,41 +2,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireSuperAdmin } from "@/lib/adminsessioncheck";
-
-async function assertOwnerLocationLimit(owner_id: string, excludingLocationId?: string) {
-  const activeSub = await prisma.ownerSubscription.findFirst({
-    where: {
-      owner_id,
-      is_deleted: false,
-      is_active: true,
-      is_expired: false,
-    },
-    orderBy: { createdAt: "desc" },
-    include: { plan: true },
-  });
-
-  if (!activeSub?.plan) return;
-
-  const currentCount = await prisma.location.count({
-    where: {
-      is_deleted: false,
-      gym: { owner_id },
-      ...(excludingLocationId ? { NOT: { id: excludingLocationId } } : {}),
-    },
-  });
-
-  if (currentCount >= activeSub.plan.max_locations) {
-    throw new Error(`Location limit reached for this owner (max ${activeSub.plan.max_locations})`);
-  }
-}
+import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireSuperAdmin(req, res);
+  const session = await requireAdminOrOwner(req, res);
   if (!session) return;
+
+  const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
     const { id, ...data } = req.body as Record<string, any>;
@@ -50,8 +26,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(StatusCodes.NOT_FOUND).json({ error: "Location not found" });
     }
 
-    // If gym_id is changing, validate the new gym and plan limit for the new owner
-    if (data.gym_id !== undefined && data.gym_id !== existing.gym_id) {
+    // For GYM_OWNER: verify they own the gym this location belongs to
+    if (isGymOwner && existing.gym.owner_id !== session.user.id) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        error: "UNAUTHORIZED_GYM",
+        message: "Location does not belong to your gym",
+      });
+    }
+
+    // Check subscription is active
+    const validation = await validateOwnerSubscription(existing.gym.owner_id);
+    if (!validation.isActive) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        error: "SUBSCRIPTION_EXPIRED",
+        message: "Subscription is expired or inactive",
+      });
+    }
+
+    // If gym_id is changing (only SUPER_ADMIN can do this), validate the new gym and plan limit for the new owner
+    if (!isGymOwner && data.gym_id !== undefined && data.gym_id !== existing.gym_id) {
       const gym = await prisma.gym.findUnique({
         where: { id: data.gym_id },
         select: { id: true, owner_id: true, is_deleted: true },
@@ -59,7 +52,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!gym || gym.is_deleted) {
         return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid gym_id" });
       }
-      await assertOwnerLocationLimit(gym.owner_id, id);
+
+      // Check limit for new owner (excluding current location)
+      const currentCount = await prisma.location.count({
+        where: {
+          is_deleted: false,
+          gym: { owner_id: gym.owner_id },
+          NOT: { id },
+        },
+      });
+
+      const newOwnerValidation = await validateOwnerSubscription(gym.owner_id);
+      if (newOwnerValidation.isActive && newOwnerValidation.subscription) {
+        if (currentCount >= newOwnerValidation.subscription.plan.max_locations) {
+          return res.status(StatusCodes.CONFLICT).json({
+            error: "LIMIT_EXCEEDED",
+            resourceType: "location",
+            current: currentCount,
+            max: newOwnerValidation.subscription.plan.max_locations,
+            message: `Location limit reached for this owner (max ${newOwnerValidation.subscription.plan.max_locations})`,
+          });
+        }
+      }
+    }
+
+    // GYM_OWNER cannot change gym_id
+    if (isGymOwner && data.gym_id !== undefined && data.gym_id !== existing.gym_id) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        error: "Forbidden – You cannot change the gym for a location",
+      });
     }
 
     const updated = await prisma.location.update({

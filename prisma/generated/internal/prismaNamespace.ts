@@ -1349,6 +1349,7 @@ export const MemberScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
   gym_id: 'gym_id',
+  location_id: 'location_id',
   joinedAt: 'joinedAt'
 } as const
 
@@ -1363,7 +1364,8 @@ export const EquipmentScalarFieldEnum = {
   weight: 'weight',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
-  gym_id: 'gym_id'
+  gym_id: 'gym_id',
+  location_id: 'location_id'
 } as const
 
 export type EquipmentScalarFieldEnum = (typeof EquipmentScalarFieldEnum)[keyof typeof EquipmentScalarFieldEnum]

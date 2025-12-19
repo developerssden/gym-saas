@@ -33,6 +33,7 @@ export type EquipmentMinAggregateOutputType = {
   is_active: boolean | null
   is_deleted: boolean | null
   gym_id: string | null
+  location_id: string | null
 }
 
 export type EquipmentMaxAggregateOutputType = {
@@ -44,6 +45,7 @@ export type EquipmentMaxAggregateOutputType = {
   is_active: boolean | null
   is_deleted: boolean | null
   gym_id: string | null
+  location_id: string | null
 }
 
 export type EquipmentCountAggregateOutputType = {
@@ -55,6 +57,7 @@ export type EquipmentCountAggregateOutputType = {
   is_active: number
   is_deleted: number
   gym_id: number
+  location_id: number
   _all: number
 }
 
@@ -68,6 +71,7 @@ export type EquipmentMinAggregateInputType = {
   is_active?: true
   is_deleted?: true
   gym_id?: true
+  location_id?: true
 }
 
 export type EquipmentMaxAggregateInputType = {
@@ -79,6 +83,7 @@ export type EquipmentMaxAggregateInputType = {
   is_active?: true
   is_deleted?: true
   gym_id?: true
+  location_id?: true
 }
 
 export type EquipmentCountAggregateInputType = {
@@ -90,6 +95,7 @@ export type EquipmentCountAggregateInputType = {
   is_active?: true
   is_deleted?: true
   gym_id?: true
+  location_id?: true
   _all?: true
 }
 
@@ -174,6 +180,7 @@ export type EquipmentGroupByOutputType = {
   is_active: boolean
   is_deleted: boolean
   gym_id: string
+  location_id: string | null
   _count: EquipmentCountAggregateOutputType | null
   _min: EquipmentMinAggregateOutputType | null
   _max: EquipmentMaxAggregateOutputType | null
@@ -206,7 +213,9 @@ export type EquipmentWhereInput = {
   is_active?: Prisma.BoolFilter<"Equipment"> | boolean
   is_deleted?: Prisma.BoolFilter<"Equipment"> | boolean
   gym_id?: Prisma.StringFilter<"Equipment"> | string
+  location_id?: Prisma.StringNullableFilter<"Equipment"> | string | null
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
+  location?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
 }
 
 export type EquipmentOrderByWithRelationInput = {
@@ -218,7 +227,9 @@ export type EquipmentOrderByWithRelationInput = {
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
+  location_id?: Prisma.SortOrderInput | Prisma.SortOrder
   gym?: Prisma.GymOrderByWithRelationInput
+  location?: Prisma.LocationOrderByWithRelationInput
 }
 
 export type EquipmentWhereUniqueInput = Prisma.AtLeast<{
@@ -233,7 +244,9 @@ export type EquipmentWhereUniqueInput = Prisma.AtLeast<{
   is_active?: Prisma.BoolFilter<"Equipment"> | boolean
   is_deleted?: Prisma.BoolFilter<"Equipment"> | boolean
   gym_id?: Prisma.StringFilter<"Equipment"> | string
+  location_id?: Prisma.StringNullableFilter<"Equipment"> | string | null
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
+  location?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
 }, "id">
 
 export type EquipmentOrderByWithAggregationInput = {
@@ -245,6 +258,7 @@ export type EquipmentOrderByWithAggregationInput = {
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
+  location_id?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.EquipmentCountOrderByAggregateInput
   _max?: Prisma.EquipmentMaxOrderByAggregateInput
   _min?: Prisma.EquipmentMinOrderByAggregateInput
@@ -262,6 +276,7 @@ export type EquipmentScalarWhereWithAggregatesInput = {
   is_active?: Prisma.BoolWithAggregatesFilter<"Equipment"> | boolean
   is_deleted?: Prisma.BoolWithAggregatesFilter<"Equipment"> | boolean
   gym_id?: Prisma.StringWithAggregatesFilter<"Equipment"> | string
+  location_id?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
 }
 
 export type EquipmentCreateInput = {
@@ -273,6 +288,7 @@ export type EquipmentCreateInput = {
   is_active?: boolean
   is_deleted?: boolean
   gym: Prisma.GymCreateNestedOneWithoutEquipmentInput
+  location?: Prisma.LocationCreateNestedOneWithoutEquipmentInput
 }
 
 export type EquipmentUncheckedCreateInput = {
@@ -284,6 +300,7 @@ export type EquipmentUncheckedCreateInput = {
   is_active?: boolean
   is_deleted?: boolean
   gym_id: string
+  location_id?: string | null
 }
 
 export type EquipmentUpdateInput = {
@@ -295,6 +312,7 @@ export type EquipmentUpdateInput = {
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   gym?: Prisma.GymUpdateOneRequiredWithoutEquipmentNestedInput
+  location?: Prisma.LocationUpdateOneWithoutEquipmentNestedInput
 }
 
 export type EquipmentUncheckedUpdateInput = {
@@ -306,6 +324,7 @@ export type EquipmentUncheckedUpdateInput = {
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
+  location_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EquipmentCreateManyInput = {
@@ -317,6 +336,7 @@ export type EquipmentCreateManyInput = {
   is_active?: boolean
   is_deleted?: boolean
   gym_id: string
+  location_id?: string | null
 }
 
 export type EquipmentUpdateManyMutationInput = {
@@ -338,6 +358,7 @@ export type EquipmentUncheckedUpdateManyInput = {
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
+  location_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EquipmentListRelationFilter = {
@@ -359,6 +380,7 @@ export type EquipmentCountOrderByAggregateInput = {
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
+  location_id?: Prisma.SortOrder
 }
 
 export type EquipmentMaxOrderByAggregateInput = {
@@ -370,6 +392,7 @@ export type EquipmentMaxOrderByAggregateInput = {
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
+  location_id?: Prisma.SortOrder
 }
 
 export type EquipmentMinOrderByAggregateInput = {
@@ -381,6 +404,7 @@ export type EquipmentMinOrderByAggregateInput = {
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
+  location_id?: Prisma.SortOrder
 }
 
 export type EquipmentCreateNestedManyWithoutGymInput = {
@@ -425,6 +449,48 @@ export type EquipmentUncheckedUpdateManyWithoutGymNestedInput = {
   deleteMany?: Prisma.EquipmentScalarWhereInput | Prisma.EquipmentScalarWhereInput[]
 }
 
+export type EquipmentCreateNestedManyWithoutLocationInput = {
+  create?: Prisma.XOR<Prisma.EquipmentCreateWithoutLocationInput, Prisma.EquipmentUncheckedCreateWithoutLocationInput> | Prisma.EquipmentCreateWithoutLocationInput[] | Prisma.EquipmentUncheckedCreateWithoutLocationInput[]
+  connectOrCreate?: Prisma.EquipmentCreateOrConnectWithoutLocationInput | Prisma.EquipmentCreateOrConnectWithoutLocationInput[]
+  createMany?: Prisma.EquipmentCreateManyLocationInputEnvelope
+  connect?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+}
+
+export type EquipmentUncheckedCreateNestedManyWithoutLocationInput = {
+  create?: Prisma.XOR<Prisma.EquipmentCreateWithoutLocationInput, Prisma.EquipmentUncheckedCreateWithoutLocationInput> | Prisma.EquipmentCreateWithoutLocationInput[] | Prisma.EquipmentUncheckedCreateWithoutLocationInput[]
+  connectOrCreate?: Prisma.EquipmentCreateOrConnectWithoutLocationInput | Prisma.EquipmentCreateOrConnectWithoutLocationInput[]
+  createMany?: Prisma.EquipmentCreateManyLocationInputEnvelope
+  connect?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+}
+
+export type EquipmentUpdateManyWithoutLocationNestedInput = {
+  create?: Prisma.XOR<Prisma.EquipmentCreateWithoutLocationInput, Prisma.EquipmentUncheckedCreateWithoutLocationInput> | Prisma.EquipmentCreateWithoutLocationInput[] | Prisma.EquipmentUncheckedCreateWithoutLocationInput[]
+  connectOrCreate?: Prisma.EquipmentCreateOrConnectWithoutLocationInput | Prisma.EquipmentCreateOrConnectWithoutLocationInput[]
+  upsert?: Prisma.EquipmentUpsertWithWhereUniqueWithoutLocationInput | Prisma.EquipmentUpsertWithWhereUniqueWithoutLocationInput[]
+  createMany?: Prisma.EquipmentCreateManyLocationInputEnvelope
+  set?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+  disconnect?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+  delete?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+  connect?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+  update?: Prisma.EquipmentUpdateWithWhereUniqueWithoutLocationInput | Prisma.EquipmentUpdateWithWhereUniqueWithoutLocationInput[]
+  updateMany?: Prisma.EquipmentUpdateManyWithWhereWithoutLocationInput | Prisma.EquipmentUpdateManyWithWhereWithoutLocationInput[]
+  deleteMany?: Prisma.EquipmentScalarWhereInput | Prisma.EquipmentScalarWhereInput[]
+}
+
+export type EquipmentUncheckedUpdateManyWithoutLocationNestedInput = {
+  create?: Prisma.XOR<Prisma.EquipmentCreateWithoutLocationInput, Prisma.EquipmentUncheckedCreateWithoutLocationInput> | Prisma.EquipmentCreateWithoutLocationInput[] | Prisma.EquipmentUncheckedCreateWithoutLocationInput[]
+  connectOrCreate?: Prisma.EquipmentCreateOrConnectWithoutLocationInput | Prisma.EquipmentCreateOrConnectWithoutLocationInput[]
+  upsert?: Prisma.EquipmentUpsertWithWhereUniqueWithoutLocationInput | Prisma.EquipmentUpsertWithWhereUniqueWithoutLocationInput[]
+  createMany?: Prisma.EquipmentCreateManyLocationInputEnvelope
+  set?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+  disconnect?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+  delete?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+  connect?: Prisma.EquipmentWhereUniqueInput | Prisma.EquipmentWhereUniqueInput[]
+  update?: Prisma.EquipmentUpdateWithWhereUniqueWithoutLocationInput | Prisma.EquipmentUpdateWithWhereUniqueWithoutLocationInput[]
+  updateMany?: Prisma.EquipmentUpdateManyWithWhereWithoutLocationInput | Prisma.EquipmentUpdateManyWithWhereWithoutLocationInput[]
+  deleteMany?: Prisma.EquipmentScalarWhereInput | Prisma.EquipmentScalarWhereInput[]
+}
+
 export type EquipmentCreateWithoutGymInput = {
   id?: string
   name: string
@@ -433,6 +499,7 @@ export type EquipmentCreateWithoutGymInput = {
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
+  location?: Prisma.LocationCreateNestedOneWithoutEquipmentInput
 }
 
 export type EquipmentUncheckedCreateWithoutGymInput = {
@@ -443,6 +510,7 @@ export type EquipmentUncheckedCreateWithoutGymInput = {
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
+  location_id?: string | null
 }
 
 export type EquipmentCreateOrConnectWithoutGymInput = {
@@ -483,6 +551,55 @@ export type EquipmentScalarWhereInput = {
   is_active?: Prisma.BoolFilter<"Equipment"> | boolean
   is_deleted?: Prisma.BoolFilter<"Equipment"> | boolean
   gym_id?: Prisma.StringFilter<"Equipment"> | string
+  location_id?: Prisma.StringNullableFilter<"Equipment"> | string | null
+}
+
+export type EquipmentCreateWithoutLocationInput = {
+  id?: string
+  name: string
+  type: string
+  quantity: string
+  weight?: string | null
+  is_active?: boolean
+  is_deleted?: boolean
+  gym: Prisma.GymCreateNestedOneWithoutEquipmentInput
+}
+
+export type EquipmentUncheckedCreateWithoutLocationInput = {
+  id?: string
+  name: string
+  type: string
+  quantity: string
+  weight?: string | null
+  is_active?: boolean
+  is_deleted?: boolean
+  gym_id: string
+}
+
+export type EquipmentCreateOrConnectWithoutLocationInput = {
+  where: Prisma.EquipmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.EquipmentCreateWithoutLocationInput, Prisma.EquipmentUncheckedCreateWithoutLocationInput>
+}
+
+export type EquipmentCreateManyLocationInputEnvelope = {
+  data: Prisma.EquipmentCreateManyLocationInput | Prisma.EquipmentCreateManyLocationInput[]
+  skipDuplicates?: boolean
+}
+
+export type EquipmentUpsertWithWhereUniqueWithoutLocationInput = {
+  where: Prisma.EquipmentWhereUniqueInput
+  update: Prisma.XOR<Prisma.EquipmentUpdateWithoutLocationInput, Prisma.EquipmentUncheckedUpdateWithoutLocationInput>
+  create: Prisma.XOR<Prisma.EquipmentCreateWithoutLocationInput, Prisma.EquipmentUncheckedCreateWithoutLocationInput>
+}
+
+export type EquipmentUpdateWithWhereUniqueWithoutLocationInput = {
+  where: Prisma.EquipmentWhereUniqueInput
+  data: Prisma.XOR<Prisma.EquipmentUpdateWithoutLocationInput, Prisma.EquipmentUncheckedUpdateWithoutLocationInput>
+}
+
+export type EquipmentUpdateManyWithWhereWithoutLocationInput = {
+  where: Prisma.EquipmentScalarWhereInput
+  data: Prisma.XOR<Prisma.EquipmentUpdateManyMutationInput, Prisma.EquipmentUncheckedUpdateManyWithoutLocationInput>
 }
 
 export type EquipmentCreateManyGymInput = {
@@ -493,6 +610,7 @@ export type EquipmentCreateManyGymInput = {
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
+  location_id?: string | null
 }
 
 export type EquipmentUpdateWithoutGymInput = {
@@ -503,6 +621,7 @@ export type EquipmentUpdateWithoutGymInput = {
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  location?: Prisma.LocationUpdateOneWithoutEquipmentNestedInput
 }
 
 export type EquipmentUncheckedUpdateWithoutGymInput = {
@@ -513,6 +632,7 @@ export type EquipmentUncheckedUpdateWithoutGymInput = {
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  location_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EquipmentUncheckedUpdateManyWithoutGymInput = {
@@ -523,6 +643,51 @@ export type EquipmentUncheckedUpdateManyWithoutGymInput = {
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  location_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type EquipmentCreateManyLocationInput = {
+  id?: string
+  name: string
+  type: string
+  quantity: string
+  weight?: string | null
+  is_active?: boolean
+  is_deleted?: boolean
+  gym_id: string
+}
+
+export type EquipmentUpdateWithoutLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  gym?: Prisma.GymUpdateOneRequiredWithoutEquipmentNestedInput
+}
+
+export type EquipmentUncheckedUpdateWithoutLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  gym_id?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type EquipmentUncheckedUpdateManyWithoutLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  gym_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -536,7 +701,9 @@ export type EquipmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   is_active?: boolean
   is_deleted?: boolean
   gym_id?: boolean
+  location_id?: boolean
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
+  location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
 }, ExtArgs["result"]["equipment"]>
 
 export type EquipmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -548,7 +715,9 @@ export type EquipmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   is_active?: boolean
   is_deleted?: boolean
   gym_id?: boolean
+  location_id?: boolean
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
+  location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
 }, ExtArgs["result"]["equipment"]>
 
 export type EquipmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -560,7 +729,9 @@ export type EquipmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   is_active?: boolean
   is_deleted?: boolean
   gym_id?: boolean
+  location_id?: boolean
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
+  location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
 }, ExtArgs["result"]["equipment"]>
 
 export type EquipmentSelectScalar = {
@@ -572,23 +743,28 @@ export type EquipmentSelectScalar = {
   is_active?: boolean
   is_deleted?: boolean
   gym_id?: boolean
+  location_id?: boolean
 }
 
-export type EquipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "quantity" | "weight" | "is_active" | "is_deleted" | "gym_id", ExtArgs["result"]["equipment"]>
+export type EquipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "quantity" | "weight" | "is_active" | "is_deleted" | "gym_id" | "location_id", ExtArgs["result"]["equipment"]>
 export type EquipmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
+  location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
 }
 export type EquipmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
+  location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
 }
 export type EquipmentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
+  location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
 }
 
 export type $EquipmentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Equipment"
   objects: {
     gym: Prisma.$GymPayload<ExtArgs>
+    location: Prisma.$LocationPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -599,6 +775,7 @@ export type $EquipmentPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     is_active: boolean
     is_deleted: boolean
     gym_id: string
+    location_id: string | null
   }, ExtArgs["result"]["equipment"]>
   composites: {}
 }
@@ -994,6 +1171,7 @@ readonly fields: EquipmentFieldRefs;
 export interface Prisma__EquipmentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   gym<T extends Prisma.GymDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GymDefaultArgs<ExtArgs>>): Prisma.Prisma__GymClient<runtime.Types.Result.GetResult<Prisma.$GymPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  location<T extends Prisma.Equipment$locationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Equipment$locationArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1031,6 +1209,7 @@ export interface EquipmentFieldRefs {
   readonly is_active: Prisma.FieldRef<"Equipment", 'Boolean'>
   readonly is_deleted: Prisma.FieldRef<"Equipment", 'Boolean'>
   readonly gym_id: Prisma.FieldRef<"Equipment", 'String'>
+  readonly location_id: Prisma.FieldRef<"Equipment", 'String'>
 }
     
 
@@ -1424,6 +1603,25 @@ export type EquipmentDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Limit how many Equipment to delete.
    */
   limit?: number
+}
+
+/**
+ * Equipment.location
+ */
+export type Equipment$locationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Location
+   */
+  select?: Prisma.LocationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Location
+   */
+  omit?: Prisma.LocationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LocationInclude<ExtArgs> | null
+  where?: Prisma.LocationWhereInput
 }
 
 /**

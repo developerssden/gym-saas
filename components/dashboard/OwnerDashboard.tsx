@@ -1,10 +1,11 @@
 import React from 'react'
+import { PageContainer } from '../layout/page-container'
 
 type Props = {}
 
 const OwnerDashboard = (props: Props) => {
   return (
-    <div>OwnerDashboard</div>
+    <PageContainer><h1 className='h1'>Owner Dashboard</h1></PageContainer>
   )
 }
 

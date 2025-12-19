@@ -10,7 +10,7 @@ const LocationsPage = () => {
   if (status === "loading") {
     return <FullScreenLoader />;
   }
-  if (session?.user?.role !== "SUPER_ADMIN") {
+  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER") {
     return redirect("/unauthorized");
   }
   return <Locations session={session} />;

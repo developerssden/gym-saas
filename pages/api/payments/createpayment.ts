@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireSuperAdmin } from "@/lib/adminsessioncheck";
+import { requireAdminOrOwner } from "@/lib/sessioncheck";
 import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
 
 export default async function handler(
@@ -14,8 +14,10 @@ export default async function handler(
       .status(StatusCodes.METHOD_NOT_ALLOWED)
       .json({ message: "Method not allowed" });
 
-  const session = await requireSuperAdmin(req, res);
+  const session = await requireAdminOrOwner(req, res);
   if (!session) return;
+
+  const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
     const {
@@ -57,10 +59,11 @@ export default async function handler(
       });
     }
 
-    // Verify subscription exists
+    // Verify subscription exists and belongs to owner (for GYM_OWNER)
     if (subscription_type === SubscriptionTypeEnum.OWNER) {
       const ownerSubscription = await prisma.ownerSubscription.findUnique({
         where: { id: owner_subscription_id },
+        include: { owner: true },
       });
 
       if (!ownerSubscription) {
@@ -68,14 +71,35 @@ export default async function handler(
           error: "Owner subscription not found",
         });
       }
+
+      // For GYM_OWNER: verify they own this subscription
+      if (isGymOwner && ownerSubscription.owner_id !== session.user.id) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          error: "Forbidden – You can only create payments for your own subscriptions",
+        });
+      }
     } else {
       const memberSubscription = await prisma.memberSubscription.findUnique({
         where: { id: member_subscription_id },
+        include: {
+          member: {
+            include: {
+              gym: true,
+            },
+          },
+        },
       });
 
       if (!memberSubscription) {
         return res.status(StatusCodes.NOT_FOUND).json({
           error: "Member subscription not found",
+        });
+      }
+
+      // For GYM_OWNER: verify member belongs to their gym
+      if (isGymOwner && memberSubscription.member.gym.owner_id !== session.user.id) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          error: "Forbidden – You can only create payments for your members' subscriptions",
         });
       }
     }

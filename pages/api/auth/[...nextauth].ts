@@ -82,6 +82,76 @@ export const options: NextAuthOptions = {
         token.role = user.role;
         token.first_name = user.first_name;
         token.last_name = user.last_name;
+        
+        // For GYM_OWNER, set default gym and location on first login
+        if (user.role === 'GYM_OWNER') {
+          const gyms = await prisma.gym.findMany({
+            where: {
+              owner_id: user.id,
+              is_deleted: false,
+              is_active: true
+            },
+            orderBy: {
+              createdAt: 'asc'
+            },
+            include: {
+              locations: {
+                where: {
+                  is_deleted: false,
+                  is_active: true
+                },
+                orderBy: {
+                  createdAt: 'asc'
+                }
+              }
+            }
+          });
+          
+          if (gyms.length > 0) {
+            const firstGym = gyms[0];
+            token.selected_gym_id = firstGym.id;
+            
+            if (firstGym.locations.length > 0) {
+              token.selected_location_id = firstGym.locations[0].id;
+            } else {
+              token.selected_location_id = null;
+            }
+          }
+        }
+      } else if (token.role === 'GYM_OWNER' && !token.selected_gym_id && token.sub) {
+        // If token doesn't have selected_gym_id (e.g., after refresh), set defaults
+        const gyms = await prisma.gym.findMany({
+          where: {
+            owner_id: token.sub,
+            is_deleted: false,
+            is_active: true
+          },
+          orderBy: {
+            createdAt: 'asc'
+          },
+          include: {
+            locations: {
+              where: {
+                is_deleted: false,
+                is_active: true
+              },
+              orderBy: {
+                createdAt: 'asc'
+              }
+            }
+          }
+        });
+        
+        if (gyms.length > 0) {
+          const firstGym = gyms[0];
+          token.selected_gym_id = firstGym.id;
+          
+          if (firstGym.locations.length > 0) {
+            token.selected_location_id = firstGym.locations[0].id;
+          } else {
+            token.selected_location_id = null;
+          }
+        }
       }
 
       // Handle session updates
@@ -89,7 +159,12 @@ export const options: NextAuthOptions = {
         token.role = session.user.role;
         token.first_name = session.user.first_name;
         token.last_name = session.user.last_name;
-        token.selected_location_id = session.user.selected_location_id;
+        if (session.user.selected_location_id !== undefined) {
+          token.selected_location_id = session.user.selected_location_id;
+        }
+        if (session.user.selected_gym_id !== undefined) {
+          token.selected_gym_id = session.user.selected_gym_id;
+        }
       }
 
       return token;
@@ -121,9 +196,20 @@ export const options: NextAuthOptions = {
       if (userData) {
         session.user.id = userData.id;
         session.user.role = userData.role;
+        session.user.email = userData.email;
         session.user.first_name = userData.first_name;
         session.user.last_name = userData.last_name;
+        session.user.phone_number = userData.phone_number;
+        session.user.address = userData.address;
+        session.user.city = userData.city;
+        session.user.state = userData.state;
+        session.user.zip_code = userData.zip_code;
+        session.user.country = userData.country;
+        session.user.date_of_birth = userData.date_of_birth;
+        session.user.cnic = userData.cnic;
+        session.user.profile_picture = userData.profile_picture;
         session.user.selected_location_id = token.selected_location_id;
+        session.user.selected_gym_id = token.selected_gym_id;
         
         // Get plan from active owner subscription
         const activeSubscription = userData.ownerSubscriptions?.[0];
@@ -131,6 +217,83 @@ export const options: NextAuthOptions = {
           session.user.max_gyms = activeSubscription.plan.max_gyms;
           session.user.max_members = activeSubscription.plan.max_members;
           session.user.max_equipment = activeSubscription.plan.max_equipment;
+        }
+        
+        // For GYM_OWNER, fetch gyms and locations
+        if (userData.role === 'GYM_OWNER') {
+          const gyms = await prisma.gym.findMany({
+            where: {
+              owner_id: userData.id,
+              is_deleted: false,
+              is_active: true
+            },
+            orderBy: {
+              createdAt: 'asc'
+            }
+          });
+          
+          const locations = await prisma.location.findMany({
+            where: {
+              gym: {
+                owner_id: userData.id,
+                is_deleted: false,
+                is_active: true
+              },
+              is_deleted: false,
+              is_active: true
+            },
+            orderBy: {
+              createdAt: 'asc'
+            }
+          });
+          
+          session.user.gyms = gyms.map(gym => ({
+            id: gym.id,
+            name: gym.name
+          }));
+          
+          session.user.locations = locations.map(loc => ({
+            id: loc.id,
+            name: loc.name,
+            gymId: loc.gym_id,
+            address: loc.address
+          }));
+
+          // Add subscription status for GYM_OWNER
+          const activeSubscription = await prisma.ownerSubscription.findFirst({
+            where: {
+              owner_id: userData.id,
+              is_deleted: false,
+              is_active: true,
+              is_expired: false
+            },
+            orderBy: {
+              createdAt: 'desc'
+            },
+            include: {
+              plan: true
+            }
+          });
+
+          if (activeSubscription?.plan) {
+            session.user.subscription_active = true;
+            session.user.subscription_expired = false;
+            session.user.subscription_limits = {
+              max_gyms: activeSubscription.plan.max_gyms,
+              max_locations: activeSubscription.plan.max_locations,
+              max_members: activeSubscription.plan.max_members,
+              max_equipment: activeSubscription.plan.max_equipment
+            };
+          } else {
+            session.user.subscription_active = false;
+            session.user.subscription_expired = true;
+            session.user.subscription_limits = {
+              max_gyms: 0,
+              max_locations: 0,
+              max_members: 0,
+              max_equipment: 0
+            };
+          }
         }
       }
 

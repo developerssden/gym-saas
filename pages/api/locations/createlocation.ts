@@ -2,40 +2,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireSuperAdmin } from "@/lib/adminsessioncheck";
-
-async function assertOwnerLocationLimit(owner_id: string) {
-  const activeSub = await prisma.ownerSubscription.findFirst({
-    where: {
-      owner_id,
-      is_deleted: false,
-      is_active: true,
-      is_expired: false,
-    },
-    orderBy: { createdAt: "desc" },
-    include: { plan: true },
-  });
-
-  if (!activeSub?.plan) return;
-
-  const currentCount = await prisma.location.count({
-    where: {
-      is_deleted: false,
-      gym: { owner_id },
-    },
-  });
-
-  if (currentCount >= activeSub.plan.max_locations) {
-    throw new Error(`Location limit reached for this owner (max ${activeSub.plan.max_locations})`);
-  }
-}
+import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireSuperAdmin(req, res);
+  const session = await requireAdminOrOwner(req, res);
   if (!session) return;
+
+  const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
     const {
@@ -61,7 +38,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid gym_id" });
     }
 
-    await assertOwnerLocationLimit(gym.owner_id);
+    // For GYM_OWNER: verify they own this gym
+    if (isGymOwner && gym.owner_id !== session.user.id) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        error: "UNAUTHORIZED_GYM",
+        message: "Gym does not belong to you",
+      });
+    }
+
+    // Check subscription limits
+    const limitCheck = await checkLimitExceeded(gym.owner_id, "location");
+    if (limitCheck.exceeded) {
+      return res.status(StatusCodes.CONFLICT).json({
+        error: "LIMIT_EXCEEDED",
+        resourceType: "location",
+        current: limitCheck.current,
+        max: limitCheck.max,
+        message: `Location limit reached for this owner (max ${limitCheck.max})`,
+      });
+    }
+
+    // Check if subscription is active
+    const validation = await validateOwnerSubscription(gym.owner_id);
+    if (!validation.isActive) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        error: "SUBSCRIPTION_EXPIRED",
+        message: "Subscription is expired or inactive",
+      });
+    }
 
     const created = await prisma.location.create({
       data: {

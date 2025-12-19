@@ -2,14 +2,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireSuperAdmin } from "@/lib/adminsessioncheck";
+import { requireAdminOrOwner } from "@/lib/sessioncheck";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireSuperAdmin(req, res);
+  const session = await requireAdminOrOwner(req, res);
   if (!session) return;
+
+  const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
     const { id } = req.body as { id?: string };
@@ -30,6 +32,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!gym || gym.is_deleted) {
       return res.status(StatusCodes.NOT_FOUND).json({ error: "Gym not found" });
+    }
+
+    // For GYM_OWNER: verify they own this gym
+    if (isGymOwner && gym.owner_id !== session.user.id) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        error: "Forbidden – You can only access your own gyms",
+      });
     }
 
     return res.status(StatusCodes.OK).json(gym);

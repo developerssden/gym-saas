@@ -22,9 +22,28 @@ declare module 'next-auth' {
       createdAt: Date;
       updatedAt: Date;
       selected_location_id?: string | null;
+      selected_gym_id?: string | null;
       max_gyms?: number | null;
       max_members?: number | null;
       max_equipment?: number | null;
+      subscription_active?: boolean;
+      subscription_expired?: boolean;
+      subscription_limits?: {
+        max_gyms: number;
+        max_locations: number;
+        max_members: number;
+        max_equipment: number;
+      };
+      gyms?: Array<{
+        id: string;
+        name: string;
+      }>;
+      locations?: Array<{
+        id: string;
+        name: string;
+        gymId: string;
+        address?: string | null;
+      }>;
     };
   }
 
@@ -66,5 +85,6 @@ declare module 'next-auth/jwt' {
     createdAt: Date;
     updatedAt: Date;
     selected_location_id?: string | null;
+    selected_gym_id?: string | null;
   }
 }
