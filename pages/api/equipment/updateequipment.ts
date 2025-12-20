@@ -13,12 +13,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!session) return;
 
   try {
-    const { id, name, type, quantity, weight, gym_id, location_id } = req.body as {
+    const {
+      id,
+      name,
+      type,
+      category,
+      brand,
+      model_number,
+      serial_number,
+      quantity,
+      min_stock_level,
+      condition,
+      purchase_date,
+      purchase_cost,
+      supplier_name,
+      last_maintenance_date,
+      next_maintenance_due,
+      maintenance_notes,
+      usage_frequency,
+      equipment_location,
+      status,
+      weight,
+      image_url,
+      invoice_url,
+      gym_id,
+      location_id,
+    } = req.body as {
       id: string;
       name?: string;
       type?: string;
-      quantity?: string;
+      category?: string;
+      brand?: string;
+      model_number?: string;
+      serial_number?: string;
+      quantity?: string | number;
+      min_stock_level?: number | string;
+      condition?: string;
+      purchase_date?: string;
+      purchase_cost?: number | string;
+      supplier_name?: string;
+      last_maintenance_date?: string;
+      next_maintenance_due?: string;
+      maintenance_notes?: string;
+      usage_frequency?: string;
+      equipment_location?: string;
+      status?: string;
       weight?: string;
+      image_url?: string;
+      invoice_url?: string;
       gym_id?: string;
       location_id?: string;
     };
@@ -104,8 +146,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (type !== undefined) updateData.type = type;
-    if (quantity !== undefined) updateData.quantity = quantity;
-    if (weight !== undefined) updateData.weight = weight;
+    if (category !== undefined) updateData.category = category || null;
+    if (brand !== undefined) updateData.brand = brand || null;
+    if (model_number !== undefined) updateData.model_number = model_number || null;
+    if (serial_number !== undefined) updateData.serial_number = serial_number || null;
+    if (quantity !== undefined) updateData.quantity = String(quantity);
+    if (min_stock_level !== undefined)
+      updateData.min_stock_level = min_stock_level === "" ? null : Number(min_stock_level);
+    if (condition !== undefined) updateData.condition = condition || null;
+    if (purchase_date !== undefined)
+      updateData.purchase_date = purchase_date ? new Date(purchase_date) : null;
+    if (purchase_cost !== undefined)
+      updateData.purchase_cost = purchase_cost === "" ? null : Number(purchase_cost);
+    if (supplier_name !== undefined) updateData.supplier_name = supplier_name || null;
+    if (last_maintenance_date !== undefined)
+      updateData.last_maintenance_date = last_maintenance_date
+        ? new Date(last_maintenance_date)
+        : null;
+    if (next_maintenance_due !== undefined)
+      updateData.next_maintenance_due = next_maintenance_due
+        ? new Date(next_maintenance_due)
+        : null;
+    if (maintenance_notes !== undefined) updateData.maintenance_notes = maintenance_notes || null;
+    if (usage_frequency !== undefined) updateData.usage_frequency = usage_frequency || null;
+    if (equipment_location !== undefined)
+      updateData.equipment_location = equipment_location || null;
+    if (status !== undefined) updateData.status = status;
+    if (weight !== undefined) updateData.weight = weight || null;
+    if (image_url !== undefined) updateData.image_url = image_url || null;
+    if (invoice_url !== undefined) updateData.invoice_url = invoice_url || null;
     if (gym_id !== undefined) updateData.gym_id = gym_id;
     if (location_id !== undefined) updateData.location_id = location_id || null;
 
@@ -123,4 +192,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: message });
   }
 }
-

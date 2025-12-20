@@ -28,7 +28,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/date-helper-functions";
 import { cn } from "@/lib/utils";
@@ -70,13 +70,6 @@ const ManageMemberSubscriptionPage = () => {
   const [endDateOpen, setEndDateOpen] = useState(false);
 
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
-
-  if (status === "loading") {
-    return <FullScreenLoader />;
-  }
-  if (session?.user?.role !== "GYM_OWNER") {
-    return redirect("/unauthorized");
-  }
 
   // Fetch subscription data
   const { data: subscriptionData, isLoading: fetchingSubscription } = useQuery({
@@ -153,21 +146,34 @@ const ManageMemberSubscriptionPage = () => {
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
-  const formik = useFormik({
-    initialValues: {
+  // Memoize initial values to prevent unnecessary formik re-initializations
+  const initialValues = useMemo(
+    () => ({
       member_id: subscriptionData?.member_id || "",
       price: subscriptionData?.price || 0,
-      use_custom_dates: false,
-      months: 1,
+      use_custom_dates: subscriptionData?.use_custom_dates ?? false,
+      months: subscriptionData?.months || 1,
       start_date: subscriptionData?.start_date
         ? new Date(subscriptionData.start_date)
         : new Date(),
       end_date: subscriptionData?.end_date
         ? new Date(subscriptionData.end_date)
-        : calculateEndDate(new Date(), 1),
-    },
+        : calculateEndDate(new Date(), subscriptionData?.months || 1),
+    }),
+    [
+      subscriptionData?.member_id,
+      subscriptionData?.price,
+      subscriptionData?.use_custom_dates,
+      subscriptionData?.months,
+      subscriptionData?.start_date,
+      subscriptionData?.end_date,
+    ]
+  );
+
+  const formik = useFormik({
+    initialValues,
     validationSchema: MemberSubscriptionSchema,
-    enableReinitialize: true,
+    enableReinitialize: !!subscriptionData,
     onSubmit: async (values) => {
       if (!isSubscriptionActive || subscriptionExpired) {
         toast.error("Your subscription is expired. Please renew to continue.");
@@ -200,15 +206,23 @@ const ManageMemberSubscriptionPage = () => {
     },
   });
 
-  // Update end date when months or start date changes (if not using custom dates)
-  useMemo(() => {
-    if (!formik.values.use_custom_dates && formik.values.months > 0) {
-      const newEndDate = calculateEndDate(formik.values.start_date, formik.values.months);
-      if (formik.values.end_date.getTime() !== newEndDate.getTime()) {
-        formik.setFieldValue("end_date", newEndDate);
-      }
-    }
-  }, [formik.values.months, formik.values.start_date, formik.values.use_custom_dates]);
+  // Use ref to access formik to prevent handler recreation
+  const formikRef = useRef(formik);
+  formikRef.current = formik;
+
+  // Memoize handler to prevent unnecessary re-renders
+  const handleMemberChange = useCallback((val: string) => {
+    formikRef.current.setFieldValue("member_id", val, false);
+  }, []);
+
+
+  // Early returns after all hooks
+  if (status === "loading") {
+    return <FullScreenLoader />;
+  }
+  if (session?.user?.role !== "GYM_OWNER") {
+    return redirect("/unauthorized");
+  }
 
   if (fetchingSubscription) return <FullScreenLoader label="Loading subscription..." />;
 
@@ -229,8 +243,8 @@ const ManageMemberSubscriptionPage = () => {
             <div className="space-y-2 md:col-span-2">
               <Label>Member *</Label>
               <Select
-                value={formik.values.member_id}
-                onValueChange={(val) => formik.setFieldValue("member_id", val)}
+                value={formik.values.member_id || ""}
+                onValueChange={handleMemberChange}
                 disabled={action === "view"}
               >
                 <SelectTrigger className="w-full">
@@ -273,14 +287,13 @@ const ManageMemberSubscriptionPage = () => {
                   id="use_custom_dates"
                   checked={formik.values.use_custom_dates}
                   onCheckedChange={(checked) => {
-                    formik.setFieldValue("use_custom_dates", checked);
+                    formik.setFieldValue("use_custom_dates", checked, false);
                     if (!checked) {
                       // Reset to months-based calculation
-                      formik.setFieldValue("start_date", new Date());
-                      formik.setFieldValue(
-                        "end_date",
-                        calculateEndDate(new Date(), formik.values.months)
-                      );
+                      const newStartDate = new Date();
+                      const newEndDate = calculateEndDate(newStartDate, formik.values.months);
+                      formik.setFieldValue("start_date", newStartDate, false);
+                      formik.setFieldValue("end_date", newEndDate, false);
                     }
                   }}
                   disabled={action === "view"}
@@ -298,11 +311,9 @@ const ManageMemberSubscriptionPage = () => {
                   value={formik.values.months}
                   onChange={(e) => {
                     const months = parseInt(e.target.value) || 1;
-                    formik.setFieldValue("months", months);
-                    formik.setFieldValue(
-                      "end_date",
-                      calculateEndDate(formik.values.start_date, months)
-                    );
+                    const newEndDate = calculateEndDate(formik.values.start_date, months);
+                    formik.setFieldValue("months", months, false);
+                    formik.setFieldValue("end_date", newEndDate, false);
                   }}
                   onBlur={formik.handleBlur}
                   disabled={action === "view"}
@@ -340,7 +351,12 @@ const ManageMemberSubscriptionPage = () => {
                         selected={formik.values.start_date}
                         onSelect={(date) => {
                           if (date) {
-                            formik.setFieldValue("start_date", date);
+                            formik.setFieldValue("start_date", date, false);
+                            // If not using custom dates, update end date
+                            if (!formik.values.use_custom_dates) {
+                              const newEndDate = calculateEndDate(date, formik.values.months);
+                              formik.setFieldValue("end_date", newEndDate, false);
+                            }
                             setStartDateOpen(false);
                           }
                         }}

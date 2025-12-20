@@ -1360,12 +1360,31 @@ export const EquipmentScalarFieldEnum = {
   id: 'id',
   name: 'name',
   type: 'type',
+  category: 'category',
+  brand: 'brand',
+  model_number: 'model_number',
+  serial_number: 'serial_number',
   quantity: 'quantity',
+  min_stock_level: 'min_stock_level',
+  condition: 'condition',
+  purchase_date: 'purchase_date',
+  purchase_cost: 'purchase_cost',
+  supplier_name: 'supplier_name',
+  last_maintenance_date: 'last_maintenance_date',
+  next_maintenance_due: 'next_maintenance_due',
+  maintenance_notes: 'maintenance_notes',
+  usage_frequency: 'usage_frequency',
+  equipment_location: 'equipment_location',
+  status: 'status',
+  image_url: 'image_url',
+  invoice_url: 'invoice_url',
   weight: 'weight',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
   gym_id: 'gym_id',
-  location_id: 'location_id'
+  location_id: 'location_id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type EquipmentScalarFieldEnum = (typeof EquipmentScalarFieldEnum)[keyof typeof EquipmentScalarFieldEnum]
@@ -1412,6 +1431,8 @@ export const OwnerSubscriptionScalarFieldEnum = {
   end_date: 'end_date',
   is_expired: 'is_expired',
   notification_sent: 'notification_sent',
+  first_reminder_sent: 'first_reminder_sent',
+  second_reminder_sent: 'second_reminder_sent',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
   createdAt: 'createdAt',
@@ -1430,6 +1451,8 @@ export const MemberSubscriptionScalarFieldEnum = {
   end_date: 'end_date',
   is_expired: 'is_expired',
   notification_sent: 'notification_sent',
+  first_reminder_sent: 'first_reminder_sent',
+  second_reminder_sent: 'second_reminder_sent',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
   createdAt: 'createdAt',
@@ -1536,6 +1559,20 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'EquipmentCategory'
+ */
+export type EnumEquipmentCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentCategory'>
+    
+
+
+/**
+ * Reference to a field of type 'EquipmentCategory[]'
+ */
+export type ListEnumEquipmentCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentCategory[]'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -1546,6 +1583,62 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'EquipmentCondition'
+ */
+export type EnumEquipmentConditionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentCondition'>
+    
+
+
+/**
+ * Reference to a field of type 'EquipmentCondition[]'
+ */
+export type ListEnumEquipmentConditionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentCondition[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
+ * Reference to a field of type 'UsageFrequency'
+ */
+export type EnumUsageFrequencyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UsageFrequency'>
+    
+
+
+/**
+ * Reference to a field of type 'UsageFrequency[]'
+ */
+export type ListEnumUsageFrequencyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UsageFrequency[]'>
+    
+
+
+/**
+ * Reference to a field of type 'EquipmentStatus'
+ */
+export type EnumEquipmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'EquipmentStatus[]'
+ */
+export type ListEnumEquipmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EquipmentStatus[]'>
     
 
 
@@ -1602,20 +1695,6 @@ export type EnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'PaymentMethod[]'
  */
 export type ListEnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod[]'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**

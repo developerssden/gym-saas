@@ -8,19 +8,12 @@ import * as Yup from "yup";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import axios from "axios";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import {
@@ -37,8 +30,6 @@ import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 
 const MemberSchema = Yup.object({
-  gym_id: Yup.string().required("Gym is required"),
-  location_id: Yup.string().required("Location is required"),
   first_name: Yup.string().required("First name is required"),
   last_name: Yup.string().required("Last name is required"),
   email: Yup.string().email("Invalid email").required("Email is required"),
@@ -67,12 +58,15 @@ const ManageMemberPage = () => {
   const { isSubscriptionActive, subscriptionExpired, subscriptionLimits } =
     useSubscriptionValidation();
 
-  if (status === "loading") {
-    return <FullScreenLoader />;
-  }
-  if (session?.user?.role !== "GYM_OWNER") {
-    return redirect("/unauthorized");
-  }
+  // Get selected gym and location from session (from header selector) - memoize to prevent re-renders
+  const selectedGymId = useMemo(
+    () => session?.user?.selected_gym_id || "",
+    [session?.user?.selected_gym_id]
+  );
+  const selectedLocationId = useMemo(
+    () => session?.user?.selected_location_id || "",
+    [session?.user?.selected_location_id]
+  );
 
   // Fetch member data
   const { data: memberData, isLoading: fetchingMember } = useQuery({
@@ -84,39 +78,6 @@ const ManageMemberPage = () => {
     },
     enabled: !!memberId && action !== "create",
   });
-
-  // Fetch owner's gyms
-  const { data: gymsData } = useQuery({
-    queryKey: ["gyms"],
-    queryFn: async () => {
-      const res = await axios.post("/api/gyms/getgyms", { page: 1, limit: 1000 });
-      return res.data.data || [];
-    },
-    enabled: true,
-  });
-
-  const gyms = useMemo(() => gymsData || [], [gymsData]);
-
-  // Fetch locations for selected gym
-  const selectedGymId = useFormik({
-    initialValues: { gym_id: memberData?.gym_id || "" },
-  }).values.gym_id;
-
-  const { data: locationsData } = useQuery({
-    queryKey: ["locations", selectedGymId],
-    queryFn: async () => {
-      if (!selectedGymId) return [];
-      const res = await axios.post("/api/locations/getlocations", {
-        page: 1,
-        limit: 1000,
-        gym_id: selectedGymId,
-      });
-      return res.data.data || [];
-    },
-    enabled: !!selectedGymId,
-  });
-
-  const locations = useMemo(() => locationsData || [], [locationsData]);
 
   // Mutations
   const createMutation = useMutation({
@@ -158,10 +119,19 @@ const ManageMemberPage = () => {
     },
   });
 
-  const formik = useFormik({
-    initialValues: {
-      gym_id: memberData?.gym_id || "",
-      location_id: memberData?.location_id || "",
+  // Determine gym_id and location_id based on action - memoize to prevent re-renders
+  const gymId = useMemo(
+    () => (action === "create" ? selectedGymId : memberData?.gym_id || ""),
+    [action, selectedGymId, memberData?.gym_id]
+  );
+  const locationId = useMemo(
+    () => (action === "create" ? selectedLocationId : memberData?.location_id || ""),
+    [action, selectedLocationId, memberData?.location_id]
+  );
+
+  // Memoize initial values to prevent unnecessary formik re-initializations
+  const initialValues = useMemo(
+    () => ({
       first_name: memberData?.user?.first_name || "",
       last_name: memberData?.user?.last_name || "",
       email: memberData?.user?.email || "",
@@ -175,21 +145,49 @@ const ManageMemberPage = () => {
       country: memberData?.user?.country || "",
       zip_code: memberData?.user?.zip_code || "",
       cnic: memberData?.user?.cnic || "",
-    },
+    }),
+    [
+      memberData?.user?.first_name,
+      memberData?.user?.last_name,
+      memberData?.user?.email,
+      memberData?.user?.phone_number,
+      memberData?.user?.date_of_birth,
+      memberData?.user?.address,
+      memberData?.user?.city,
+      memberData?.user?.state,
+      memberData?.user?.country,
+      memberData?.user?.zip_code,
+      memberData?.user?.cnic,
+    ]
+  );
+
+  const formik = useFormik({
+    initialValues,
     validationSchema: MemberSchema,
-    enableReinitialize: true,
+    enableReinitialize: !!memberData, // Only reinitialize when memberData exists
     onSubmit: async (values) => {
       if (!isSubscriptionActive || subscriptionExpired) {
         toast.error("Your subscription is expired. Please renew to continue.");
         return;
       }
 
+      // Validate gym and location selection for create action
+      if (action === "create" && (!selectedGymId || !selectedLocationId)) {
+        toast.error("Please select a gym and location from the header selector.");
+        return;
+      }
+
       setSaving(true);
       try {
+        const submitValues = {
+          ...values,
+          gym_id: gymId,
+          location_id: locationId,
+        };
         if (action === "create") {
-          await createMutation.mutateAsync(values);
+          await createMutation.mutateAsync(submitValues);
         } else if (action === "edit") {
-          await updateMutation.mutateAsync(values);
+          await updateMutation.mutateAsync(submitValues);
         }
       } finally {
         setSaving(false);
@@ -197,17 +195,14 @@ const ManageMemberPage = () => {
     },
   });
 
-  // Reset location when gym changes
-  useEffect(() => {
-    if (formik.values.gym_id && formik.values.location_id) {
-      const locationBelongsToGym = locations.some(
-        (loc: any) => loc.id === formik.values.location_id && loc.gym_id === formik.values.gym_id
-      );
-      if (!locationBelongsToGym) {
-        formik.setFieldValue("location_id", "");
-      }
-    }
-  }, [formik.values.gym_id, locations]);
+
+  // Early returns after all hooks
+  if (status === "loading") {
+    return <FullScreenLoader />;
+  }
+  if (session?.user?.role !== "GYM_OWNER") {
+    return redirect("/unauthorized");
+  }
 
   if (fetchingMember) return <FullScreenLoader label="Loading member..." />;
 
@@ -223,64 +218,36 @@ const ManageMemberPage = () => {
             : "View Member"}
         </h1>
 
+        {action === "create" && (!selectedGymId || !selectedLocationId) && (
+          <div className="max-w-2xl mx-auto mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              Please select a gym and location from the header selector before creating a member.
+            </p>
+          </div>
+        )}
+
         <form className="max-w-2xl mx-auto" onSubmit={formik.handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-            <div className="space-y-2 md:col-span-2">
-              <Label>Gym *</Label>
-              <Select
-                value={formik.values.gym_id}
-                onValueChange={(val) => {
-                  formik.setFieldValue("gym_id", val);
-                  formik.setFieldValue("location_id", ""); // Clear location when gym changes
-                }}
-                disabled={action === "view"}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select gym" />
-                </SelectTrigger>
-                <SelectContent>
-                  {gyms.map((gym: any) => (
-                    <SelectItem key={gym.id} value={gym.id}>
-                      {gym.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {formik.touched.gym_id && formik.errors.gym_id && (
-                <p className="text-red-500 text-sm">{String(formik.errors.gym_id)}</p>
-              )}
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label>Location *</Label>
-              <Select
-                value={formik.values.location_id}
-                onValueChange={(val) => formik.setFieldValue("location_id", val)}
-                disabled={action === "view" || !formik.values.gym_id}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={
-                      !formik.values.gym_id
-                        ? "Select gym first"
-                        : locations.length === 0
-                        ? "No locations available"
-                        : "Select location"
-                    }
+            {(action === "edit" || action === "view") && memberData && (
+              <>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Gym</Label>
+                  <Input
+                    value={memberData.gym?.name || ""}
+                    disabled
+                    className="bg-muted"
                   />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations.map((loc: any) => (
-                    <SelectItem key={loc.id} value={loc.id}>
-                      {loc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {formik.touched.location_id && formik.errors.location_id && (
-                <p className="text-red-500 text-sm">{String(formik.errors.location_id)}</p>
-              )}
-            </div>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Location</Label>
+                  <Input
+                    value={memberData.location?.name || ""}
+                    disabled
+                    className="bg-muted"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="space-y-2">
               <Label>First Name *</Label>
@@ -514,4 +481,5 @@ const ManageMemberPage = () => {
 };
 
 export default ManageMemberPage;
+
 

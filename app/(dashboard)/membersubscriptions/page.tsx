@@ -22,13 +22,6 @@ const MemberSubscriptionsPage = () => {
   const debouncedFilter = useDebounce(globalFilter, 1000);
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
 
-  if (status === "loading") {
-    return <FullScreenLoader />;
-  }
-  if (session?.user?.role !== "GYM_OWNER") {
-    return redirect("/unauthorized");
-  }
-
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["membersubscriptions", pagination.pageIndex + 1, pagination.pageSize, debouncedFilter],
     queryFn: async () => {
@@ -38,8 +31,16 @@ const MemberSubscriptionsPage = () => {
       });
       return res.data;
     },
-    enabled: true,
+    enabled: status === "authenticated" && session?.user?.role === "GYM_OWNER",
   });
+
+  // Early returns after all hooks
+  if (status === "loading") {
+    return <FullScreenLoader />;
+  }
+  if (session?.user?.role !== "GYM_OWNER") {
+    return redirect("/unauthorized");
+  }
 
   return (
     <PageContainer>

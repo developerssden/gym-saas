@@ -20,82 +20,218 @@ export type EquipmentModel = runtime.Types.Result.DefaultSelection<Prisma.$Equip
 
 export type AggregateEquipment = {
   _count: EquipmentCountAggregateOutputType | null
+  _avg: EquipmentAvgAggregateOutputType | null
+  _sum: EquipmentSumAggregateOutputType | null
   _min: EquipmentMinAggregateOutputType | null
   _max: EquipmentMaxAggregateOutputType | null
+}
+
+export type EquipmentAvgAggregateOutputType = {
+  min_stock_level: number | null
+  purchase_cost: number | null
+}
+
+export type EquipmentSumAggregateOutputType = {
+  min_stock_level: number | null
+  purchase_cost: number | null
 }
 
 export type EquipmentMinAggregateOutputType = {
   id: string | null
   name: string | null
   type: string | null
+  category: $Enums.EquipmentCategory | null
+  brand: string | null
+  model_number: string | null
+  serial_number: string | null
   quantity: string | null
+  min_stock_level: number | null
+  condition: $Enums.EquipmentCondition | null
+  purchase_date: Date | null
+  purchase_cost: number | null
+  supplier_name: string | null
+  last_maintenance_date: Date | null
+  next_maintenance_due: Date | null
+  maintenance_notes: string | null
+  usage_frequency: $Enums.UsageFrequency | null
+  equipment_location: string | null
+  status: $Enums.EquipmentStatus | null
+  image_url: string | null
+  invoice_url: string | null
   weight: string | null
   is_active: boolean | null
   is_deleted: boolean | null
   gym_id: string | null
   location_id: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type EquipmentMaxAggregateOutputType = {
   id: string | null
   name: string | null
   type: string | null
+  category: $Enums.EquipmentCategory | null
+  brand: string | null
+  model_number: string | null
+  serial_number: string | null
   quantity: string | null
+  min_stock_level: number | null
+  condition: $Enums.EquipmentCondition | null
+  purchase_date: Date | null
+  purchase_cost: number | null
+  supplier_name: string | null
+  last_maintenance_date: Date | null
+  next_maintenance_due: Date | null
+  maintenance_notes: string | null
+  usage_frequency: $Enums.UsageFrequency | null
+  equipment_location: string | null
+  status: $Enums.EquipmentStatus | null
+  image_url: string | null
+  invoice_url: string | null
   weight: string | null
   is_active: boolean | null
   is_deleted: boolean | null
   gym_id: string | null
   location_id: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type EquipmentCountAggregateOutputType = {
   id: number
   name: number
   type: number
+  category: number
+  brand: number
+  model_number: number
+  serial_number: number
   quantity: number
+  min_stock_level: number
+  condition: number
+  purchase_date: number
+  purchase_cost: number
+  supplier_name: number
+  last_maintenance_date: number
+  next_maintenance_due: number
+  maintenance_notes: number
+  usage_frequency: number
+  equipment_location: number
+  status: number
+  image_url: number
+  invoice_url: number
   weight: number
   is_active: number
   is_deleted: number
   gym_id: number
   location_id: number
+  createdAt: number
+  updatedAt: number
   _all: number
 }
 
+
+export type EquipmentAvgAggregateInputType = {
+  min_stock_level?: true
+  purchase_cost?: true
+}
+
+export type EquipmentSumAggregateInputType = {
+  min_stock_level?: true
+  purchase_cost?: true
+}
 
 export type EquipmentMinAggregateInputType = {
   id?: true
   name?: true
   type?: true
+  category?: true
+  brand?: true
+  model_number?: true
+  serial_number?: true
   quantity?: true
+  min_stock_level?: true
+  condition?: true
+  purchase_date?: true
+  purchase_cost?: true
+  supplier_name?: true
+  last_maintenance_date?: true
+  next_maintenance_due?: true
+  maintenance_notes?: true
+  usage_frequency?: true
+  equipment_location?: true
+  status?: true
+  image_url?: true
+  invoice_url?: true
   weight?: true
   is_active?: true
   is_deleted?: true
   gym_id?: true
   location_id?: true
+  createdAt?: true
+  updatedAt?: true
 }
 
 export type EquipmentMaxAggregateInputType = {
   id?: true
   name?: true
   type?: true
+  category?: true
+  brand?: true
+  model_number?: true
+  serial_number?: true
   quantity?: true
+  min_stock_level?: true
+  condition?: true
+  purchase_date?: true
+  purchase_cost?: true
+  supplier_name?: true
+  last_maintenance_date?: true
+  next_maintenance_due?: true
+  maintenance_notes?: true
+  usage_frequency?: true
+  equipment_location?: true
+  status?: true
+  image_url?: true
+  invoice_url?: true
   weight?: true
   is_active?: true
   is_deleted?: true
   gym_id?: true
   location_id?: true
+  createdAt?: true
+  updatedAt?: true
 }
 
 export type EquipmentCountAggregateInputType = {
   id?: true
   name?: true
   type?: true
+  category?: true
+  brand?: true
+  model_number?: true
+  serial_number?: true
   quantity?: true
+  min_stock_level?: true
+  condition?: true
+  purchase_date?: true
+  purchase_cost?: true
+  supplier_name?: true
+  last_maintenance_date?: true
+  next_maintenance_due?: true
+  maintenance_notes?: true
+  usage_frequency?: true
+  equipment_location?: true
+  status?: true
+  image_url?: true
+  invoice_url?: true
   weight?: true
   is_active?: true
   is_deleted?: true
   gym_id?: true
   location_id?: true
+  createdAt?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -137,6 +273,18 @@ export type EquipmentAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inte
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: EquipmentAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: EquipmentSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: EquipmentMinAggregateInputType
@@ -167,6 +315,8 @@ export type EquipmentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   _count?: EquipmentCountAggregateInputType | true
+  _avg?: EquipmentAvgAggregateInputType
+  _sum?: EquipmentSumAggregateInputType
   _min?: EquipmentMinAggregateInputType
   _max?: EquipmentMaxAggregateInputType
 }
@@ -175,13 +325,34 @@ export type EquipmentGroupByOutputType = {
   id: string
   name: string
   type: string
+  category: $Enums.EquipmentCategory | null
+  brand: string | null
+  model_number: string | null
+  serial_number: string | null
   quantity: string
+  min_stock_level: number | null
+  condition: $Enums.EquipmentCondition | null
+  purchase_date: Date | null
+  purchase_cost: number | null
+  supplier_name: string | null
+  last_maintenance_date: Date | null
+  next_maintenance_due: Date | null
+  maintenance_notes: string | null
+  usage_frequency: $Enums.UsageFrequency | null
+  equipment_location: string | null
+  status: $Enums.EquipmentStatus
+  image_url: string | null
+  invoice_url: string | null
   weight: string | null
   is_active: boolean
   is_deleted: boolean
   gym_id: string
   location_id: string | null
+  createdAt: Date
+  updatedAt: Date
   _count: EquipmentCountAggregateOutputType | null
+  _avg: EquipmentAvgAggregateOutputType | null
+  _sum: EquipmentSumAggregateOutputType | null
   _min: EquipmentMinAggregateOutputType | null
   _max: EquipmentMaxAggregateOutputType | null
 }
@@ -208,12 +379,31 @@ export type EquipmentWhereInput = {
   id?: Prisma.StringFilter<"Equipment"> | string
   name?: Prisma.StringFilter<"Equipment"> | string
   type?: Prisma.StringFilter<"Equipment"> | string
+  category?: Prisma.EnumEquipmentCategoryNullableFilter<"Equipment"> | $Enums.EquipmentCategory | null
+  brand?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  model_number?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  serial_number?: Prisma.StringNullableFilter<"Equipment"> | string | null
   quantity?: Prisma.StringFilter<"Equipment"> | string
+  min_stock_level?: Prisma.IntNullableFilter<"Equipment"> | number | null
+  condition?: Prisma.EnumEquipmentConditionNullableFilter<"Equipment"> | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.DateTimeNullableFilter<"Equipment"> | Date | string | null
+  purchase_cost?: Prisma.FloatNullableFilter<"Equipment"> | number | null
+  supplier_name?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  last_maintenance_date?: Prisma.DateTimeNullableFilter<"Equipment"> | Date | string | null
+  next_maintenance_due?: Prisma.DateTimeNullableFilter<"Equipment"> | Date | string | null
+  maintenance_notes?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  usage_frequency?: Prisma.EnumUsageFrequencyNullableFilter<"Equipment"> | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  status?: Prisma.EnumEquipmentStatusFilter<"Equipment"> | $Enums.EquipmentStatus
+  image_url?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  invoice_url?: Prisma.StringNullableFilter<"Equipment"> | string | null
   weight?: Prisma.StringNullableFilter<"Equipment"> | string | null
   is_active?: Prisma.BoolFilter<"Equipment"> | boolean
   is_deleted?: Prisma.BoolFilter<"Equipment"> | boolean
   gym_id?: Prisma.StringFilter<"Equipment"> | string
   location_id?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
   location?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
 }
@@ -222,12 +412,31 @@ export type EquipmentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  category?: Prisma.SortOrderInput | Prisma.SortOrder
+  brand?: Prisma.SortOrderInput | Prisma.SortOrder
+  model_number?: Prisma.SortOrderInput | Prisma.SortOrder
+  serial_number?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  min_stock_level?: Prisma.SortOrderInput | Prisma.SortOrder
+  condition?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchase_date?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchase_cost?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplier_name?: Prisma.SortOrderInput | Prisma.SortOrder
+  last_maintenance_date?: Prisma.SortOrderInput | Prisma.SortOrder
+  next_maintenance_due?: Prisma.SortOrderInput | Prisma.SortOrder
+  maintenance_notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  usage_frequency?: Prisma.SortOrderInput | Prisma.SortOrder
+  equipment_location?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
+  image_url?: Prisma.SortOrderInput | Prisma.SortOrder
+  invoice_url?: Prisma.SortOrderInput | Prisma.SortOrder
   weight?: Prisma.SortOrderInput | Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
   location_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   gym?: Prisma.GymOrderByWithRelationInput
   location?: Prisma.LocationOrderByWithRelationInput
 }
@@ -239,12 +448,31 @@ export type EquipmentWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.EquipmentWhereInput | Prisma.EquipmentWhereInput[]
   name?: Prisma.StringFilter<"Equipment"> | string
   type?: Prisma.StringFilter<"Equipment"> | string
+  category?: Prisma.EnumEquipmentCategoryNullableFilter<"Equipment"> | $Enums.EquipmentCategory | null
+  brand?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  model_number?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  serial_number?: Prisma.StringNullableFilter<"Equipment"> | string | null
   quantity?: Prisma.StringFilter<"Equipment"> | string
+  min_stock_level?: Prisma.IntNullableFilter<"Equipment"> | number | null
+  condition?: Prisma.EnumEquipmentConditionNullableFilter<"Equipment"> | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.DateTimeNullableFilter<"Equipment"> | Date | string | null
+  purchase_cost?: Prisma.FloatNullableFilter<"Equipment"> | number | null
+  supplier_name?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  last_maintenance_date?: Prisma.DateTimeNullableFilter<"Equipment"> | Date | string | null
+  next_maintenance_due?: Prisma.DateTimeNullableFilter<"Equipment"> | Date | string | null
+  maintenance_notes?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  usage_frequency?: Prisma.EnumUsageFrequencyNullableFilter<"Equipment"> | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  status?: Prisma.EnumEquipmentStatusFilter<"Equipment"> | $Enums.EquipmentStatus
+  image_url?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  invoice_url?: Prisma.StringNullableFilter<"Equipment"> | string | null
   weight?: Prisma.StringNullableFilter<"Equipment"> | string | null
   is_active?: Prisma.BoolFilter<"Equipment"> | boolean
   is_deleted?: Prisma.BoolFilter<"Equipment"> | boolean
   gym_id?: Prisma.StringFilter<"Equipment"> | string
   location_id?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
   location?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
 }, "id">
@@ -253,15 +481,36 @@ export type EquipmentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  category?: Prisma.SortOrderInput | Prisma.SortOrder
+  brand?: Prisma.SortOrderInput | Prisma.SortOrder
+  model_number?: Prisma.SortOrderInput | Prisma.SortOrder
+  serial_number?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  min_stock_level?: Prisma.SortOrderInput | Prisma.SortOrder
+  condition?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchase_date?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchase_cost?: Prisma.SortOrderInput | Prisma.SortOrder
+  supplier_name?: Prisma.SortOrderInput | Prisma.SortOrder
+  last_maintenance_date?: Prisma.SortOrderInput | Prisma.SortOrder
+  next_maintenance_due?: Prisma.SortOrderInput | Prisma.SortOrder
+  maintenance_notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  usage_frequency?: Prisma.SortOrderInput | Prisma.SortOrder
+  equipment_location?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
+  image_url?: Prisma.SortOrderInput | Prisma.SortOrder
+  invoice_url?: Prisma.SortOrderInput | Prisma.SortOrder
   weight?: Prisma.SortOrderInput | Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
   location_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.EquipmentCountOrderByAggregateInput
+  _avg?: Prisma.EquipmentAvgOrderByAggregateInput
   _max?: Prisma.EquipmentMaxOrderByAggregateInput
   _min?: Prisma.EquipmentMinOrderByAggregateInput
+  _sum?: Prisma.EquipmentSumOrderByAggregateInput
 }
 
 export type EquipmentScalarWhereWithAggregatesInput = {
@@ -271,22 +520,60 @@ export type EquipmentScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Equipment"> | string
   name?: Prisma.StringWithAggregatesFilter<"Equipment"> | string
   type?: Prisma.StringWithAggregatesFilter<"Equipment"> | string
+  category?: Prisma.EnumEquipmentCategoryNullableWithAggregatesFilter<"Equipment"> | $Enums.EquipmentCategory | null
+  brand?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
+  model_number?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
+  serial_number?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
   quantity?: Prisma.StringWithAggregatesFilter<"Equipment"> | string
+  min_stock_level?: Prisma.IntNullableWithAggregatesFilter<"Equipment"> | number | null
+  condition?: Prisma.EnumEquipmentConditionNullableWithAggregatesFilter<"Equipment"> | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.DateTimeNullableWithAggregatesFilter<"Equipment"> | Date | string | null
+  purchase_cost?: Prisma.FloatNullableWithAggregatesFilter<"Equipment"> | number | null
+  supplier_name?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
+  last_maintenance_date?: Prisma.DateTimeNullableWithAggregatesFilter<"Equipment"> | Date | string | null
+  next_maintenance_due?: Prisma.DateTimeNullableWithAggregatesFilter<"Equipment"> | Date | string | null
+  maintenance_notes?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
+  usage_frequency?: Prisma.EnumUsageFrequencyNullableWithAggregatesFilter<"Equipment"> | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
+  status?: Prisma.EnumEquipmentStatusWithAggregatesFilter<"Equipment"> | $Enums.EquipmentStatus
+  image_url?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
+  invoice_url?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
   weight?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
   is_active?: Prisma.BoolWithAggregatesFilter<"Equipment"> | boolean
   is_deleted?: Prisma.BoolWithAggregatesFilter<"Equipment"> | boolean
   gym_id?: Prisma.StringWithAggregatesFilter<"Equipment"> | string
   location_id?: Prisma.StringNullableWithAggregatesFilter<"Equipment"> | string | null
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Equipment"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Equipment"> | Date | string
 }
 
 export type EquipmentCreateInput = {
   id?: string
   name: string
   type: string
+  category?: $Enums.EquipmentCategory | null
+  brand?: string | null
+  model_number?: string | null
+  serial_number?: string | null
   quantity: string
+  min_stock_level?: number | null
+  condition?: $Enums.EquipmentCondition | null
+  purchase_date?: Date | string | null
+  purchase_cost?: number | null
+  supplier_name?: string | null
+  last_maintenance_date?: Date | string | null
+  next_maintenance_due?: Date | string | null
+  maintenance_notes?: string | null
+  usage_frequency?: $Enums.UsageFrequency | null
+  equipment_location?: string | null
+  status?: $Enums.EquipmentStatus
+  image_url?: string | null
+  invoice_url?: string | null
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
   gym: Prisma.GymCreateNestedOneWithoutEquipmentInput
   location?: Prisma.LocationCreateNestedOneWithoutEquipmentInput
 }
@@ -295,22 +582,60 @@ export type EquipmentUncheckedCreateInput = {
   id?: string
   name: string
   type: string
+  category?: $Enums.EquipmentCategory | null
+  brand?: string | null
+  model_number?: string | null
+  serial_number?: string | null
   quantity: string
+  min_stock_level?: number | null
+  condition?: $Enums.EquipmentCondition | null
+  purchase_date?: Date | string | null
+  purchase_cost?: number | null
+  supplier_name?: string | null
+  last_maintenance_date?: Date | string | null
+  next_maintenance_due?: Date | string | null
+  maintenance_notes?: string | null
+  usage_frequency?: $Enums.UsageFrequency | null
+  equipment_location?: string | null
+  status?: $Enums.EquipmentStatus
+  image_url?: string | null
+  invoice_url?: string | null
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
   gym_id: string
   location_id?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type EquipmentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gym?: Prisma.GymUpdateOneRequiredWithoutEquipmentNestedInput
   location?: Prisma.LocationUpdateOneWithoutEquipmentNestedInput
 }
@@ -319,46 +644,122 @@ export type EquipmentUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
   location_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EquipmentCreateManyInput = {
   id?: string
   name: string
   type: string
+  category?: $Enums.EquipmentCategory | null
+  brand?: string | null
+  model_number?: string | null
+  serial_number?: string | null
   quantity: string
+  min_stock_level?: number | null
+  condition?: $Enums.EquipmentCondition | null
+  purchase_date?: Date | string | null
+  purchase_cost?: number | null
+  supplier_name?: string | null
+  last_maintenance_date?: Date | string | null
+  next_maintenance_due?: Date | string | null
+  maintenance_notes?: string | null
+  usage_frequency?: $Enums.UsageFrequency | null
+  equipment_location?: string | null
+  status?: $Enums.EquipmentStatus
+  image_url?: string | null
+  invoice_url?: string | null
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
   gym_id: string
   location_id?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type EquipmentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EquipmentUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
   location_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EquipmentListRelationFilter = {
@@ -375,36 +776,103 @@ export type EquipmentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  category?: Prisma.SortOrder
+  brand?: Prisma.SortOrder
+  model_number?: Prisma.SortOrder
+  serial_number?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  min_stock_level?: Prisma.SortOrder
+  condition?: Prisma.SortOrder
+  purchase_date?: Prisma.SortOrder
+  purchase_cost?: Prisma.SortOrder
+  supplier_name?: Prisma.SortOrder
+  last_maintenance_date?: Prisma.SortOrder
+  next_maintenance_due?: Prisma.SortOrder
+  maintenance_notes?: Prisma.SortOrder
+  usage_frequency?: Prisma.SortOrder
+  equipment_location?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  image_url?: Prisma.SortOrder
+  invoice_url?: Prisma.SortOrder
   weight?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
   location_id?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
+}
+
+export type EquipmentAvgOrderByAggregateInput = {
+  min_stock_level?: Prisma.SortOrder
+  purchase_cost?: Prisma.SortOrder
 }
 
 export type EquipmentMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  category?: Prisma.SortOrder
+  brand?: Prisma.SortOrder
+  model_number?: Prisma.SortOrder
+  serial_number?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  min_stock_level?: Prisma.SortOrder
+  condition?: Prisma.SortOrder
+  purchase_date?: Prisma.SortOrder
+  purchase_cost?: Prisma.SortOrder
+  supplier_name?: Prisma.SortOrder
+  last_maintenance_date?: Prisma.SortOrder
+  next_maintenance_due?: Prisma.SortOrder
+  maintenance_notes?: Prisma.SortOrder
+  usage_frequency?: Prisma.SortOrder
+  equipment_location?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  image_url?: Prisma.SortOrder
+  invoice_url?: Prisma.SortOrder
   weight?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
   location_id?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type EquipmentMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  category?: Prisma.SortOrder
+  brand?: Prisma.SortOrder
+  model_number?: Prisma.SortOrder
+  serial_number?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  min_stock_level?: Prisma.SortOrder
+  condition?: Prisma.SortOrder
+  purchase_date?: Prisma.SortOrder
+  purchase_cost?: Prisma.SortOrder
+  supplier_name?: Prisma.SortOrder
+  last_maintenance_date?: Prisma.SortOrder
+  next_maintenance_due?: Prisma.SortOrder
+  maintenance_notes?: Prisma.SortOrder
+  usage_frequency?: Prisma.SortOrder
+  equipment_location?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  image_url?: Prisma.SortOrder
+  invoice_url?: Prisma.SortOrder
   weight?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
   gym_id?: Prisma.SortOrder
   location_id?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
+}
+
+export type EquipmentSumOrderByAggregateInput = {
+  min_stock_level?: Prisma.SortOrder
+  purchase_cost?: Prisma.SortOrder
 }
 
 export type EquipmentCreateNestedManyWithoutGymInput = {
@@ -491,14 +959,69 @@ export type EquipmentUncheckedUpdateManyWithoutLocationNestedInput = {
   deleteMany?: Prisma.EquipmentScalarWhereInput | Prisma.EquipmentScalarWhereInput[]
 }
 
+export type NullableEnumEquipmentCategoryFieldUpdateOperationsInput = {
+  set?: $Enums.EquipmentCategory | null
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableEnumEquipmentConditionFieldUpdateOperationsInput = {
+  set?: $Enums.EquipmentCondition | null
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableEnumUsageFrequencyFieldUpdateOperationsInput = {
+  set?: $Enums.UsageFrequency | null
+}
+
+export type EnumEquipmentStatusFieldUpdateOperationsInput = {
+  set?: $Enums.EquipmentStatus
+}
+
 export type EquipmentCreateWithoutGymInput = {
   id?: string
   name: string
   type: string
+  category?: $Enums.EquipmentCategory | null
+  brand?: string | null
+  model_number?: string | null
+  serial_number?: string | null
   quantity: string
+  min_stock_level?: number | null
+  condition?: $Enums.EquipmentCondition | null
+  purchase_date?: Date | string | null
+  purchase_cost?: number | null
+  supplier_name?: string | null
+  last_maintenance_date?: Date | string | null
+  next_maintenance_due?: Date | string | null
+  maintenance_notes?: string | null
+  usage_frequency?: $Enums.UsageFrequency | null
+  equipment_location?: string | null
+  status?: $Enums.EquipmentStatus
+  image_url?: string | null
+  invoice_url?: string | null
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
   location?: Prisma.LocationCreateNestedOneWithoutEquipmentInput
 }
 
@@ -506,11 +1029,30 @@ export type EquipmentUncheckedCreateWithoutGymInput = {
   id?: string
   name: string
   type: string
+  category?: $Enums.EquipmentCategory | null
+  brand?: string | null
+  model_number?: string | null
+  serial_number?: string | null
   quantity: string
+  min_stock_level?: number | null
+  condition?: $Enums.EquipmentCondition | null
+  purchase_date?: Date | string | null
+  purchase_cost?: number | null
+  supplier_name?: string | null
+  last_maintenance_date?: Date | string | null
+  next_maintenance_due?: Date | string | null
+  maintenance_notes?: string | null
+  usage_frequency?: $Enums.UsageFrequency | null
+  equipment_location?: string | null
+  status?: $Enums.EquipmentStatus
+  image_url?: string | null
+  invoice_url?: string | null
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
   location_id?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type EquipmentCreateOrConnectWithoutGymInput = {
@@ -546,22 +1088,60 @@ export type EquipmentScalarWhereInput = {
   id?: Prisma.StringFilter<"Equipment"> | string
   name?: Prisma.StringFilter<"Equipment"> | string
   type?: Prisma.StringFilter<"Equipment"> | string
+  category?: Prisma.EnumEquipmentCategoryNullableFilter<"Equipment"> | $Enums.EquipmentCategory | null
+  brand?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  model_number?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  serial_number?: Prisma.StringNullableFilter<"Equipment"> | string | null
   quantity?: Prisma.StringFilter<"Equipment"> | string
+  min_stock_level?: Prisma.IntNullableFilter<"Equipment"> | number | null
+  condition?: Prisma.EnumEquipmentConditionNullableFilter<"Equipment"> | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.DateTimeNullableFilter<"Equipment"> | Date | string | null
+  purchase_cost?: Prisma.FloatNullableFilter<"Equipment"> | number | null
+  supplier_name?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  last_maintenance_date?: Prisma.DateTimeNullableFilter<"Equipment"> | Date | string | null
+  next_maintenance_due?: Prisma.DateTimeNullableFilter<"Equipment"> | Date | string | null
+  maintenance_notes?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  usage_frequency?: Prisma.EnumUsageFrequencyNullableFilter<"Equipment"> | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  status?: Prisma.EnumEquipmentStatusFilter<"Equipment"> | $Enums.EquipmentStatus
+  image_url?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  invoice_url?: Prisma.StringNullableFilter<"Equipment"> | string | null
   weight?: Prisma.StringNullableFilter<"Equipment"> | string | null
   is_active?: Prisma.BoolFilter<"Equipment"> | boolean
   is_deleted?: Prisma.BoolFilter<"Equipment"> | boolean
   gym_id?: Prisma.StringFilter<"Equipment"> | string
   location_id?: Prisma.StringNullableFilter<"Equipment"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
 }
 
 export type EquipmentCreateWithoutLocationInput = {
   id?: string
   name: string
   type: string
+  category?: $Enums.EquipmentCategory | null
+  brand?: string | null
+  model_number?: string | null
+  serial_number?: string | null
   quantity: string
+  min_stock_level?: number | null
+  condition?: $Enums.EquipmentCondition | null
+  purchase_date?: Date | string | null
+  purchase_cost?: number | null
+  supplier_name?: string | null
+  last_maintenance_date?: Date | string | null
+  next_maintenance_due?: Date | string | null
+  maintenance_notes?: string | null
+  usage_frequency?: $Enums.UsageFrequency | null
+  equipment_location?: string | null
+  status?: $Enums.EquipmentStatus
+  image_url?: string | null
+  invoice_url?: string | null
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
   gym: Prisma.GymCreateNestedOneWithoutEquipmentInput
 }
 
@@ -569,11 +1149,30 @@ export type EquipmentUncheckedCreateWithoutLocationInput = {
   id?: string
   name: string
   type: string
+  category?: $Enums.EquipmentCategory | null
+  brand?: string | null
+  model_number?: string | null
+  serial_number?: string | null
   quantity: string
+  min_stock_level?: number | null
+  condition?: $Enums.EquipmentCondition | null
+  purchase_date?: Date | string | null
+  purchase_cost?: number | null
+  supplier_name?: string | null
+  last_maintenance_date?: Date | string | null
+  next_maintenance_due?: Date | string | null
+  maintenance_notes?: string | null
+  usage_frequency?: $Enums.UsageFrequency | null
+  equipment_location?: string | null
+  status?: $Enums.EquipmentStatus
+  image_url?: string | null
+  invoice_url?: string | null
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
   gym_id: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type EquipmentCreateOrConnectWithoutLocationInput = {
@@ -606,21 +1205,59 @@ export type EquipmentCreateManyGymInput = {
   id?: string
   name: string
   type: string
+  category?: $Enums.EquipmentCategory | null
+  brand?: string | null
+  model_number?: string | null
+  serial_number?: string | null
   quantity: string
+  min_stock_level?: number | null
+  condition?: $Enums.EquipmentCondition | null
+  purchase_date?: Date | string | null
+  purchase_cost?: number | null
+  supplier_name?: string | null
+  last_maintenance_date?: Date | string | null
+  next_maintenance_due?: Date | string | null
+  maintenance_notes?: string | null
+  usage_frequency?: $Enums.UsageFrequency | null
+  equipment_location?: string | null
+  status?: $Enums.EquipmentStatus
+  image_url?: string | null
+  invoice_url?: string | null
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
   location_id?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type EquipmentUpdateWithoutGymInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.LocationUpdateOneWithoutEquipmentNestedInput
 }
 
@@ -628,43 +1265,119 @@ export type EquipmentUncheckedUpdateWithoutGymInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   location_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EquipmentUncheckedUpdateManyWithoutGymInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   location_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EquipmentCreateManyLocationInput = {
   id?: string
   name: string
   type: string
+  category?: $Enums.EquipmentCategory | null
+  brand?: string | null
+  model_number?: string | null
+  serial_number?: string | null
   quantity: string
+  min_stock_level?: number | null
+  condition?: $Enums.EquipmentCondition | null
+  purchase_date?: Date | string | null
+  purchase_cost?: number | null
+  supplier_name?: string | null
+  last_maintenance_date?: Date | string | null
+  next_maintenance_due?: Date | string | null
+  maintenance_notes?: string | null
+  usage_frequency?: $Enums.UsageFrequency | null
+  equipment_location?: string | null
+  status?: $Enums.EquipmentStatus
+  image_url?: string | null
+  invoice_url?: string | null
   weight?: string | null
   is_active?: boolean
   is_deleted?: boolean
   gym_id: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type EquipmentUpdateWithoutLocationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gym?: Prisma.GymUpdateOneRequiredWithoutEquipmentNestedInput
 }
 
@@ -672,22 +1385,60 @@ export type EquipmentUncheckedUpdateWithoutLocationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EquipmentUncheckedUpdateManyWithoutLocationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableEnumEquipmentCategoryFieldUpdateOperationsInput | $Enums.EquipmentCategory | null
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  model_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serial_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.StringFieldUpdateOperationsInput | string
+  min_stock_level?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  condition?: Prisma.NullableEnumEquipmentConditionFieldUpdateOperationsInput | $Enums.EquipmentCondition | null
+  purchase_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  purchase_cost?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  supplier_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_maintenance_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  next_maintenance_due?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  maintenance_notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usage_frequency?: Prisma.NullableEnumUsageFrequencyFieldUpdateOperationsInput | $Enums.UsageFrequency | null
+  equipment_location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEquipmentStatusFieldUpdateOperationsInput | $Enums.EquipmentStatus
+  image_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoice_url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   weight?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -696,12 +1447,31 @@ export type EquipmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   id?: boolean
   name?: boolean
   type?: boolean
+  category?: boolean
+  brand?: boolean
+  model_number?: boolean
+  serial_number?: boolean
   quantity?: boolean
+  min_stock_level?: boolean
+  condition?: boolean
+  purchase_date?: boolean
+  purchase_cost?: boolean
+  supplier_name?: boolean
+  last_maintenance_date?: boolean
+  next_maintenance_due?: boolean
+  maintenance_notes?: boolean
+  usage_frequency?: boolean
+  equipment_location?: boolean
+  status?: boolean
+  image_url?: boolean
+  invoice_url?: boolean
   weight?: boolean
   is_active?: boolean
   is_deleted?: boolean
   gym_id?: boolean
   location_id?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
   location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
 }, ExtArgs["result"]["equipment"]>
@@ -710,12 +1480,31 @@ export type EquipmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   name?: boolean
   type?: boolean
+  category?: boolean
+  brand?: boolean
+  model_number?: boolean
+  serial_number?: boolean
   quantity?: boolean
+  min_stock_level?: boolean
+  condition?: boolean
+  purchase_date?: boolean
+  purchase_cost?: boolean
+  supplier_name?: boolean
+  last_maintenance_date?: boolean
+  next_maintenance_due?: boolean
+  maintenance_notes?: boolean
+  usage_frequency?: boolean
+  equipment_location?: boolean
+  status?: boolean
+  image_url?: boolean
+  invoice_url?: boolean
   weight?: boolean
   is_active?: boolean
   is_deleted?: boolean
   gym_id?: boolean
   location_id?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
   location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
 }, ExtArgs["result"]["equipment"]>
@@ -724,12 +1513,31 @@ export type EquipmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   name?: boolean
   type?: boolean
+  category?: boolean
+  brand?: boolean
+  model_number?: boolean
+  serial_number?: boolean
   quantity?: boolean
+  min_stock_level?: boolean
+  condition?: boolean
+  purchase_date?: boolean
+  purchase_cost?: boolean
+  supplier_name?: boolean
+  last_maintenance_date?: boolean
+  next_maintenance_due?: boolean
+  maintenance_notes?: boolean
+  usage_frequency?: boolean
+  equipment_location?: boolean
+  status?: boolean
+  image_url?: boolean
+  invoice_url?: boolean
   weight?: boolean
   is_active?: boolean
   is_deleted?: boolean
   gym_id?: boolean
   location_id?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
   location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
 }, ExtArgs["result"]["equipment"]>
@@ -738,15 +1546,34 @@ export type EquipmentSelectScalar = {
   id?: boolean
   name?: boolean
   type?: boolean
+  category?: boolean
+  brand?: boolean
+  model_number?: boolean
+  serial_number?: boolean
   quantity?: boolean
+  min_stock_level?: boolean
+  condition?: boolean
+  purchase_date?: boolean
+  purchase_cost?: boolean
+  supplier_name?: boolean
+  last_maintenance_date?: boolean
+  next_maintenance_due?: boolean
+  maintenance_notes?: boolean
+  usage_frequency?: boolean
+  equipment_location?: boolean
+  status?: boolean
+  image_url?: boolean
+  invoice_url?: boolean
   weight?: boolean
   is_active?: boolean
   is_deleted?: boolean
   gym_id?: boolean
   location_id?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
 }
 
-export type EquipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "quantity" | "weight" | "is_active" | "is_deleted" | "gym_id" | "location_id", ExtArgs["result"]["equipment"]>
+export type EquipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "category" | "brand" | "model_number" | "serial_number" | "quantity" | "min_stock_level" | "condition" | "purchase_date" | "purchase_cost" | "supplier_name" | "last_maintenance_date" | "next_maintenance_due" | "maintenance_notes" | "usage_frequency" | "equipment_location" | "status" | "image_url" | "invoice_url" | "weight" | "is_active" | "is_deleted" | "gym_id" | "location_id" | "createdAt" | "updatedAt", ExtArgs["result"]["equipment"]>
 export type EquipmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
   location?: boolean | Prisma.Equipment$locationArgs<ExtArgs>
@@ -770,12 +1597,31 @@ export type $EquipmentPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     id: string
     name: string
     type: string
+    category: $Enums.EquipmentCategory | null
+    brand: string | null
+    model_number: string | null
+    serial_number: string | null
     quantity: string
+    min_stock_level: number | null
+    condition: $Enums.EquipmentCondition | null
+    purchase_date: Date | null
+    purchase_cost: number | null
+    supplier_name: string | null
+    last_maintenance_date: Date | null
+    next_maintenance_due: Date | null
+    maintenance_notes: string | null
+    usage_frequency: $Enums.UsageFrequency | null
+    equipment_location: string | null
+    status: $Enums.EquipmentStatus
+    image_url: string | null
+    invoice_url: string | null
     weight: string | null
     is_active: boolean
     is_deleted: boolean
     gym_id: string
     location_id: string | null
+    createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["equipment"]>
   composites: {}
 }
@@ -1204,12 +2050,31 @@ export interface EquipmentFieldRefs {
   readonly id: Prisma.FieldRef<"Equipment", 'String'>
   readonly name: Prisma.FieldRef<"Equipment", 'String'>
   readonly type: Prisma.FieldRef<"Equipment", 'String'>
+  readonly category: Prisma.FieldRef<"Equipment", 'EquipmentCategory'>
+  readonly brand: Prisma.FieldRef<"Equipment", 'String'>
+  readonly model_number: Prisma.FieldRef<"Equipment", 'String'>
+  readonly serial_number: Prisma.FieldRef<"Equipment", 'String'>
   readonly quantity: Prisma.FieldRef<"Equipment", 'String'>
+  readonly min_stock_level: Prisma.FieldRef<"Equipment", 'Int'>
+  readonly condition: Prisma.FieldRef<"Equipment", 'EquipmentCondition'>
+  readonly purchase_date: Prisma.FieldRef<"Equipment", 'DateTime'>
+  readonly purchase_cost: Prisma.FieldRef<"Equipment", 'Float'>
+  readonly supplier_name: Prisma.FieldRef<"Equipment", 'String'>
+  readonly last_maintenance_date: Prisma.FieldRef<"Equipment", 'DateTime'>
+  readonly next_maintenance_due: Prisma.FieldRef<"Equipment", 'DateTime'>
+  readonly maintenance_notes: Prisma.FieldRef<"Equipment", 'String'>
+  readonly usage_frequency: Prisma.FieldRef<"Equipment", 'UsageFrequency'>
+  readonly equipment_location: Prisma.FieldRef<"Equipment", 'String'>
+  readonly status: Prisma.FieldRef<"Equipment", 'EquipmentStatus'>
+  readonly image_url: Prisma.FieldRef<"Equipment", 'String'>
+  readonly invoice_url: Prisma.FieldRef<"Equipment", 'String'>
   readonly weight: Prisma.FieldRef<"Equipment", 'String'>
   readonly is_active: Prisma.FieldRef<"Equipment", 'Boolean'>
   readonly is_deleted: Prisma.FieldRef<"Equipment", 'Boolean'>
   readonly gym_id: Prisma.FieldRef<"Equipment", 'String'>
   readonly location_id: Prisma.FieldRef<"Equipment", 'String'>
+  readonly createdAt: Prisma.FieldRef<"Equipment", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"Equipment", 'DateTime'>
 }
     
 

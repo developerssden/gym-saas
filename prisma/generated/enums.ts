@@ -57,3 +57,42 @@ export const BillingModel = {
 } as const
 
 export type BillingModel = (typeof BillingModel)[keyof typeof BillingModel]
+
+
+export const EquipmentCategory = {
+  CARDIO: 'CARDIO',
+  STRENGTH: 'STRENGTH',
+  FREE_WEIGHTS: 'FREE_WEIGHTS',
+  ACCESSORIES: 'ACCESSORIES',
+  CONSUMABLES: 'CONSUMABLES'
+} as const
+
+export type EquipmentCategory = (typeof EquipmentCategory)[keyof typeof EquipmentCategory]
+
+
+export const EquipmentCondition = {
+  NEW: 'NEW',
+  GOOD: 'GOOD',
+  NEEDS_MAINTENANCE: 'NEEDS_MAINTENANCE',
+  OUT_OF_ORDER: 'OUT_OF_ORDER'
+} as const
+
+export type EquipmentCondition = (typeof EquipmentCondition)[keyof typeof EquipmentCondition]
+
+
+export const UsageFrequency = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH'
+} as const
+
+export type UsageFrequency = (typeof UsageFrequency)[keyof typeof UsageFrequency]
+
+
+export const EquipmentStatus = {
+  ACTIVE: 'ACTIVE',
+  IN_REPAIR: 'IN_REPAIR',
+  RETIRED: 'RETIRED'
+} as const
+
+export type EquipmentStatus = (typeof EquipmentStatus)[keyof typeof EquipmentStatus]

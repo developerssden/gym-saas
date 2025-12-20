@@ -138,19 +138,65 @@ model Member {
 }
 
 
+enum EquipmentCategory {
+  CARDIO
+  STRENGTH
+  FREE_WEIGHTS
+  ACCESSORIES
+  CONSUMABLES
+}
+
+enum EquipmentCondition {
+  NEW
+  GOOD
+  NEEDS_MAINTENANCE
+  OUT_OF_ORDER
+}
+
+enum UsageFrequency {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum EquipmentStatus {
+  ACTIVE
+  IN_REPAIR
+  RETIRED
+}
+
 // Equipment model
 model Equipment {
-  id          String  @id @default(uuid())
-  name        String
-  type        String
-  quantity    String
-  weight      String?
-  is_active   Boolean @default(true)
-  is_deleted  Boolean @default(false)
-  gym_id      String
-  location_id String?
-  gym         Gym     @relation(fields: [gym_id], references: [id])
-  location    Location? @relation(fields: [location_id], references: [id])
+  id                    String            @id @default(uuid())
+  name                  String
+  type                  String
+  category              EquipmentCategory?
+  brand                 String?
+  model_number          String?
+  serial_number         String?
+  quantity              String
+  min_stock_level       Int?
+  condition             EquipmentCondition?
+  purchase_date         DateTime?
+  purchase_cost         Float?
+  supplier_name         String?
+  last_maintenance_date DateTime?
+  next_maintenance_due  DateTime?
+  maintenance_notes     String?
+  usage_frequency       UsageFrequency?
+  equipment_location    String?
+  status                EquipmentStatus  @default(ACTIVE)
+  image_url             String?
+  invoice_url           String?
+  weight                String?
+  is_active             Boolean           @default(true)
+  is_deleted            Boolean           @default(false)
+  gym_id                String
+  location_id           String?
+  gym                   Gym               @relation(fields: [gym_id], references: [id])
+  location              Location?         @relation(fields: [location_id], references: [id])
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
 }
 
 model Plan {
@@ -190,6 +236,8 @@ model OwnerSubscription {
   end_date            DateTime
   is_expired          Boolean       @default(false)
   notification_sent   Boolean       @default(false)
+  first_reminder_sent  Boolean       @default(false)
+  second_reminder_sent Boolean       @default(false)
   is_active           Boolean       @default(true)
   is_deleted          Boolean       @default(false)
   createdAt           DateTime      @default(now())
@@ -209,7 +257,9 @@ model MemberSubscription {
   start_date          DateTime
   end_date            DateTime
   is_expired          Boolean       @default(false)
-  notification_sent    Boolean       @default(false)
+  notification_sent   Boolean       @default(false)
+  first_reminder_sent  Boolean       @default(false)
+  second_reminder_sent Boolean       @default(false)
   is_active           Boolean       @default(true)
   is_deleted          Boolean       @default(false)
   createdAt           DateTime      @default(now())
