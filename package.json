@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate && prisma db seed"
+  },
+  "prisma": {
+    "seed": "tsx ./prisma/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
