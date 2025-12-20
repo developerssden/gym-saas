@@ -13,7 +13,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -22,7 +22,7 @@ const TodoSchema = Yup.object({
   description: Yup.string().required("Description is required"),
 });
 
-const ManageTodoPage = () => {
+const ManageTodoContent = () => {
   const { data: session, status } = useSession({ required: true });
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -119,7 +119,7 @@ const ManageTodoPage = () => {
               disabled={isViewMode}
               placeholder="Enter todo title"
             />
-            {formik.touched.title && formik.errors.title && (
+            {formik.touched.title && typeof formik.errors.title === 'string' && (
               <p className="text-sm text-red-500">{formik.errors.title}</p>
             )}
           </div>
@@ -136,7 +136,7 @@ const ManageTodoPage = () => {
               placeholder="Enter todo description"
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
-            {formik.touched.description && formik.errors.description && (
+            {formik.touched.description && typeof formik.errors.description === 'string' && (
               <p className="text-sm text-red-500">{formik.errors.description}</p>
             )}
           </div>
@@ -176,6 +176,14 @@ const ManageTodoPage = () => {
         </form>
       </div>
     </PageContainer>
+  );
+};
+
+const ManageTodoPage = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManageTodoContent />
+    </Suspense>
   );
 };
 

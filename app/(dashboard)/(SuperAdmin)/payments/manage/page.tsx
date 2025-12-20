@@ -22,7 +22,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
 
 const ManagePaymentSchema = Yup.object({
@@ -34,7 +34,7 @@ const ManagePaymentSchema = Yup.object({
   notes: Yup.string().notRequired(),
 });
 
-const ManagePaymentPage = () => {
+const ManagePaymentContent = () => {
   const { data: session, status } = useSession({ required: true });
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -283,6 +283,14 @@ const ManagePaymentPage = () => {
         </form>
       </div>
     </PageContainer>
+  );
+};
+
+const ManagePaymentPage = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManagePaymentContent />
+    </Suspense>
   );
 };
 

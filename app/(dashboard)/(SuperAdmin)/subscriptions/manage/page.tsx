@@ -22,7 +22,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
 
 type ClientOption = {
@@ -32,7 +32,7 @@ type ClientOption = {
   email?: string | null;
 };
 
-const ManageOwnerSubscriptionPage = () => {
+const ManageOwnerSubscriptionContent = () => {
   const { data: session, status } = useSession({ required: true });
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -497,6 +497,14 @@ const ManageOwnerSubscriptionPage = () => {
         </form>
       </div>
     </PageContainer>
+  );
+};
+
+const ManageOwnerSubscriptionPage = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManageOwnerSubscriptionContent />
+    </Suspense>
   );
 };
 

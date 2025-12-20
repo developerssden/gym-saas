@@ -13,7 +13,7 @@ import axios from "axios";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import {
@@ -43,7 +43,7 @@ const MemberSchema = Yup.object({
   cnic: Yup.string().notRequired(),
 });
 
-const ManageMemberPage = () => {
+const ManageMemberContent = () => {
   const { data: session, status } = useSession({ required: true });
   const searchParams = useSearchParams();
   const action = searchParams?.get("action") as "create" | "edit" | "view";
@@ -480,6 +480,13 @@ const ManageMemberPage = () => {
   );
 };
 
-export default ManageMemberPage;
+const ManageMemberPage = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManageMemberContent />
+    </Suspense>
+  );
+};
 
+export default ManageMemberPage;
 

@@ -13,7 +13,7 @@ import axios from "axios";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
 const SubscriptionSchema = Yup.object({
   name: Yup.string().required("Name is required"),
@@ -38,7 +38,7 @@ const SubscriptionSchema = Yup.object({
   is_active: Yup.boolean(),
 });
 
-const ManageSubscriptions = () => {
+const ManageSubscriptionsContent = () => {
   const searchParams = useSearchParams();
   const action = searchParams?.get("action") as "create" | "edit" | "view";
   const subscriptionId = searchParams?.get("id") || null;
@@ -281,6 +281,14 @@ const ManageSubscriptions = () => {
         </form>
       </div>
     </PageContainer>
+  );
+};
+
+const ManageSubscriptions = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManageSubscriptionsContent />
+    </Suspense>
   );
 };
 

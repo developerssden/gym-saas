@@ -28,7 +28,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useMemo, useState, useCallback, useRef } from "react";
+import { useMemo, useState, useCallback, useRef, Suspense } from "react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/date-helper-functions";
 import { cn } from "@/lib/utils";
@@ -55,7 +55,7 @@ const MemberSubscriptionSchema = Yup.object({
   }),
 });
 
-const ManageMemberSubscriptionPage = () => {
+const ManageMemberSubscriptionContent = () => {
   const { data: session, status } = useSession({ required: true });
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -444,6 +444,14 @@ const ManageMemberSubscriptionPage = () => {
         </form>
       </div>
     </PageContainer>
+  );
+};
+
+const ManageMemberSubscriptionPage = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManageMemberSubscriptionContent />
+    </Suspense>
   );
 };
 

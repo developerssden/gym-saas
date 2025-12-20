@@ -22,7 +22,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
 
 const AnnouncementSchema = Yup.object({
@@ -32,7 +32,7 @@ const AnnouncementSchema = Yup.object({
   is_active: Yup.boolean(),
 });
 
-const ManageAnnouncementPage = () => {
+const ManageAnnouncementContent = () => {
   const { data: session, status } = useSession({ required: true });
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -200,6 +200,13 @@ const ManageAnnouncementPage = () => {
   );
 };
 
-export default ManageAnnouncementPage;
+const ManageAnnouncementPage = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManageAnnouncementContent />
+    </Suspense>
+  );
+};
 
+export default ManageAnnouncementPage;
 

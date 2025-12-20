@@ -20,7 +20,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
@@ -42,7 +42,7 @@ const LocationSchema = Yup.object({
   country: Yup.string().notRequired(),
 });
 
-const ManageLocationPage = () => {
+const ManageLocationContent = () => {
   const { data: session, status } = useSession({ required: true });
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -335,7 +335,6 @@ const ManageLocationPage = () => {
                   type="submit"
                   className="flex-1"
                   disabled={
-                    action === "view" ||
                     (isGymOwner && (!isSubscriptionActive || subscriptionExpired))
                   }
                 >
@@ -372,6 +371,14 @@ const ManageLocationPage = () => {
         />
       )}
     </PageContainer>
+  );
+};
+
+const ManageLocationPage = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManageLocationContent />
+    </Suspense>
   );
 };
 

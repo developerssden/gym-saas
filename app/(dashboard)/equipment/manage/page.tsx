@@ -23,7 +23,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { toast } from "sonner";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
@@ -96,7 +96,7 @@ const formatDate = (date: Date | string | undefined): string => {
   return format(d, "PPP");
 };
 
-const ManageEquipmentPage = () => {
+const ManageEquipmentContent = () => {
   const { data: session, status } = useSession({ required: true });
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -421,7 +421,7 @@ const ManageEquipmentPage = () => {
                   disabled={isDisabled}
                   placeholder="e.g., Treadmill Pro 5000"
                 />
-                {formik.touched.name && formik.errors.name && (
+                {formik.touched.name && typeof formik.errors.name === "string" && (
                   <p className="text-sm text-red-500">{formik.errors.name}</p>
                 )}
               </div>
@@ -444,7 +444,7 @@ const ManageEquipmentPage = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                {formik.touched.category && formik.errors.category && (
+                {formik.touched.category && typeof formik.errors.category === "string" && (
                   <p className="text-sm text-red-500">{formik.errors.category}</p>
                 )}
               </div>
@@ -499,7 +499,7 @@ const ManageEquipmentPage = () => {
                   disabled={isDisabled}
                   placeholder="e.g., Treadmill"
                 />
-                {formik.touched.type && formik.errors.type && (
+                {formik.touched.type && typeof formik.errors.type === "string" && (
                   <p className="text-sm text-red-500">{formik.errors.type}</p>
                 )}
               </div>
@@ -541,7 +541,7 @@ const ManageEquipmentPage = () => {
                   disabled={isDisabled}
                   placeholder="0"
                 />
-                {formik.touched.min_stock_level && formik.errors.min_stock_level && (
+                {formik.touched.min_stock_level && typeof formik.errors.min_stock_level === "string" && (
                   <p className="text-sm text-red-500">{formik.errors.min_stock_level}</p>
                 )}
               </div>
@@ -615,12 +615,9 @@ const ManageEquipmentPage = () => {
                   disabled={isDisabled}
                   placeholder="0.00"
                 />
-                {formik.touched.purchase_cost && formik.errors.purchase_cost && (
+                {formik.touched.purchase_cost && typeof formik.errors.purchase_cost === "string" && (
                   <p className="text-sm text-red-500">{formik.errors.purchase_cost}</p>
                 )}
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="supplier_name">Supplier Name</Label>
                 <Input
                   id="supplier_name"
@@ -920,6 +917,14 @@ const ManageEquipmentPage = () => {
         }}
       />
     </PageContainer>
+  );
+};
+
+const ManageEquipmentPage = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManageEquipmentContent />
+    </Suspense>
   );
 };
 

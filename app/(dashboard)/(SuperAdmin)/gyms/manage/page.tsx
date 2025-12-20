@@ -20,7 +20,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
@@ -38,7 +38,7 @@ const GymSchema = Yup.object({
   country: Yup.string().notRequired(),
 });
 
-const ManageGymPage = () => {
+const ManageGymContent = () => {
   const { data: session, status } = useSession({ required: true });
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -309,7 +309,6 @@ const ManageGymPage = () => {
                   type="submit"
                   className="flex-1"
                   disabled={
-                    action === "view" ||
                     (isGymOwner && (!isSubscriptionActive || subscriptionExpired))
                   }
                 >
@@ -339,6 +338,13 @@ const ManageGymPage = () => {
   );
 };
 
-export default ManageGymPage;
+const ManageGymPage = () => {
+  return (
+    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
+      <ManageGymContent />
+    </Suspense>
+  );
+};
 
+export default ManageGymPage;
 
