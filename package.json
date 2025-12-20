@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate && prisma db seed"
+    "postinstall": "prisma generate && prisma db push && prisma db seed"
   },
   "prisma": {
     "seed": "tsx ./prisma/seed.ts"
