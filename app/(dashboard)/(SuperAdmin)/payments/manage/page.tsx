@@ -26,10 +26,24 @@ import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
 
 const ManagePaymentSchema = Yup.object({
-  owner_subscription_id: Yup.string().required("Owner subscription is required"),
+  subscription_type: Yup.string().oneOf(["OWNER", "MEMBER"]).required("Subscription type is required"),
+  owner_subscription_id: Yup.string().when("subscription_type", {
+    is: "OWNER",
+    then: (schema) => schema.required("Owner subscription is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  member_subscription_id: Yup.string().when("subscription_type", {
+    is: "MEMBER",
+    then: (schema) => schema.required("Member subscription is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   amount: Yup.number().positive("Amount must be positive").required("Amount is required"),
   payment_method: Yup.string().oneOf(["CASH", "BANK_TRANSFER"]).required("Payment method is required"),
-  transaction_id: Yup.string().notRequired(),
+  transaction_id: Yup.string().when("payment_method", {
+    is: "BANK_TRANSFER",
+    then: (schema) => schema.required("Transaction ID is required for bank transfer"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   payment_date: Yup.string().notRequired(),
   notes: Yup.string().notRequired(),
 });
@@ -46,7 +60,11 @@ const ManagePaymentContent = () => {
   const [saving, setSaving] = useState(false);
 
   if (status === "loading") return <FullScreenLoader />;
-  if (session?.user?.role !== "SUPER_ADMIN") return redirect("/unauthorized");
+  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER") {
+    return redirect("/unauthorized");
+  }
+
+  const isGymOwner = session?.user?.role === "GYM_OWNER";
 
   const { data: paymentData, isLoading: fetchingPayment } = useQuery({
     queryKey: ["payment", paymentId],
@@ -60,12 +78,26 @@ const ManagePaymentContent = () => {
     enabled: !!paymentId && action !== "create",
   });
 
-  // Fetch owner subscriptions for dropdown
+  // Fetch owner subscriptions for dropdown (only for SUPER_ADMIN)
   const { data: ownerSubscriptionsData } = useOwnerSubscriptions({
-    enabled: true,
+    enabled: !isGymOwner,
+  });
+
+  // Fetch member subscriptions for dropdown (for GYM_OWNER or SUPER_ADMIN)
+  const { data: memberSubscriptionsData } = useQuery({
+    queryKey: ["memberSubscriptions", "all"],
+    queryFn: async () => {
+      const res = await axios.post("/api/membersubscriptions/getmembersubscriptions", {
+        page: 1,
+        limit: 1000,
+      });
+      return res.data;
+    },
+    enabled: isGymOwner || action === "create",
   });
 
   const ownerSubscriptions = ownerSubscriptionsData?.data ?? [];
+  const memberSubscriptions = memberSubscriptionsData?.data ?? [];
 
   const ownerSubscriptionLabelById = useMemo(() => {
     const map = new Map<string, string>();
@@ -80,6 +112,19 @@ const ManagePaymentContent = () => {
     return map;
   }, [ownerSubscriptions]);
 
+  const memberSubscriptionLabelById = useMemo(() => {
+    const map = new Map<string, string>();
+    memberSubscriptions.forEach((sub: any) => {
+      const member = sub.member;
+      const user = member?.user;
+      const label = user
+        ? `${user.first_name} ${user.last_name}`.trim() + ` - PKR ${sub.price}`
+        : sub.id;
+      map.set(sub.id, label);
+    });
+    return map;
+  }, [memberSubscriptions]);
+
   const createMutation = useMutation({
     mutationFn: (values: any) => axios.post("/api/payments/createpayment", values),
     onSuccess: () => {
@@ -90,11 +135,16 @@ const ManagePaymentContent = () => {
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
+  // Determine default subscription type based on user role
+  const defaultSubscriptionType = isGymOwner ? "MEMBER" : paymentData?.subscription_type || "OWNER";
+
   const formik = useFormik({
     initialValues: {
+      subscription_type: paymentData?.subscription_type || defaultSubscriptionType,
       owner_subscription_id: paymentData?.owner_subscription_id || "",
+      member_subscription_id: paymentData?.member_subscription_id || "",
       amount: paymentData?.amount || "",
-      payment_method: paymentData?.payment_method || "",
+      payment_method: paymentData?.payment_method || "CASH",
       transaction_id: paymentData?.transaction_id || "",
       payment_date: paymentData?.payment_date
         ? new Date(paymentData.payment_date).toISOString().slice(0, 10)
@@ -107,11 +157,16 @@ const ManagePaymentContent = () => {
       setSaving(true);
       try {
         const payload: any = {
-          subscription_type: "OWNER",
-          owner_subscription_id: values.owner_subscription_id,
+          subscription_type: values.subscription_type,
           amount: values.amount,
           payment_method: values.payment_method,
         };
+
+        if (values.subscription_type === "OWNER") {
+          payload.owner_subscription_id = values.owner_subscription_id;
+        } else {
+          payload.member_subscription_id = values.member_subscription_id;
+        }
 
         if (values.transaction_id) {
           payload.transaction_id = values.transaction_id;
@@ -151,28 +206,88 @@ const ManagePaymentContent = () => {
 
         <form className="max-w-2xl mx-auto" onSubmit={formik.handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-            <div className="space-y-2 md:col-span-2">
-              <Label>Owner Subscription *</Label>
-              <Select
-                value={formik.values.owner_subscription_id || ""}
-                onValueChange={(val) => formik.setFieldValue("owner_subscription_id", val)}
-                disabled={action === "view"}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select owner subscription" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ownerSubscriptions.map((sub) => (
-                    <SelectItem key={sub.id} value={sub.id}>
-                      {ownerSubscriptionLabelById.get(sub.id) || sub.id}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {formik.touched.owner_subscription_id && formik.errors.owner_subscription_id && (
-                <p className="text-red-500 text-sm">{String(formik.errors.owner_subscription_id)}</p>
-              )}
-            </div>
+            {/* Subscription Type - only show for SUPER_ADMIN */}
+            {!isGymOwner && (
+              <div className="space-y-2 md:col-span-2">
+                <Label>Subscription Type *</Label>
+                <Select
+                  value={formik.values.subscription_type || ""}
+                  onValueChange={(val) => {
+                    formik.setFieldValue("subscription_type", val);
+                    // Clear the other subscription ID when switching types
+                    if (val === "OWNER") {
+                      formik.setFieldValue("member_subscription_id", "");
+                    } else {
+                      formik.setFieldValue("owner_subscription_id", "");
+                    }
+                  }}
+                  disabled={action === "view"}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select subscription type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="OWNER">Owner Subscription</SelectItem>
+                    <SelectItem value="MEMBER">Member Subscription</SelectItem>
+                  </SelectContent>
+                </Select>
+                {formik.touched.subscription_type && formik.errors.subscription_type && (
+                  <p className="text-red-500 text-sm">{String(formik.errors.subscription_type)}</p>
+                )}
+              </div>
+            )}
+
+            {/* Owner Subscription - only for SUPER_ADMIN and when type is OWNER */}
+            {!isGymOwner && formik.values.subscription_type === "OWNER" && (
+              <div className="space-y-2 md:col-span-2">
+                <Label>Owner Subscription *</Label>
+                <Select
+                  value={formik.values.owner_subscription_id || ""}
+                  onValueChange={(val) => formik.setFieldValue("owner_subscription_id", val)}
+                  disabled={action === "view"}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select owner subscription" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ownerSubscriptions.map((sub) => (
+                      <SelectItem key={sub.id} value={sub.id}>
+                        {ownerSubscriptionLabelById.get(sub.id) || sub.id}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formik.touched.owner_subscription_id && formik.errors.owner_subscription_id && (
+                  <p className="text-red-500 text-sm">{String(formik.errors.owner_subscription_id)}</p>
+                )}
+              </div>
+            )}
+
+            {/* Member Subscription - for GYM_OWNER or when type is MEMBER */}
+            {(isGymOwner || formik.values.subscription_type === "MEMBER") && (
+              <div className="space-y-2 md:col-span-2">
+                <Label>Member Subscription *</Label>
+                <Select
+                  value={formik.values.member_subscription_id || ""}
+                  onValueChange={(val) => formik.setFieldValue("member_subscription_id", val)}
+                  disabled={action === "view"}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select member subscription" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {memberSubscriptions.map((sub: any) => (
+                      <SelectItem key={sub.id} value={sub.id}>
+                        {memberSubscriptionLabelById.get(sub.id) || sub.id}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formik.touched.member_subscription_id && formik.errors.member_subscription_id && (
+                  <p className="text-red-500 text-sm">{String(formik.errors.member_subscription_id)}</p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Amount *</Label>
@@ -193,7 +308,13 @@ const ManagePaymentContent = () => {
               <Label>Payment Method *</Label>
               <Select
                 value={formik.values.payment_method || ""}
-                onValueChange={(val) => formik.setFieldValue("payment_method", val)}
+                onValueChange={(val) => {
+                  formik.setFieldValue("payment_method", val);
+                  // Clear transaction_id if switching to CASH
+                  if (val === "CASH") {
+                    formik.setFieldValue("transaction_id", "");
+                  }
+                }}
                 disabled={action === "view"}
               >
                 <SelectTrigger className="w-full">
@@ -210,14 +331,18 @@ const ManagePaymentContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Transaction ID</Label>
+              <Label>Transaction ID {formik.values.payment_method === "BANK_TRANSFER" ? "*" : ""}</Label>
               <Input
                 type="text"
                 name="transaction_id"
                 value={formik.values.transaction_id}
                 onChange={formik.handleChange}
-                disabled={action === "view"}
-                placeholder="Enter transaction ID (optional)"
+                disabled={action === "view" || formik.values.payment_method === "CASH"}
+                placeholder={
+                  formik.values.payment_method === "BANK_TRANSFER"
+                    ? "Enter transaction ID (required)"
+                    : "Auto-generated for cash payments"
+                }
               />
               {formik.touched.transaction_id && formik.errors.transaction_id && (
                 <p className="text-red-500 text-sm">{String(formik.errors.transaction_id)}</p>
@@ -295,4 +420,3 @@ const ManagePaymentPage = () => {
 };
 
 export default ManagePaymentPage;
-

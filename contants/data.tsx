@@ -67,7 +67,7 @@ export const routeItems: RouteItem[] = [
     title: "Payments",
     href: "/payments",
     icon: CreditCard,
-    permissions: ["SUPER_ADMIN"],
+    permissions: ["SUPER_ADMIN","GYM_OWNER"	],
   },
   {
     title: "Plans",

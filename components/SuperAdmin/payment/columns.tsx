@@ -123,11 +123,7 @@ const ActionCell = ({ payment }: { payment: Payment }) => {
     }
   };
 
-  // Only show invoice button for owner subscription payments
-  if (payment.subscription_type !== "OWNER") {
-    return <span className="text-muted-foreground text-sm">-</span>;
-  }
-
+  // Show invoice button for both owner and member subscription payments
   return (
     <div className="flex gap-2">
       <Button

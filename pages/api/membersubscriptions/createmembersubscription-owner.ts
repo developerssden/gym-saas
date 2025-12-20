@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -19,6 +20,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       start_date,
       end_date,
       use_custom_dates,
+      // Payment fields (optional - will default if not provided)
+      payment_method,
+      transaction_id,
+      payment_date,
+      notes,
     } = req.body as {
       member_id: string;
       price: number;
@@ -26,6 +32,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       start_date?: string;
       end_date?: string;
       use_custom_dates: boolean;
+      payment_method?: string;
+      transaction_id?: string;
+      payment_date?: string;
+      notes?: string;
     };
 
     // Validate required fields
@@ -96,30 +106,57 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       finalEndDate.setMonth(finalEndDate.getMonth() + months);
     }
 
-    // Create MemberSubscription (payment is created separately)
-    const memberSubscription = await prisma.memberSubscription.create({
-      data: {
-        member_id,
-        price: parseInt(String(price)),
-        billing_model: "MONTHLY", // Default, can be adjusted if needed
-        start_date: finalStartDate,
-        end_date: finalEndDate,
-        is_expired: false,
-        is_active: true,
-      },
-      include: {
-        member: {
-          include: {
-            user: true,
-            gym: true,
-          },
+    // Default payment method to CASH if not provided
+    const finalPaymentMethod = (payment_method as PaymentMethod) || PaymentMethod.CASH;
+    
+    // Generate transaction ID for CASH if not provided
+    const finalTransactionId =
+      finalPaymentMethod === PaymentMethod.BANK_TRANSFER
+        ? transaction_id || null
+        : transaction_id ||
+          `CASH-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+    // Validate BANK_TRANSFER requires transaction_id
+    if (finalPaymentMethod === PaymentMethod.BANK_TRANSFER && !finalTransactionId) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "transaction_id is required for BANK_TRANSFER",
+      });
+    }
+
+    // Create MemberSubscription and Payment in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create MemberSubscription
+      const memberSubscription = await tx.memberSubscription.create({
+        data: {
+          member_id,
+          price: parseInt(String(price)),
+          billing_model: "MONTHLY", // Default, can be adjusted if needed
+          start_date: finalStartDate,
+          end_date: finalEndDate,
+          is_expired: false,
+          is_active: true,
         },
-      },
+      });
+
+      // Automatically create payment record
+      await tx.payment.create({
+        data: {
+          member_subscription_id: memberSubscription.id,
+          subscription_type: SubscriptionTypeEnum.MEMBER,
+          amount: parseInt(String(price)),
+          payment_method: finalPaymentMethod,
+          transaction_id: finalTransactionId,
+          payment_date: payment_date ? new Date(payment_date) : new Date(),
+          notes: notes || null,
+        },
+      });
+
+      return memberSubscription;
     });
 
     return res.status(StatusCodes.CREATED).json({
-      message: "Member subscription created successfully",
-      data: memberSubscription,
+      message: "Member subscription and payment created successfully",
+      data: result,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

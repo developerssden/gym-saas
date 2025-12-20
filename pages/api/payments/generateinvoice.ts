@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireSuperAdmin } from "@/lib/adminsessioncheck";
+import { requireAdminOrOwner } from "@/lib/sessioncheck";
 import { SubscriptionTypeEnum } from "@/prisma/generated/client";
 import PDFDocument from "pdfkit";
 import { Readable } from "stream";
@@ -11,8 +11,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireSuperAdmin(req, res);
+  const session = await requireAdminOrOwner(req, res);
   if (!session) return;
+
+  const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
     const { payment_id } = req.body;
@@ -38,7 +40,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             member: {
               include: {
                 user: true,
-                gym: true,
+                gym: {
+                  include: {
+                    owner: true,
+                  },
+                },
+                location: true,
               },
             },
           },
@@ -52,16 +59,53 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Only generate invoice for owner subscriptions
-    if (payment.subscription_type !== SubscriptionTypeEnum.OWNER || !payment.ownerSubscription) {
+    // For gym owners: verify they own the member's gym
+    if (isGymOwner) {
+      if (
+        payment.subscription_type !== SubscriptionTypeEnum.MEMBER ||
+        !payment.memberSubscription ||
+        payment.memberSubscription.member.gym.owner_id !== session.user.id
+      ) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          error: "Forbidden – You can only generate invoices for your members' payments",
+        });
+      }
+    }
+
+    // Determine subscription type and get relevant data
+    const isOwnerSubscription = payment.subscription_type === SubscriptionTypeEnum.OWNER;
+    const isMemberSubscription = payment.subscription_type === SubscriptionTypeEnum.MEMBER;
+
+    if (!isOwnerSubscription && !isMemberSubscription) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error: "Invoice can only be generated for owner subscription payments",
+        error: "Invalid subscription type",
       });
     }
 
-    const sub = payment.ownerSubscription;
-    const customer = sub.owner;
-    const plan = sub.plan;
+    let customer: any;
+    let sub: any;
+    let plan: any;
+    let gym: any;
+
+    if (isOwnerSubscription) {
+      if (!payment.ownerSubscription) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          error: "Owner subscription not found",
+        });
+      }
+      sub = payment.ownerSubscription;
+      customer = sub.owner;
+      plan = sub.plan;
+    } else {
+      if (!payment.memberSubscription) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          error: "Member subscription not found",
+        });
+      }
+      sub = payment.memberSubscription;
+      customer = sub.member.user;
+      gym = sub.member.gym;
+    }
 
     // Create PDF
     const doc = new PDFDocument({ margin: 50, size: "A4" });
@@ -101,51 +145,100 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .text("INVOICE", 50, 50, { align: "center" })
       .moveDown(0.5);
 
-    // Invoice details section
+    // Define column boundaries to prevent overlap
+    const leftColumnX = 50;
+    const leftColumnWidth = 280; // Left column ends at 330
+    const rightColumnX = 360; // Start right column after left column with gap
+    const rightColumnWidth = 190; // Right column from 360 to 550
+    
+    // Invoice details section (left side)
     const invoiceDetailsY = 120;
+    let leftY = invoiceDetailsY;
     doc
       .fontSize(10)
       .font("Helvetica")
-      .text(`Invoice #: ${payment.id.substring(0, 8).toUpperCase()}`, 50, invoiceDetailsY)
-      .text(`Date: ${formatDate(payment.payment_date)}`, 50, invoiceDetailsY + 15)
-      .text(`Payment Method: ${payment.payment_method === "CASH" ? "Cash" : "Bank Transfer"}`, 50, invoiceDetailsY + 30)
-      .text(
+      .text(`Invoice #: ${payment.id.substring(0, 8).toUpperCase()}`, leftColumnX, leftY, { width: leftColumnWidth })
+      .text(`Date: ${formatDate(payment.payment_date)}`, leftColumnX, (leftY += 15), { width: leftColumnWidth })
+      .text(`Payment Method: ${payment.payment_method === "CASH" ? "Cash" : "Bank Transfer"}`, leftColumnX, (leftY += 15), { width: leftColumnWidth });
+    
+    if (isOwnerSubscription || isMemberSubscription) {
+      doc.text(
         `Subscription Period: ${formatDate(sub.start_date)} - ${formatDate(sub.end_date)}`,
-        50,
-        invoiceDetailsY + 45
+        leftColumnX,
+        (leftY += 15),
+        { width: leftColumnWidth }
       );
-
-    if (payment.transaction_id) {
-      doc.text(`Transaction ID: ${payment.transaction_id}`, 50, invoiceDetailsY + 60);
     }
 
-    // Company/Business Info (right side)
-    const companyY = invoiceDetailsY;
-    doc
-      .fontSize(10)
-      .font("Helvetica-Bold")
-      .text("Gym SaaS", 400, companyY, { align: "right" })
-      .font("Helvetica")
-      .fontSize(9)
-      .text("123 Business Street", 400, companyY + 15, { align: "right" })
-      .text("City, State 12345", 400, companyY + 30, { align: "right" })
-      .text("United States", 400, companyY + 45, { align: "right" });
+    if (payment.transaction_id) {
+      doc.text(`Transaction ID: ${payment.transaction_id}`, leftColumnX, (leftY += 15), { width: leftColumnWidth });
+    }
 
-    // Bill To section
-    const billToY = invoiceDetailsY + 95;
+    // Company/Business Info (right side) - positioned in separate column
+    let rightY = invoiceDetailsY;
+    
+    if (isMemberSubscription && gym) {
+      doc
+        .fontSize(10)
+        .font("Helvetica-Bold")
+        .text(gym.name || "Gym", rightColumnX, rightY, { align: "right", width: rightColumnWidth })
+        .font("Helvetica")
+        .fontSize(9);
+      
+      if (gym.address) {
+        rightY += 15;
+        doc.text(gym.address, rightColumnX, rightY, { align: "right", width: rightColumnWidth });
+      }
+      if (gym.city && gym.state) {
+        rightY += 15;
+        doc.text(`${gym.city}, ${gym.state} ${gym.zip_code || ""}`, rightColumnX, rightY, { align: "right", width: rightColumnWidth });
+      }
+      if (gym.country) {
+        rightY += 15;
+        doc.text(gym.country, rightColumnX, rightY, { align: "right", width: rightColumnWidth });
+      }
+      if (gym.phone_number) {
+        rightY += 15;
+        doc.text(`Phone: ${gym.phone_number}`, rightColumnX, rightY, { align: "right", width: rightColumnWidth });
+      }
+    } else {
+      doc
+        .fontSize(10)
+        .font("Helvetica-Bold")
+        .text("Gym SaaS", rightColumnX, rightY, { align: "right", width: rightColumnWidth })
+        .font("Helvetica")
+        .fontSize(9);
+      rightY += 15;
+      doc.text("123 Business Street", rightColumnX, rightY, { align: "right", width: rightColumnWidth });
+      rightY += 15;
+      doc.text("City, State 12345", rightColumnX, rightY, { align: "right", width: rightColumnWidth });
+      rightY += 15;
+      doc.text("United States", rightColumnX, rightY, { align: "right", width: rightColumnWidth });
+      rightY += 15;
+    }
+
+    // Bill To section - use the maximum Y position from left or right side, plus generous spacing
+    const maxY = Math.max(leftY, rightY);
+    const billToY = maxY + 50; // Increased spacing to prevent overlap
     doc
       .fontSize(11)
       .font("Helvetica-Bold")
-      .text("Bill To:", 50, billToY)
+      .text("Bill To:", leftColumnX, billToY)
       .font("Helvetica")
-      .fontSize(10)
-      .text(`${customer.first_name} ${customer.last_name}`, 50, billToY + 20);
+      .fontSize(10);
+    
+    let billToCurrentY = billToY + 20;
+    doc.text(`${customer.first_name} ${customer.last_name}`, leftColumnX, billToCurrentY, { width: leftColumnWidth });
 
     if (customer.email) {
-      doc.text(customer.email, 50, billToY + 35);
+      billToCurrentY += 15;
+      doc.text(customer.email, leftColumnX, billToCurrentY, { width: leftColumnWidth });
     }
 
-    doc.text(customer.phone_number, 50, billToY + 50);
+    if (customer.phone_number) {
+      billToCurrentY += 15;
+      doc.text(customer.phone_number, leftColumnX, billToCurrentY, { width: leftColumnWidth });
+    }
 
     const addressLines = [
       customer.address,
@@ -153,12 +246,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       customer.country,
     ].filter(Boolean);
 
-    addressLines.forEach((line, index) => {
-      doc.text(line, 50, billToY + 65 + index * 15);
+    addressLines.forEach((line) => {
+      billToCurrentY += 15;
+      doc.text(line, leftColumnX, billToCurrentY, { width: leftColumnWidth });
     });
 
-    // Items table (subscriptions are single charges; quantity/unit price aren't meaningful here)
-    const tableTop = billToY + 140;
+    // Items table - position after Bill To section with proper spacing
+    const tableTop = billToCurrentY + 50;
     const rowHeight = 30;
     const tableX = 50;
     const tableWidth = 500;
@@ -187,11 +281,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .rect(tableX, rowY, tableWidth, rowHeight)
       .stroke();
 
-    // Keep the line-item description short; the subscription period is already displayed above.
-    doc.text(`${plan.name} - ${sub.billing_model} Subscription`, descX, rowY + 10, {
-      width: descWidth - 10,
-      ellipsis: true,
-    });
+    // Description based on subscription type
+    if (isOwnerSubscription && plan) {
+      doc.text(`${plan.name} - ${sub.billing_model} Subscription`, descX, rowY + 10, {
+        width: descWidth - 10,
+        ellipsis: true,
+      });
+    } else if (isMemberSubscription) {
+      const description = `Member Subscription - ${sub.billing_model} (${formatDate(sub.start_date)} to ${formatDate(sub.end_date)})`;
+      doc.text(description, descX, rowY + 10, {
+        width: descWidth - 10,
+        ellipsis: true,
+      });
+    }
     doc.text(formatCurrency(payment.amount), amountX, rowY + 10, { width: amountWidth - 10, align: "right" });
 
     // Notes section (if exists)
