@@ -40,24 +40,31 @@ export function Pricing() {
                         </CardHeader>
                         <CardContent className="grid gap-4">
                             <div className="text-4xl font-bold">
-                                PKR 50
+                                PKR 5000
                                 <span className="text-lg font-normal text-muted-foreground">
                                     /month
                                 </span>
                             </div>
                             <ul className="grid gap-2 text-sm text-muted-foreground">
+                            <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" />  1 Gym Location Management
+                                </li>
                                 <li className="flex items-center gap-2">
-                                    <Check className="h-4 w-4 text-primary" /> Member Management
+                                    <Check className="h-4 w-4 text-primary" /> 200 Members in each Gym Management
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <Check className="h-4 w-4 text-primary" /> Dashboard & Reporting
                                 </li>
                                 <li className="flex items-center gap-2">
-                                    <Check className="h-4 w-4 text-primary" /> Inventory Tracking
+                                    <Check className="h-4 w-4 text-primary" /> 200 Items in Inventory Tracking
                                 </li>
                                 <li className="flex items-center gap-2">
-                                    <Check className="h-4 w-4 text-primary" /> Up to 500 Members
+                                    <Check className="h-4 w-4 text-primary" /> 200 Members
                                 </li>
+                                <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" />  Unlimited Task Management
+                                </li>
+                                
                             </ul>
                         </CardContent>
                         <CardFooter>
@@ -90,8 +97,15 @@ export function Pricing() {
                                     <Check className="h-4 w-4 text-primary" /> Dedicated Support
                                 </li>
                                 <li className="flex items-center gap-2">
-                                    <Check className="h-4 w-4 text-primary" /> Custom Integrations
+                                    <Check className="h-4 w-4 text-primary" /> Custom number of Gym & Location
                                 </li>
+                                <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" /> Custom number of Members in each Gym
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" /> Custom number of Items in Inventory Tracking
+                                </li>
+
                             </ul>
                         </CardContent>
                         <CardFooter>

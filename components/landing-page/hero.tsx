@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { FadeIn } from "@/components/landing-page/fade-in"
+import Image from "next/image"
 
 export function Hero() {
     return (
@@ -9,11 +10,11 @@ export function Hero() {
             <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center mx-auto px-4">
                 <FadeIn>
                     <Link
-                        href="https://twitter.com/gymsaas"
+                        href="https://www.linkedin.com/in/its-bakar/"
                         className="rounded-2xl bg-muted px-4 py-1.5 text-sm font-medium"
                         target="_blank"
                     >
-                        Follow along on Twitter
+                        Follow along on LinkedIn
                     </Link>
                 </FadeIn>
                 <FadeIn delay={0.1}>
@@ -43,13 +44,20 @@ export function Hero() {
                 </FadeIn>
             </div>
             <FadeIn delay={0.4} className="mx-auto mt-16 max-w-5xl px-4 sm:px-6 lg:px-8">
-                <div className="rounded-xl border bg-background p-2 shadow-2xl ring-1 ring-gray-900/10 dark:ring-gray-100/10">
-                    {/* Placeholder for a dashboard image */}
-                    <div className="aspect-[16/9] w-full rounded-lg bg-gradient-to-tr from-sky-200 to-blue-300 dark:from-sky-900 dark:to-blue-900 flex items-center justify-center text-muted-foreground">
-                        <span className="text-lg font-medium">Dashboard Preview Image</span>
-                    </div>
-                </div>
-            </FadeIn>
+  <div className="rounded-xl border bg-background p-2 shadow-2xl ring-1 ring-gray-900/10 dark:ring-gray-100/10">
+    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-sky-200 to-blue-300 dark:from-sky-900 dark:to-blue-900">
+      <Image
+        src="/dashboard.png"
+        alt="Dashboard preview"
+        fill
+        className="object-cover"
+        priority
+        sizes="(max-width: 768px) 100vw, 900px"
+      />
+    </div>
+  </div>
+</FadeIn>
+
         </section>
     )
 }
