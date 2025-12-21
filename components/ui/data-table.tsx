@@ -57,7 +57,7 @@ export function DataTable<TData, TValue>({
     const table = useReactTable({
         data,
         columns,
-        pageCount: pageCount ?? -1,
+        pageCount: pageCount,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,

@@ -51,7 +51,16 @@ export function DataTablePagination<TData>({
                 </div>
                 <div className="flex w-[100px] items-center justify-center text-sm font-medium">
                     Page {table.getState().pagination.pageIndex + 1} of{" "}
-                    {table.getPageCount()}
+                    {(() => {
+                        const pageCount = table.getPageCount()
+                        // If pageCount is -1 (unknown), calculate from row count
+                        if (pageCount === -1) {
+                            const pageSize = table.getState().pagination.pageSize
+                            const rowCount = table.getFilteredRowModel().rows.length
+                            return Math.max(1, Math.ceil(rowCount / pageSize))
+                        }
+                        return pageCount
+                    })()}
                 </div>
                 <div className="flex items-center space-x-2">
                     <Button

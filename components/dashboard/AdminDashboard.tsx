@@ -493,7 +493,7 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 h-full w-full lg:grid-cols-2 min-w-0">
           <Card>
             <CardHeader>
               <CardTitle>Active subscription users</CardTitle>

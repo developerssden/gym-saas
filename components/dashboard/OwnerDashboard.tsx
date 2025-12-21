@@ -506,7 +506,7 @@ const OwnerDashboard = () => {
           </Card>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 h-full w-full lg:grid-cols-2">
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -578,7 +578,7 @@ const OwnerDashboard = () => {
           </Card>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 h-full w-full lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Active member subscriptions</CardTitle>
