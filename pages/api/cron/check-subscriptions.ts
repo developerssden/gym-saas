@@ -4,18 +4,6 @@ import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import sendEmail from "@/lib/sendEmail";
 
-// Verify cron secret to prevent unauthorized access
-const verifyCronSecret = (req: NextApiRequest): boolean => {
-  const authHeader = req.headers.authorization;
-  const cronSecret = process.env.CRON_SECRET;
-  
-  if (!cronSecret) {
-    console.warn("CRON_SECRET not set in environment variables");
-    return false;
-  }
-  
-  return authHeader === `Bearer ${cronSecret}`;
-};
 
 // Calculate days until expiration
 const getDaysUntilExpiration = (endDate: Date): number => {
@@ -135,17 +123,9 @@ const getGymOwnerSummaryEmail = (expiredMembers: Array<{ name: string; email: st
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Only allow POST requests
+  // Only allow GET requests
   if (req.method !== "GET") {
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
-  }
-
-  // Verify cron secret (optional but recommended for security)
-  // For Vercel Cron, you can also check req.headers['x-vercel-cron'] === '1'
-  const isVercelCron = req.headers["x-vercel-cron"] === "1";
-  if (!isVercelCron && !verifyCronSecret(req)) {
-    console.warn("Unauthorized cron job attempt");
-    return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
   }
 
   try {
