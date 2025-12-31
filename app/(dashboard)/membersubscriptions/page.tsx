@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { columns } from "@/components/membersubscriptions/columns";
+import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 
 const MemberSubscriptionsPage = () => {
   const { data: session, status } = useSession({ required: true });
@@ -21,6 +22,7 @@ const MemberSubscriptionsPage = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 1000);
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["membersubscriptions", pagination.pageIndex + 1, pagination.pageSize, debouncedFilter],
@@ -46,11 +48,15 @@ const MemberSubscriptionsPage = () => {
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <h1 className="h1">Member Subscriptions</h1>
-        <Link href={`/membersubscriptions/manage?action=create`}>
-          <Button disabled={!isSubscriptionActive || subscriptionExpired}>
+        {!isSubscriptionActive || subscriptionExpired ? (
+          <Button onClick={() => setShowExpiredModal(true)}>
             Create Subscription
           </Button>
-        </Link>
+        ) : (
+          <Link href={`/membersubscriptions/manage?action=create`}>
+            <Button>Create Subscription</Button>
+          </Link>
+        )}
       </div>
 
       {isLoading && !data && (
@@ -84,6 +90,11 @@ const MemberSubscriptionsPage = () => {
           searchValue={globalFilter}
         />
       )}
+
+      <SubscriptionExpiredModal
+        open={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+      />
     </PageContainer>
   );
 };

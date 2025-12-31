@@ -28,6 +28,7 @@ import { CountryDropdown } from "@/components/ui/country-dropdown";
 import { cn } from "@/lib/utils";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
+import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 
 const MemberSchema = Yup.object({
   first_name: Yup.string().required("First name is required"),
@@ -54,6 +55,7 @@ const ManageMemberContent = () => {
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [limitInfo, setLimitInfo] = useState<any>(null);
   const [dateOfBirthOpen, setDateOfBirthOpen] = useState(false);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
 
   const { isSubscriptionActive, subscriptionExpired, subscriptionLimits } =
     useSubscriptionValidation();
@@ -167,7 +169,7 @@ const ManageMemberContent = () => {
     enableReinitialize: !!memberData, // Only reinitialize when memberData exists
     onSubmit: async (values) => {
       if (!isSubscriptionActive || subscriptionExpired) {
-        toast.error("Your subscription is expired. Please renew to continue.");
+        setShowExpiredModal(true);
         return;
       }
 
@@ -443,7 +445,12 @@ const ManageMemberContent = () => {
                 <Button
                   type="submit"
                   className="flex-1"
-                  disabled={!isSubscriptionActive || subscriptionExpired}
+                  onClick={(e) => {
+                    if (!isSubscriptionActive || subscriptionExpired) {
+                      e.preventDefault();
+                      setShowExpiredModal(true);
+                    }
+                  }}
                 >
                   {action === "create" ? "Create Member" : "Update Member"}
                 </Button>
@@ -476,6 +483,10 @@ const ManageMemberContent = () => {
           limitInfo={limitInfo}
         />
       )}
+      <SubscriptionExpiredModal
+        open={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+      />
     </PageContainer>
   );
 };

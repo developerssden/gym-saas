@@ -15,6 +15,7 @@ import axios from "axios";
 import { columns } from "@/components/equipment/columns";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
+import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 
 const EquipmentPage = () => {
   const { data: session, status } = useSession({ required: true });
@@ -22,6 +23,7 @@ const EquipmentPage = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 1000);
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [limitExceeded, setLimitExceeded] = useState<{
     show: boolean;
     resourceType?: string;
@@ -66,11 +68,15 @@ const EquipmentPage = () => {
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <h1 className="h1">Equipment / Inventory</h1>
-        <Link href={`/equipment/manage?action=create`}>
-          <Button disabled={!isSubscriptionActive || subscriptionExpired || !selectedGymId}>
+        {!isSubscriptionActive || subscriptionExpired ? (
+          <Button onClick={() => setShowExpiredModal(true)}>
             Create Equipment
           </Button>
-        </Link>
+        ) : (
+          <Link href={`/equipment/manage?action=create`}>
+            <Button disabled={!selectedGymId}>Create Equipment</Button>
+          </Link>
+        )}
       </div>
 
       {!selectedGymId && (
@@ -117,6 +123,10 @@ const EquipmentPage = () => {
           current: limitExceeded.current || 0,
           max: limitExceeded.max || 0,
         }}
+      />
+      <SubscriptionExpiredModal
+        open={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
       />
     </PageContainer>
   );

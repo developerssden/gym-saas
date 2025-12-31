@@ -24,6 +24,7 @@ import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
+import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 
 type OwnerOption = { id: string; first_name: string; last_name: string; email?: string | null };
 
@@ -50,6 +51,7 @@ const ManageGymContent = () => {
   const [saving, setSaving] = useState(false);
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [limitInfo, setLimitInfo] = useState<any>(null);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
 
   const isSuperAdmin = status === "authenticated" && session?.user?.role === "SUPER_ADMIN";
   const isGymOwner = status === "authenticated" && session?.user?.role === "GYM_OWNER";
@@ -137,8 +139,8 @@ const ManageGymContent = () => {
     onSubmit: async (values) => {
       // Check subscription for GYM_OWNER
       if (isGymOwner) {
-        if (!isSubscriptionActive) {
-          toast.error("Your subscription is expired. Please renew to continue.");
+        if (!isSubscriptionActive || subscriptionExpired) {
+          setShowExpiredModal(true);
           return;
         }
 
@@ -176,7 +178,7 @@ const ManageGymContent = () => {
           setLimitInfo(error.response.data);
           setLimitModalOpen(true);
         } else if (error?.response?.data?.error === "SUBSCRIPTION_EXPIRED") {
-          toast.error("Your subscription is expired. Please renew to continue.");
+          setShowExpiredModal(true);
         }
       } finally {
         setSaving(false);
@@ -334,6 +336,10 @@ const ManageGymContent = () => {
           planName={session?.user?.subscription_limits ? "Current Plan" : undefined}
         />
       )}
+      <SubscriptionExpiredModal
+        open={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+      />
     </PageContainer>
   );
 };

@@ -27,6 +27,7 @@ import { useState, useMemo, Suspense } from "react";
 import { toast } from "sonner";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
+import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 import { CalendarIcon, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -113,6 +114,7 @@ const ManageEquipmentContent = () => {
     current?: number;
     max?: number;
   }>({ show: false });
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
 
   // Date picker states
   const [purchaseDateOpen, setPurchaseDateOpen] = useState(false);
@@ -243,7 +245,7 @@ const ManageEquipmentContent = () => {
     enableReinitialize: !!equipmentData,
     onSubmit: async (values) => {
       if (!isSubscriptionActive || subscriptionExpired) {
-        toast.error("Your subscription is expired. Please renew to continue.");
+        setShowExpiredModal(true);
         return;
       }
 
@@ -885,7 +887,17 @@ const ManageEquipmentContent = () => {
           <div className="flex gap-4 pt-4">
             {!isViewMode && (
               <>
-                <Button type="submit" disabled={saving || isDisabled} size="lg">
+                <Button 
+                  type="submit" 
+                  disabled={saving || (isDisabled && !subscriptionExpired)} 
+                  size="lg"
+                  onClick={(e) => {
+                    if (!isSubscriptionActive || subscriptionExpired) {
+                      e.preventDefault();
+                      setShowExpiredModal(true);
+                    }
+                  }}
+                >
                   {saving
                     ? "Saving..."
                     : action === "create"
@@ -915,6 +927,10 @@ const ManageEquipmentContent = () => {
           current: limitExceeded.current || 0,
           max: limitExceeded.max || 0,
         }}
+      />
+      <SubscriptionExpiredModal
+        open={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
       />
     </PageContainer>
   );

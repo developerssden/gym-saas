@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { formatDate } from "@/lib/date-helper-functions";
 import { cn } from "@/lib/utils";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
+import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 
 const MemberSubscriptionSchema = Yup.object({
   member_id: Yup.string().required("Member is required"),
@@ -68,6 +69,7 @@ const ManageMemberSubscriptionContent = () => {
   const [saving, setSaving] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
 
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
 
@@ -176,7 +178,7 @@ const ManageMemberSubscriptionContent = () => {
     enableReinitialize: !!subscriptionData,
     onSubmit: async (values) => {
       if (!isSubscriptionActive || subscriptionExpired) {
-        toast.error("Your subscription is expired. Please renew to continue.");
+        setShowExpiredModal(true);
         return;
       }
 
@@ -417,7 +419,12 @@ const ManageMemberSubscriptionContent = () => {
                 <Button
                   type="submit"
                   className="flex-1"
-                  disabled={!isSubscriptionActive || subscriptionExpired}
+                  onClick={(e) => {
+                    if (!isSubscriptionActive || subscriptionExpired) {
+                      e.preventDefault();
+                      setShowExpiredModal(true);
+                    }
+                  }}
                 >
                   {action === "create" ? "Create Subscription" : "Update Subscription"}
                 </Button>
@@ -443,6 +450,10 @@ const ManageMemberSubscriptionContent = () => {
           </div>
         </form>
       </div>
+      <SubscriptionExpiredModal
+        open={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+      />
     </PageContainer>
   );
 };
