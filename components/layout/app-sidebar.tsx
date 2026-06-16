@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem
 } from '@/components/ui/sidebar';
-import { routeItems } from '@/contants/data';
+import { routeItems } from '@/constants/data';
 import Link from 'next/link';
 
 type Role = 'SUPER_ADMIN' | 'GYM_OWNER' | 'MEMBER';

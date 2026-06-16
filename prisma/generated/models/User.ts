@@ -298,6 +298,7 @@ export type UserWhereInput = {
   gyms_owned?: Prisma.GymListRelationFilter
   member?: Prisma.XOR<Prisma.MemberNullableScalarRelationFilter, Prisma.MemberWhereInput> | null
   ownerSubscriptions?: Prisma.OwnerSubscriptionListRelationFilter
+  recordedPayments?: Prisma.PaymentListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -324,6 +325,7 @@ export type UserOrderByWithRelationInput = {
   gyms_owned?: Prisma.GymOrderByRelationAggregateInput
   member?: Prisma.MemberOrderByWithRelationInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionOrderByRelationAggregateInput
+  recordedPayments?: Prisma.PaymentOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -353,6 +355,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   gyms_owned?: Prisma.GymListRelationFilter
   member?: Prisma.XOR<Prisma.MemberNullableScalarRelationFilter, Prisma.MemberWhereInput> | null
   ownerSubscriptions?: Prisma.OwnerSubscriptionListRelationFilter
+  recordedPayments?: Prisma.PaymentListRelationFilter
 }, "id">
 
 export type UserOrderByWithAggregationInput = {
@@ -429,6 +432,7 @@ export type UserCreateInput = {
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -455,6 +459,7 @@ export type UserUncheckedCreateInput = {
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserUpdateInput = {
@@ -481,6 +486,7 @@ export type UserUpdateInput = {
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -507,6 +513,7 @@ export type UserUncheckedUpdateInput = {
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -646,6 +653,11 @@ export type UserScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput
 }
 
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
@@ -722,6 +734,22 @@ export type UserUpdateOneRequiredWithoutOwnerSubscriptionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOwnerSubscriptionsInput, Prisma.UserUpdateWithoutOwnerSubscriptionsInput>, Prisma.UserUncheckedUpdateWithoutOwnerSubscriptionsInput>
 }
 
+export type UserCreateNestedOneWithoutRecordedPaymentsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRecordedPaymentsInput, Prisma.UserUncheckedCreateWithoutRecordedPaymentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRecordedPaymentsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutRecordedPaymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRecordedPaymentsInput, Prisma.UserUncheckedCreateWithoutRecordedPaymentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRecordedPaymentsInput
+  upsert?: Prisma.UserUpsertWithoutRecordedPaymentsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRecordedPaymentsInput, Prisma.UserUpdateWithoutRecordedPaymentsInput>, Prisma.UserUncheckedUpdateWithoutRecordedPaymentsInput>
+}
+
 export type UserCreateWithoutTodosInput = {
   id?: string
   first_name: string
@@ -745,6 +773,7 @@ export type UserCreateWithoutTodosInput = {
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserUncheckedCreateWithoutTodosInput = {
@@ -770,6 +799,7 @@ export type UserUncheckedCreateWithoutTodosInput = {
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserCreateOrConnectWithoutTodosInput = {
@@ -811,6 +841,7 @@ export type UserUpdateWithoutTodosInput = {
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTodosInput = {
@@ -836,6 +867,7 @@ export type UserUncheckedUpdateWithoutTodosInput = {
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
 }
 
 export type UserCreateWithoutGyms_ownedInput = {
@@ -861,6 +893,7 @@ export type UserCreateWithoutGyms_ownedInput = {
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserUncheckedCreateWithoutGyms_ownedInput = {
@@ -886,6 +919,7 @@ export type UserUncheckedCreateWithoutGyms_ownedInput = {
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserCreateOrConnectWithoutGyms_ownedInput = {
@@ -927,6 +961,7 @@ export type UserUpdateWithoutGyms_ownedInput = {
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGyms_ownedInput = {
@@ -952,6 +987,7 @@ export type UserUncheckedUpdateWithoutGyms_ownedInput = {
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
 }
 
 export type UserCreateWithoutMemberInput = {
@@ -977,6 +1013,7 @@ export type UserCreateWithoutMemberInput = {
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserUncheckedCreateWithoutMemberInput = {
@@ -1002,6 +1039,7 @@ export type UserUncheckedCreateWithoutMemberInput = {
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserCreateOrConnectWithoutMemberInput = {
@@ -1043,6 +1081,7 @@ export type UserUpdateWithoutMemberInput = {
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMemberInput = {
@@ -1068,6 +1107,7 @@ export type UserUncheckedUpdateWithoutMemberInput = {
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
 }
 
 export type UserCreateWithoutOwnerSubscriptionsInput = {
@@ -1093,6 +1133,7 @@ export type UserCreateWithoutOwnerSubscriptionsInput = {
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserUncheckedCreateWithoutOwnerSubscriptionsInput = {
@@ -1118,6 +1159,7 @@ export type UserUncheckedCreateWithoutOwnerSubscriptionsInput = {
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
 }
 
 export type UserCreateOrConnectWithoutOwnerSubscriptionsInput = {
@@ -1159,6 +1201,7 @@ export type UserUpdateWithoutOwnerSubscriptionsInput = {
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnerSubscriptionsInput = {
@@ -1184,6 +1227,127 @@ export type UserUncheckedUpdateWithoutOwnerSubscriptionsInput = {
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
+}
+
+export type UserCreateWithoutRecordedPaymentsInput = {
+  id?: string
+  first_name: string
+  last_name: string
+  phone_number: string
+  address: string
+  city: string
+  state: string
+  zip_code: string
+  country: string
+  date_of_birth: Date | string
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
+}
+
+export type UserUncheckedCreateWithoutRecordedPaymentsInput = {
+  id?: string
+  first_name: string
+  last_name: string
+  phone_number: string
+  address: string
+  city: string
+  state: string
+  zip_code: string
+  country: string
+  date_of_birth: Date | string
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
+}
+
+export type UserCreateOrConnectWithoutRecordedPaymentsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutRecordedPaymentsInput, Prisma.UserUncheckedCreateWithoutRecordedPaymentsInput>
+}
+
+export type UserUpsertWithoutRecordedPaymentsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutRecordedPaymentsInput, Prisma.UserUncheckedUpdateWithoutRecordedPaymentsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutRecordedPaymentsInput, Prisma.UserUncheckedCreateWithoutRecordedPaymentsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutRecordedPaymentsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutRecordedPaymentsInput, Prisma.UserUncheckedUpdateWithoutRecordedPaymentsInput>
+}
+
+export type UserUpdateWithoutRecordedPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.StringFieldUpdateOperationsInput | string
+  last_name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  zip_code?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  date_of_birth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUpdateOneWithoutUserNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
+}
+
+export type UserUncheckedUpdateWithoutRecordedPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.StringFieldUpdateOperationsInput | string
+  last_name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  zip_code?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  date_of_birth?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 
@@ -1195,12 +1359,14 @@ export type UserCountOutputType = {
   todos: number
   gyms_owned: number
   ownerSubscriptions: number
+  recordedPayments: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   todos?: boolean | UserCountOutputTypeCountTodosArgs
   gyms_owned?: boolean | UserCountOutputTypeCountGyms_ownedArgs
   ownerSubscriptions?: boolean | UserCountOutputTypeCountOwnerSubscriptionsArgs
+  recordedPayments?: boolean | UserCountOutputTypeCountRecordedPaymentsArgs
 }
 
 /**
@@ -1234,6 +1400,13 @@ export type UserCountOutputTypeCountOwnerSubscriptionsArgs<ExtArgs extends runti
   where?: Prisma.OwnerSubscriptionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountRecordedPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1259,6 +1432,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   gyms_owned?: boolean | Prisma.User$gyms_ownedArgs<ExtArgs>
   member?: boolean | Prisma.User$memberArgs<ExtArgs>
   ownerSubscriptions?: boolean | Prisma.User$ownerSubscriptionsArgs<ExtArgs>
+  recordedPayments?: boolean | Prisma.User$recordedPaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1334,6 +1508,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   gyms_owned?: boolean | Prisma.User$gyms_ownedArgs<ExtArgs>
   member?: boolean | Prisma.User$memberArgs<ExtArgs>
   ownerSubscriptions?: boolean | Prisma.User$ownerSubscriptionsArgs<ExtArgs>
+  recordedPayments?: boolean | Prisma.User$recordedPaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1346,6 +1521,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     gyms_owned: Prisma.$GymPayload<ExtArgs>[]
     member: Prisma.$MemberPayload<ExtArgs> | null
     ownerSubscriptions: Prisma.$OwnerSubscriptionPayload<ExtArgs>[]
+    recordedPayments: Prisma.$PaymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1765,6 +1941,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   gyms_owned<T extends Prisma.User$gyms_ownedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$gyms_ownedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GymPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   member<T extends Prisma.User$memberArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$memberArgs<ExtArgs>>): Prisma.Prisma__MemberClient<runtime.Types.Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   ownerSubscriptions<T extends Prisma.User$ownerSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownerSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OwnerSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  recordedPayments<T extends Prisma.User$recordedPaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$recordedPaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2289,6 +2466,30 @@ export type User$ownerSubscriptionsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.OwnerSubscriptionScalarFieldEnum | Prisma.OwnerSubscriptionScalarFieldEnum[]
+}
+
+/**
+ * User.recordedPayments
+ */
+export type User$recordedPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Payment
+   */
+  select?: Prisma.PaymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Payment
+   */
+  omit?: Prisma.PaymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentInclude<ExtArgs> | null
+  where?: Prisma.PaymentWhereInput
+  orderBy?: Prisma.PaymentOrderByWithRelationInput | Prisma.PaymentOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentScalarFieldEnum | Prisma.PaymentScalarFieldEnum[]
 }
 
 /**

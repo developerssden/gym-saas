@@ -175,6 +175,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           transaction_id: transactionId,
           payment_date: req.body.payment_date ? new Date(req.body.payment_date) : new Date(),
           notes: req.body.notes || null,
+          recorded_by_id: session.user.id,
         },
       });
 

@@ -81,6 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             transaction_id: transaction_id || null,
             payment_date: payment_date ? new Date(payment_date) : new Date(),
             notes: notes || null,
+            recorded_by_id: session.user.id,
           },
         });
       }

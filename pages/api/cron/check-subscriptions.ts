@@ -3,27 +3,22 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import sendEmail from "@/lib/sendEmail";
+import {
+  computeOwnerActions,
+  computeMemberActions,
+} from "@/lib/cron/computeActions";
 
+function getCronSecret(req: NextApiRequest): string | undefined {
+  const headerSecret = req.headers["x-cron-secret"];
+  if (typeof headerSecret === "string") return headerSecret;
 
-// Calculate days until expiration
-const getDaysUntilExpiration = (endDate: Date): number => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const end = new Date(endDate);
-  end.setHours(0, 0, 0, 0);
-  const diffTime = end.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
-};
+  const auth = req.headers.authorization;
+  if (typeof auth === "string" && auth.startsWith("Bearer ")) {
+    return auth.slice(7);
+  }
 
-// Check if date is today
-const isToday = (date: Date): boolean => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const checkDate = new Date(date);
-  checkDate.setHours(0, 0, 0, 0);
-  return today.getTime() === checkDate.getTime();
-};
+  return undefined;
+}
 
 // Email templates
 const getOwnerReminderEmail = (ownerName: string, daysLeft: number, planName: string) => {
@@ -123,24 +118,18 @@ const getGymOwnerSummaryEmail = (expiredMembers: Array<{ name: string; email: st
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Only allow GET requests
   if (req.method !== "GET") {
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const twoDaysFromNow = new Date(today);
-    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-    
-    const oneDayFromNow = new Date(today);
-    oneDayFromNow.setDate(oneDayFromNow.getDate() + 1);
+  const cronSecret = getCronSecret(req);
+  if (!cronSecret || cronSecret !== process.env.CRON_SECRET) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ error: "Unauthorized" });
+  }
 
+  try {
     // ========== OWNER SUBSCRIPTIONS ==========
-    
-    // Get active owner subscriptions that haven't expired yet
+
     const activeOwnerSubscriptions = await prisma.ownerSubscription.findMany({
       where: {
         is_active: true,
@@ -165,85 +154,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const expiredOwnersToday: Array<{ name: string; email: string; planName: string }> = [];
-    const ownerReminders: Array<{
-      subscription: typeof activeOwnerSubscriptions[0];
-      daysLeft: number;
-      reminderType: "first" | "second" | "expired";
-    }> = [];
+    let ownerRemindersSent = 0;
 
-    for (const subscription of activeOwnerSubscriptions) {
-      const daysLeft = getDaysUntilExpiration(subscription.end_date);
-      const isExpiredToday = isToday(subscription.end_date);
+    const ownerActions = computeOwnerActions(activeOwnerSubscriptions);
 
-      if (isExpiredToday) {
-        // Mark as expired
+    for (const action of ownerActions) {
+      if (action.type === "EXPIRE") {
         await prisma.ownerSubscription.update({
-          where: { id: subscription.id },
+          where: { id: action.id },
           data: {
             is_expired: true,
             notification_sent: true,
           },
         });
 
-        // Send expiration email to owner
-        if (subscription.owner.email) {
-          const ownerName = `${subscription.owner.first_name} ${subscription.owner.last_name}`;
+        if (action.ownerEmail && action.ownerName && action.planName) {
           const { subject, text, html } = getOwnerReminderEmail(
-            ownerName,
+            action.ownerName,
             0,
-            subscription.plan.name
+            action.planName
           );
-          
+
           try {
-            await sendEmail(subscription.owner.email, subject, text, html);
+            await sendEmail(action.ownerEmail, subject, text, html);
             expiredOwnersToday.push({
-              name: ownerName,
-              email: subscription.owner.email,
-              planName: subscription.plan.name,
+              name: action.ownerName,
+              email: action.ownerEmail,
+              planName: action.planName,
             });
           } catch (error) {
-            console.error(`Failed to send email to ${subscription.owner.email}:`, error);
+            console.error(`Failed to send email to ${action.ownerEmail}:`, error);
           }
         }
-      } else if (daysLeft === 2 && !subscription.first_reminder_sent) {
-        // First reminder (2 days before)
-        ownerReminders.push({ subscription, daysLeft, reminderType: "first" });
-      } else if (daysLeft === 1 && !subscription.second_reminder_sent) {
-        // Second reminder (1 day before)
-        ownerReminders.push({ subscription, daysLeft, reminderType: "second" });
-      }
-    }
-
-    // Send reminder emails to owners
-    for (const reminder of ownerReminders) {
-      const { subscription, daysLeft, reminderType } = reminder;
-      
-      if (subscription.owner.email) {
-        const ownerName = `${subscription.owner.first_name} ${subscription.owner.last_name}`;
+      } else if (
+        (action.type === "FIRST_REMINDER" || action.type === "SECOND_REMINDER") &&
+        action.email &&
+        action.planName
+      ) {
         const { subject, text, html } = getOwnerReminderEmail(
-          ownerName,
-          daysLeft,
-          subscription.plan.name
+          action.name,
+          action.daysLeft,
+          action.planName
         );
-        
+
         try {
-          await sendEmail(subscription.owner.email, subject, text, html);
-          
-          // Update reminder flag
+          await sendEmail(action.email, subject, text, html);
+
           await prisma.ownerSubscription.update({
-            where: { id: subscription.id },
+            where: { id: action.id },
             data: {
-              first_reminder_sent: reminderType === "first",
-              second_reminder_sent: reminderType === "second",
+              first_reminder_sent: action.type === "FIRST_REMINDER",
+              second_reminder_sent: action.type === "SECOND_REMINDER",
             },
           });
+          ownerRemindersSent++;
         } catch (error) {
-          console.error(`Failed to send reminder email to ${subscription.owner.email}:`, error);
+          console.error(`Failed to send reminder email to ${action.email}:`, error);
         }
       }
     }
 
-    // Send summary email to Super Admin if there are expired owners
     if (expiredOwnersToday.length > 0) {
       const superAdmins = await prisma.user.findMany({
         where: {
@@ -256,7 +226,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       const { subject, text, html } = getSuperAdminSummaryEmail(expiredOwnersToday);
-      
+
       for (const admin of superAdmins) {
         if (admin.email) {
           try {
@@ -269,8 +239,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // ========== MEMBER SUBSCRIPTIONS ==========
-    
-    // Get active member subscriptions that haven't expired yet
+
     const activeMemberSubscriptions = await prisma.memberSubscription.findMany({
       where: {
         is_active: true,
@@ -305,100 +274,90 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    // Group expired members by gym owner
     const expiredMembersByOwner = new Map<
       string,
       Array<{ name: string; email: string; ownerEmail: string }>
     >();
+    let memberRemindersSent = 0;
 
-    const memberReminders: Array<{
-      subscription: typeof activeMemberSubscriptions[0];
-      daysLeft: number;
-      reminderType: "first" | "second" | "expired";
-    }> = [];
+    const memberSubsById = new Map(
+      activeMemberSubscriptions.map((sub) => [sub.id, sub])
+    );
+    const memberActions = computeMemberActions(activeMemberSubscriptions);
 
-    for (const subscription of activeMemberSubscriptions) {
-      const daysLeft = getDaysUntilExpiration(subscription.end_date);
-      const isExpiredToday = isToday(subscription.end_date);
-
-      if (isExpiredToday) {
-        // Mark as expired
+    for (const action of memberActions) {
+      if (action.type === "EXPIRE") {
         await prisma.memberSubscription.update({
-          where: { id: subscription.id },
+          where: { id: action.id },
           data: {
             is_expired: true,
             notification_sent: true,
           },
         });
 
-        // Send expiration email to member
-        if (subscription.member.user.email) {
-          const memberName = `${subscription.member.user.first_name} ${subscription.member.user.last_name}`;
-          const { subject, text, html } = getMemberReminderEmail(memberName, 0);
-          
+        const subscription = memberSubsById.get(action.id);
+        if (subscription?.member.user.email && action.ownerName) {
+          const { subject, text, html } = getMemberReminderEmail(action.ownerName, 0);
+
           try {
             await sendEmail(subscription.member.user.email, subject, text, html);
-            
-            // Add to owner's expired list
+
             const ownerId = subscription.member.gym.owner.id;
             const ownerEmail = subscription.member.gym.owner.email || "";
-            
+
             if (!expiredMembersByOwner.has(ownerId)) {
               expiredMembersByOwner.set(ownerId, []);
             }
-            
+
             expiredMembersByOwner.get(ownerId)?.push({
-              name: memberName,
+              name: action.ownerName,
               email: subscription.member.user.email,
               ownerEmail,
             });
           } catch (error) {
-            console.error(`Failed to send email to member ${subscription.member.user.email}:`, error);
+            console.error(
+              `Failed to send email to member ${subscription.member.user.email}:`,
+              error
+            );
           }
         }
-      } else if (daysLeft === 2 && !subscription.first_reminder_sent) {
-        // First reminder (2 days before)
-        memberReminders.push({ subscription, daysLeft, reminderType: "first" });
-      } else if (daysLeft === 1 && !subscription.second_reminder_sent) {
-        // Second reminder (1 day before)
-        memberReminders.push({ subscription, daysLeft, reminderType: "second" });
-      }
-    }
+      } else if (
+        (action.type === "FIRST_REMINDER" || action.type === "SECOND_REMINDER") &&
+        action.email
+      ) {
+        const { subject, text, html } = getMemberReminderEmail(
+          action.name,
+          action.daysLeft
+        );
 
-    // Send reminder emails to members
-    for (const reminder of memberReminders) {
-      const { subscription, daysLeft, reminderType } = reminder;
-      
-      if (subscription.member.user.email) {
-        const memberName = `${subscription.member.user.first_name} ${subscription.member.user.last_name}`;
-        const { subject, text, html } = getMemberReminderEmail(memberName, daysLeft);
-        
         try {
-          await sendEmail(subscription.member.user.email, subject, text, html);
-          
-          // Update reminder flag
+          await sendEmail(action.email, subject, text, html);
+
           await prisma.memberSubscription.update({
-            where: { id: subscription.id },
+            where: { id: action.id },
             data: {
-              first_reminder_sent: reminderType === "first",
-              second_reminder_sent: reminderType === "second",
+              first_reminder_sent: action.type === "FIRST_REMINDER",
+              second_reminder_sent: action.type === "SECOND_REMINDER",
             },
           });
+          memberRemindersSent++;
         } catch (error) {
-          console.error(`Failed to send reminder email to member ${subscription.member.user.email}:`, error);
+          console.error(`Failed to send reminder email to member ${action.email}:`, error);
         }
       }
     }
 
-    // Send summary emails to gym owners
-    for (const [ownerId, expiredMembers] of expiredMembersByOwner.entries()) {
+    for (const [, expiredMembers] of expiredMembersByOwner.entries()) {
       if (expiredMembers.length > 0 && expiredMembers[0].ownerEmail) {
         const { subject, text, html } = getGymOwnerSummaryEmail(expiredMembers);
-        
+
         try {
           await sendEmail(expiredMembers[0].ownerEmail, subject, text, html);
         } catch (error) {
-          console.error(`Failed to send summary email to gym owner ${expiredMembers[0].ownerEmail}:`, error);
+          console.error(
+            `Failed to send summary email to gym owner ${expiredMembers[0].ownerEmail}:`,
+            error
+          );
         }
       }
     }
@@ -408,11 +367,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       summary: {
         ownerSubscriptions: {
           expired: expiredOwnersToday.length,
-          remindersSent: ownerReminders.length,
+          remindersSent: ownerRemindersSent,
         },
         memberSubscriptions: {
           expired: Array.from(expiredMembersByOwner.values()).flat().length,
-          remindersSent: memberReminders.length,
+          remindersSent: memberRemindersSent,
         },
       },
     });
@@ -424,4 +383,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
-

@@ -1,4 +1,10 @@
 import { BillingModel } from "@/prisma/generated/client";
+import {
+  getDaysUntilExpiration,
+  isExpiredOrToday,
+} from "@/lib/date-utils";
+
+export { getDaysUntilExpiration, isExpiredOrToday };
 
 /**
  * Calculate end date based on billing model
@@ -27,21 +33,8 @@ export function calculateNextPaymentDate(
   return new Date(endDate);
 }
 
-/**
- * Check if a subscription is expired
- */
-export function isSubscriptionExpired(endDate: Date): boolean {
-  return new Date() > endDate;
-}
-
-/**
- * Calculate remaining days in current subscription
- */
-export function getRemainingDays(endDate: Date): number {
-  const now = new Date();
-  const diff = endDate.getTime() - now.getTime();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-}
+/** @deprecated Use isExpiredOrToday from date-utils */
+export const isSubscriptionExpired = isExpiredOrToday;
 
 /**
  * Get subscription price based on billing model
@@ -129,9 +122,7 @@ export function calculateEndDateWithRemainingDays(
  * Returns 0 if expired or negative
  */
 export function calculateRemainingDaysFromEndDate(endDate: Date): number {
-  const now = new Date();
-  const diff = endDate.getTime() - now.getTime();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  const days = getDaysUntilExpiration(endDate);
   return days > 0 ? days : 0;
 }
 

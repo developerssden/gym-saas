@@ -9,7 +9,7 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 
-import { routeItems } from "@/contants/data";
+import { routeItems } from "@/constants/data";
 
 const formatSegment = (segment: string) =>
   segment

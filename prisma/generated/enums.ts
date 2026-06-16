@@ -18,14 +18,6 @@ export const Role = {
 export type Role = (typeof Role)[keyof typeof Role]
 
 
-export const SubscriptionType = {
-  MONTHLY: 'MONTHLY',
-  YEARLY: 'YEARLY'
-} as const
-
-export type SubscriptionType = (typeof SubscriptionType)[keyof typeof SubscriptionType]
-
-
 export const PaymentMethod = {
   CASH: 'CASH',
   BANK_TRANSFER: 'BANK_TRANSFER'

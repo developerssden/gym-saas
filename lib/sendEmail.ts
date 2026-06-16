@@ -1,4 +1,5 @@
 import nodemailer, { TransportOptions } from "nodemailer";
+import { SMTP } from "@/lib/constants";
 
 interface EmailAttachment {
   filename: string;
@@ -19,7 +20,7 @@ const sendEmail = async (
     const transporter = nodemailer.createTransport({
       service: "gmail",
       host: "smtp.gmail.com",
-      port: 587,
+      port: SMTP.PORT,
       secure: false, // true for 465, false for other ports
       auth: {
         user: process.env.GMAIL_USER,
@@ -28,8 +29,8 @@ const sendEmail = async (
       tls: {
         rejectUnauthorized: false,
       },
-      connectionTimeout: 100000,
-      greetingTimeout: 100000,
+      connectionTimeout: SMTP.CONNECTION_TIMEOUT,
+      greetingTimeout: SMTP.GREETING_TIMEOUT,
     } as TransportOptions);
 
     const mailOptions = {

@@ -3,19 +3,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireGymOwner } from "@/lib/ownersessioncheck";
-import { isSubscriptionExpired, getRemainingDays } from "@/lib/subscription-helpers";
+import { isSubscriptionExpired } from "@/lib/subscription-helpers";
 import sendEmail from "@/lib/sendEmail";
-
-// Calculate days until expiration
-const getDaysUntilExpiration = (endDate: Date): number => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const end = new Date(endDate);
-  end.setHours(0, 0, 0, 0);
-  const diffTime = end.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
-};
+import { getDaysUntilExpiration } from "@/lib/date-utils";
+import { REMINDER_DAYS } from "@/lib/constants";
 
 // Email template for member reminders
 const getMemberReminderEmail = (memberName: string, daysLeft: number) => {
@@ -208,9 +199,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // - 2 days left and first reminder not sent
       // - 1 day left and second reminder not sent
       // - 0 days left (expired today)
-      if (daysLeft === 2 && !updated.first_reminder_sent) {
+      if (daysLeft === REMINDER_DAYS.FIRST && !updated.first_reminder_sent) {
         const memberName = `${updated.member.user.first_name} ${updated.member.user.last_name}`;
-        const { subject, text, html } = getMemberReminderEmail(memberName, 2);
+        const { subject, text, html } = getMemberReminderEmail(memberName, REMINDER_DAYS.FIRST);
         
         try {
           await sendEmail(updated.member.user.email, subject, text, html);
@@ -223,9 +214,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         } catch (error) {
           console.error(`Failed to send reminder email to ${updated.member.user.email}:`, error);
         }
-      } else if (daysLeft === 1 && !updated.second_reminder_sent) {
+      } else if (daysLeft === REMINDER_DAYS.SECOND && !updated.second_reminder_sent) {
         const memberName = `${updated.member.user.first_name} ${updated.member.user.last_name}`;
-        const { subject, text, html } = getMemberReminderEmail(memberName, 1);
+        const { subject, text, html } = getMemberReminderEmail(memberName, REMINDER_DAYS.SECOND);
         
         try {
           await sendEmail(updated.member.user.email, subject, text, html);

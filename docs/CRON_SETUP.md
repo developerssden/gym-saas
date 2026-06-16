@@ -26,9 +26,11 @@ The cron job runs daily at 12:00 AM (midnight) to:
    }
    ```
 
-2. **Deploy to Vercel**: The cron job will automatically be set up when you deploy.
+2. **Set `CRON_SECRET`** in your Vercel project environment variables. Vercel automatically sends this value as `Authorization: Bearer <CRON_SECRET>` when invoking scheduled cron jobs.
 
-3. **Verify**: Check your Vercel dashboard → Settings → Cron Jobs to see the scheduled job.
+3. **Deploy to Vercel**: The cron job will automatically be set up when you deploy.
+
+4. **Verify**: Check your Vercel dashboard → Settings → Cron Jobs to see the scheduled job.
 
 ### Option 2: External Cron Service
 
@@ -39,22 +41,25 @@ If you're not using Vercel, you can use external cron services like:
 
 1. Create a cron job that calls: `https://your-domain.com/api/cron/check-subscriptions`
 2. Set the schedule to: `0 0 * * *` (runs daily at midnight)
-3. Set the HTTP method to: `POST`
-4. Add authorization header: `Authorization: Bearer YOUR_CRON_SECRET`
+3. Set the HTTP method to: `GET`
+4. Add one of these authorization headers:
+   - `Authorization: Bearer YOUR_CRON_SECRET`
+   - `x-cron-secret: YOUR_CRON_SECRET`
 
 ### Option 3: Manual Testing
 
 You can manually trigger the cron job for testing:
 
 ```bash
-curl -X POST https://your-domain.com/api/cron/check-subscriptions \
+curl -X GET https://your-domain.com/api/cron/check-subscriptions \
   -H "Authorization: Bearer YOUR_CRON_SECRET"
 ```
 
-Or if using Vercel Cron header:
+Or with the `x-cron-secret` header:
+
 ```bash
-curl -X POST https://your-domain.com/api/cron/check-subscriptions \
-  -H "x-vercel-cron: 1"
+curl -X GET https://your-domain.com/api/cron/check-subscriptions \
+  -H "x-cron-secret: YOUR_CRON_SECRET"
 ```
 
 ## Environment Variables
@@ -63,7 +68,15 @@ Make sure these environment variables are set:
 
 - `GMAIL_USER`: Your Gmail address for sending emails
 - `GMAIL_APP_PASSWORD`: Gmail App Password (not your regular password)
-- `CRON_SECRET`: (Optional) Secret token for securing the cron endpoint
+- `CRON_SECRET`: **Required.** Long random secret used to authenticate cron requests. Set the same value locally and in production.
+
+Example `.env`:
+
+```
+CRON_SECRET=your-long-random-secret-here
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-app-password
+```
 
 ## How It Works
 
@@ -108,7 +121,12 @@ All emails are HTML formatted and include:
 ### Cron job not running
 - Check Vercel dashboard for cron job status
 - Verify `vercel.json` is properly configured
+- Verify `CRON_SECRET` is set in environment variables
 - Check deployment logs for errors
+
+### Cron job returns 401 Unauthorized
+- Ensure `CRON_SECRET` is set in your environment
+- Ensure the request includes `Authorization: Bearer <CRON_SECRET>` or `x-cron-secret: <CRON_SECRET>`
 
 ### Emails not sending
 - Verify `GMAIL_USER` and `GMAIL_APP_PASSWORD` are set correctly
@@ -128,7 +146,7 @@ To test the cron job manually:
    - 1 day from today (for second reminder)
    - Today (for expiration)
 
-2. Manually trigger the cron endpoint
+2. Manually trigger the cron endpoint with the secret header
 
 3. Verify:
    - Emails are sent correctly
@@ -145,4 +163,3 @@ The cron schedule `0 0 * * *` means:
 - `*` - day of week (every day of week)
 
 This runs at 12:00 AM UTC daily. Adjust timezone if needed.
-

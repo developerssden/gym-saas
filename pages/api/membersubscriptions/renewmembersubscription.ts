@@ -59,23 +59,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let endDate: Date;
 
     if (existingSubscription) {
-      // Add remaining days from previous subscription
       const remainingDays = calculateRemainingDaysFromEndDate(existingSubscription.end_date);
       endDate = calculateEndDateWithRemainingDays(startDate, billingModelEnum, remainingDays);
-      
-      // Deactivate previous subscription
-      await prisma.memberSubscription.update({
-        where: { id: existingSubscription.id },
-        data: { is_active: false },
-      });
     } else {
-      // New subscription
       endDate = calculateEndDate(startDate, billingModelEnum);
     }
 
-    // Create new subscription and payment in a transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create MemberSubscription
+      if (existingSubscription) {
+        await tx.memberSubscription.update({
+          where: { id: existingSubscription.id },
+          data: { is_active: false },
+        });
+      }
+
       const memberSubscription = await tx.memberSubscription.create({
         data: {
           member_id,
@@ -88,7 +85,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      // Create payment record if payment details provided
       if (amount && payment_method) {
         await tx.payment.create({
           data: {
@@ -99,6 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             transaction_id: transaction_id || null,
             payment_date: payment_date ? new Date(payment_date) : new Date(),
             notes: notes || null,
+            recorded_by_id: session.user.id,
           },
         });
       }
@@ -117,5 +114,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .json({ error: message });
   }
 }
-
-

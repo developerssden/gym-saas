@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma"
 import { requireGymOwner } from "@/lib/ownersessioncheck"
 import { StatusCodes } from "http-status-codes"
 import { SubscriptionTypeEnum } from "@/prisma/generated/client"
+import { DASHBOARD } from "@/lib/constants";
 
 type OwnerOverviewResponse = {
   totals: {
@@ -285,7 +286,7 @@ export default async function handler(
           },
         },
         orderBy: { end_date: "asc" },
-        take: 25,
+        take: DASHBOARD.SUBSCRIPTION_TABLE_LIMIT,
       }),
       // Expired subscriptions
       prisma.memberSubscription.findMany({
@@ -312,7 +313,7 @@ export default async function handler(
           },
         },
         orderBy: { end_date: "desc" },
-        take: 25,
+        take: DASHBOARD.SUBSCRIPTION_TABLE_LIMIT,
       }),
       // Recent payments
       prisma.payment.findMany({
@@ -339,7 +340,7 @@ export default async function handler(
           },
         },
         orderBy: { payment_date: "desc" },
-        take: 25,
+        take: DASHBOARD.SUBSCRIPTION_TABLE_LIMIT,
       }),
     ])
 
@@ -365,8 +366,8 @@ export default async function handler(
         monthKeys.push(new Date(m))
         m = addMonths(m, 1)
       }
-      if (monthKeys.length > 12) {
-        monthKeys.splice(0, monthKeys.length - 12)
+      if (monthKeys.length > DASHBOARD.CHART_MONTHS) {
+        monthKeys.splice(0, monthKeys.length - DASHBOARD.CHART_MONTHS)
       }
     }
     const monthTotals = new Map<string, number>()

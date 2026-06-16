@@ -13,11 +13,6 @@ enum Role {
   MEMBER
 }
 
-enum SubscriptionType {
-  MONTHLY
-  YEARLY
-}
-
 enum PaymentMethod {
   CASH
   BANK_TRANSFER
@@ -60,6 +55,7 @@ model User {
   member            Member?
 
   ownerSubscriptions OwnerSubscription[]
+  recordedPayments   Payment[]             @relation("RecordedPayments")
 }
 
 model Todo {
@@ -280,10 +276,12 @@ model Payment {
   transaction_id          String?
   payment_date            DateTime
   notes                   String?
+  recorded_by_id          String?
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
   
   // Relations
   ownerSubscription       OwnerSubscription?  @relation(fields: [owner_subscription_id], references: [id])
   memberSubscription     MemberSubscription? @relation(fields: [member_subscription_id], references: [id])
+  recordedBy              User?               @relation("RecordedPayments", fields: [recorded_by_id], references: [id])
 }
