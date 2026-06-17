@@ -84,6 +84,7 @@ export default function RenewMemberModal({
       toast.success(`${memberName}'s membership renewed successfully`);
 
       queryClient.invalidateQueries({ queryKey: ["ownerDashboardOverview"] });
+      queryClient.invalidateQueries({ queryKey: ["membersubscriptions"] });
 
       handleClose();
     } catch (err: unknown) {

@@ -47,6 +47,8 @@ export type MemberSubscriptionMinAggregateOutputType = {
   second_reminder_sent: boolean | null
   is_active: boolean | null
   is_deleted: boolean | null
+  churn_reason: string | null
+  churn_note: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -64,6 +66,8 @@ export type MemberSubscriptionMaxAggregateOutputType = {
   second_reminder_sent: boolean | null
   is_active: boolean | null
   is_deleted: boolean | null
+  churn_reason: string | null
+  churn_note: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -81,6 +85,8 @@ export type MemberSubscriptionCountAggregateOutputType = {
   second_reminder_sent: number
   is_active: number
   is_deleted: number
+  churn_reason: number
+  churn_note: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -108,6 +114,8 @@ export type MemberSubscriptionMinAggregateInputType = {
   second_reminder_sent?: true
   is_active?: true
   is_deleted?: true
+  churn_reason?: true
+  churn_note?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -125,6 +133,8 @@ export type MemberSubscriptionMaxAggregateInputType = {
   second_reminder_sent?: true
   is_active?: true
   is_deleted?: true
+  churn_reason?: true
+  churn_note?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -142,6 +152,8 @@ export type MemberSubscriptionCountAggregateInputType = {
   second_reminder_sent?: true
   is_active?: true
   is_deleted?: true
+  churn_reason?: true
+  churn_note?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -246,6 +258,8 @@ export type MemberSubscriptionGroupByOutputType = {
   second_reminder_sent: boolean
   is_active: boolean
   is_deleted: boolean
+  churn_reason: string | null
+  churn_note: string | null
   createdAt: Date
   updatedAt: Date
   _count: MemberSubscriptionCountAggregateOutputType | null
@@ -286,6 +300,8 @@ export type MemberSubscriptionWhereInput = {
   second_reminder_sent?: Prisma.BoolFilter<"MemberSubscription"> | boolean
   is_active?: Prisma.BoolFilter<"MemberSubscription"> | boolean
   is_deleted?: Prisma.BoolFilter<"MemberSubscription"> | boolean
+  churn_reason?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
+  churn_note?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   member?: Prisma.XOR<Prisma.MemberScalarRelationFilter, Prisma.MemberWhereInput>
@@ -305,6 +321,8 @@ export type MemberSubscriptionOrderByWithRelationInput = {
   second_reminder_sent?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  churn_reason?: Prisma.SortOrderInput | Prisma.SortOrder
+  churn_note?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   member?: Prisma.MemberOrderByWithRelationInput
@@ -327,6 +345,8 @@ export type MemberSubscriptionWhereUniqueInput = Prisma.AtLeast<{
   second_reminder_sent?: Prisma.BoolFilter<"MemberSubscription"> | boolean
   is_active?: Prisma.BoolFilter<"MemberSubscription"> | boolean
   is_deleted?: Prisma.BoolFilter<"MemberSubscription"> | boolean
+  churn_reason?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
+  churn_note?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   member?: Prisma.XOR<Prisma.MemberScalarRelationFilter, Prisma.MemberWhereInput>
@@ -346,6 +366,8 @@ export type MemberSubscriptionOrderByWithAggregationInput = {
   second_reminder_sent?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  churn_reason?: Prisma.SortOrderInput | Prisma.SortOrder
+  churn_note?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MemberSubscriptionCountOrderByAggregateInput
@@ -371,6 +393,8 @@ export type MemberSubscriptionScalarWhereWithAggregatesInput = {
   second_reminder_sent?: Prisma.BoolWithAggregatesFilter<"MemberSubscription"> | boolean
   is_active?: Prisma.BoolWithAggregatesFilter<"MemberSubscription"> | boolean
   is_deleted?: Prisma.BoolWithAggregatesFilter<"MemberSubscription"> | boolean
+  churn_reason?: Prisma.StringNullableWithAggregatesFilter<"MemberSubscription"> | string | null
+  churn_note?: Prisma.StringNullableWithAggregatesFilter<"MemberSubscription"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MemberSubscription"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MemberSubscription"> | Date | string
 }
@@ -387,6 +411,8 @@ export type MemberSubscriptionCreateInput = {
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   member: Prisma.MemberCreateNestedOneWithoutMemberSubscriptionsInput
@@ -406,6 +432,8 @@ export type MemberSubscriptionUncheckedCreateInput = {
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutMemberSubscriptionInput
@@ -423,6 +451,8 @@ export type MemberSubscriptionUpdateInput = {
   second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   member?: Prisma.MemberUpdateOneRequiredWithoutMemberSubscriptionsNestedInput
@@ -442,6 +472,8 @@ export type MemberSubscriptionUncheckedUpdateInput = {
   second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutMemberSubscriptionNestedInput
@@ -460,6 +492,8 @@ export type MemberSubscriptionCreateManyInput = {
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -476,6 +510,8 @@ export type MemberSubscriptionUpdateManyMutationInput = {
   second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -493,6 +529,8 @@ export type MemberSubscriptionUncheckedUpdateManyInput = {
   second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -520,6 +558,8 @@ export type MemberSubscriptionCountOrderByAggregateInput = {
   second_reminder_sent?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  churn_reason?: Prisma.SortOrder
+  churn_note?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -541,6 +581,8 @@ export type MemberSubscriptionMaxOrderByAggregateInput = {
   second_reminder_sent?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  churn_reason?: Prisma.SortOrder
+  churn_note?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -558,6 +600,8 @@ export type MemberSubscriptionMinOrderByAggregateInput = {
   second_reminder_sent?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  churn_reason?: Prisma.SortOrder
+  churn_note?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -641,6 +685,8 @@ export type MemberSubscriptionCreateWithoutMemberInput = {
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   payments?: Prisma.PaymentCreateNestedManyWithoutMemberSubscriptionInput
@@ -658,6 +704,8 @@ export type MemberSubscriptionUncheckedCreateWithoutMemberInput = {
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutMemberSubscriptionInput
@@ -705,6 +753,8 @@ export type MemberSubscriptionScalarWhereInput = {
   second_reminder_sent?: Prisma.BoolFilter<"MemberSubscription"> | boolean
   is_active?: Prisma.BoolFilter<"MemberSubscription"> | boolean
   is_deleted?: Prisma.BoolFilter<"MemberSubscription"> | boolean
+  churn_reason?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
+  churn_note?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
 }
@@ -721,6 +771,8 @@ export type MemberSubscriptionCreateWithoutPaymentsInput = {
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   member: Prisma.MemberCreateNestedOneWithoutMemberSubscriptionsInput
@@ -739,6 +791,8 @@ export type MemberSubscriptionUncheckedCreateWithoutPaymentsInput = {
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -771,6 +825,8 @@ export type MemberSubscriptionUpdateWithoutPaymentsInput = {
   second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   member?: Prisma.MemberUpdateOneRequiredWithoutMemberSubscriptionsNestedInput
@@ -789,6 +845,8 @@ export type MemberSubscriptionUncheckedUpdateWithoutPaymentsInput = {
   second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -805,6 +863,8 @@ export type MemberSubscriptionCreateManyMemberInput = {
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -821,6 +881,8 @@ export type MemberSubscriptionUpdateWithoutMemberInput = {
   second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUpdateManyWithoutMemberSubscriptionNestedInput
@@ -838,6 +900,8 @@ export type MemberSubscriptionUncheckedUpdateWithoutMemberInput = {
   second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutMemberSubscriptionNestedInput
@@ -855,6 +919,8 @@ export type MemberSubscriptionUncheckedUpdateManyWithoutMemberInput = {
   second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -903,6 +969,8 @@ export type MemberSubscriptionSelect<ExtArgs extends runtime.Types.Extensions.In
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: boolean
+  churn_note?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   member?: boolean | Prisma.MemberDefaultArgs<ExtArgs>
@@ -923,6 +991,8 @@ export type MemberSubscriptionSelectCreateManyAndReturn<ExtArgs extends runtime.
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: boolean
+  churn_note?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   member?: boolean | Prisma.MemberDefaultArgs<ExtArgs>
@@ -941,6 +1011,8 @@ export type MemberSubscriptionSelectUpdateManyAndReturn<ExtArgs extends runtime.
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: boolean
+  churn_note?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   member?: boolean | Prisma.MemberDefaultArgs<ExtArgs>
@@ -959,11 +1031,13 @@ export type MemberSubscriptionSelectScalar = {
   second_reminder_sent?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  churn_reason?: boolean
+  churn_note?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MemberSubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "member_id" | "price" | "billing_model" | "start_date" | "end_date" | "is_expired" | "notification_sent" | "first_reminder_sent" | "second_reminder_sent" | "is_active" | "is_deleted" | "createdAt" | "updatedAt", ExtArgs["result"]["memberSubscription"]>
+export type MemberSubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "member_id" | "price" | "billing_model" | "start_date" | "end_date" | "is_expired" | "notification_sent" | "first_reminder_sent" | "second_reminder_sent" | "is_active" | "is_deleted" | "churn_reason" | "churn_note" | "createdAt" | "updatedAt", ExtArgs["result"]["memberSubscription"]>
 export type MemberSubscriptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   member?: boolean | Prisma.MemberDefaultArgs<ExtArgs>
   payments?: boolean | Prisma.MemberSubscription$paymentsArgs<ExtArgs>
@@ -995,6 +1069,8 @@ export type $MemberSubscriptionPayload<ExtArgs extends runtime.Types.Extensions.
     second_reminder_sent: boolean
     is_active: boolean
     is_deleted: boolean
+    churn_reason: string | null
+    churn_note: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["memberSubscription"]>
@@ -1434,6 +1510,8 @@ export interface MemberSubscriptionFieldRefs {
   readonly second_reminder_sent: Prisma.FieldRef<"MemberSubscription", 'Boolean'>
   readonly is_active: Prisma.FieldRef<"MemberSubscription", 'Boolean'>
   readonly is_deleted: Prisma.FieldRef<"MemberSubscription", 'Boolean'>
+  readonly churn_reason: Prisma.FieldRef<"MemberSubscription", 'String'>
+  readonly churn_note: Prisma.FieldRef<"MemberSubscription", 'String'>
   readonly createdAt: Prisma.FieldRef<"MemberSubscription", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MemberSubscription", 'DateTime'>
 }

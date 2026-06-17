@@ -46,6 +46,8 @@ export type MemberSubscription = {
     notification_sent: boolean
     is_active: boolean
     is_deleted: boolean
+    churn_reason: string | null
+    churn_note: string | null
     createdAt: Date
     updatedAt: Date
     member?: any

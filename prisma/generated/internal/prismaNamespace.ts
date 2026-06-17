@@ -1455,6 +1455,8 @@ export const MemberSubscriptionScalarFieldEnum = {
   second_reminder_sent: 'second_reminder_sent',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
+  churn_reason: 'churn_reason',
+  churn_note: 'churn_note',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -258,6 +258,8 @@ model MemberSubscription {
   second_reminder_sent Boolean       @default(false)
   is_active           Boolean       @default(true)
   is_deleted          Boolean       @default(false)
+  churn_reason        String?
+  churn_note          String?
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   
