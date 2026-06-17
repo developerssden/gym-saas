@@ -24,17 +24,25 @@ import {
 import type { OwnerSubscription } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import {
-  TrashIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  RotateCwIcon,
-  PencilIcon,
+  MoreHorizontal,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  RotateCw,
+  Pencil,
 } from "lucide-react";
 import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -123,6 +131,7 @@ export const columns: ColumnDef<OwnerSubscription>[] = [
   {
     id: "actions",
     header: "Actions",
+    enableHiding: false,
     cell: ({ row }) => <ActionCell subscription={row.original} />,
   },
 ];
@@ -213,44 +222,84 @@ const ActionCell = ({ subscription }: { subscription: OwnerSubscription }) => {
   });
 
   return (
-    <div className="flex gap-2">
-      <Button
-        asChild
-        size="icon"
-        variant="outline"
-        className="rounded"
-        title="Edit"
-      >
-        <Link href={`/subscriptions/manage?action=edit&id=${subscription.id}`}>
-          <PencilIcon size={16} />
-        </Link>
-      </Button>
-
-      <Button
-        size="icon"
-        variant="outline"
-        onClick={() => {
-          setRenewForm((prev) => ({
-            ...prev,
-            billing_model: subscription.billing_model ?? prev.billing_model,
-            amount: "",
-            payment_method: "CASH",
-            transaction_id: "",
-            payment_date: new Date().toISOString().slice(0, 10),
-            notes: "",
-          }));
-          setRenewOpen(true);
-        }}
-        disabled={!subscription.is_expired || isRenewing}
-        className="rounded text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-        title={
-          subscription.is_expired
-            ? "Renew (start/end updated from today based on billing model)"
-            : "Renew is available only when subscription is expired"
-        }
-      >
-        <RotateCwIcon size={16} />
-      </Button>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem asChild>
+            <Link href={`/subscriptions/manage?action=edit&id=${subscription.id}`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              setRenewForm((prev) => ({
+                ...prev,
+                billing_model: subscription.billing_model ?? prev.billing_model,
+                amount: "",
+                payment_method: "CASH",
+                transaction_id: "",
+                payment_date: new Date().toISOString().slice(0, 10),
+                notes: "",
+              }));
+              setRenewOpen(true);
+            }}
+            disabled={!subscription.is_expired || isRenewing}
+          >
+            <RotateCw className="mr-2 h-4 w-4" />
+            Renew
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => toggleActive()} disabled={isToggling}>
+            {subscription.is_active ? (
+              <XCircle className="mr-2 h-4 w-4" />
+            ) : (
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+            )}
+            {subscription.is_active ? "Deactivate" : "Activate"}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className="text-destructive"
+                disabled={isDeleting}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will delete the subscription
+                  for{" "}
+                  <span className="font-medium">
+                    {subscription.owner?.first_name} {subscription.owner?.last_name}
+                  </span>
+                  .
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => deleteSubscription()}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <Dialog open={renewOpen} onOpenChange={setRenewOpen}>
         <DialogContent>
@@ -381,61 +430,6 @@ const ActionCell = ({ subscription }: { subscription: OwnerSubscription }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button
-            size="icon"
-            variant="outline"
-            className="rounded text-red-600 hover:text-red-700 hover:bg-red-50"
-            disabled={isDeleting}
-            title="Delete"
-          >
-            <TrashIcon size={16} />
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will delete the subscription
-              for{" "}
-              <span className="font-medium">
-                {subscription.owner?.first_name} {subscription.owner?.last_name}
-              </span>
-              .
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteSubscription()}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Button
-        size="icon"
-        variant="outline"
-        onClick={() => toggleActive()}
-        disabled={isToggling}
-        className={`rounded ${
-          subscription.is_active
-            ? "text-green-500 hover:text-green-600 hover:bg-green-50"
-            : "text-gray-400 hover:text-green-500 hover:bg-gray-50"
-        }`}
-        title={subscription.is_active ? "Deactivate" : "Activate"}
-      >
-        {subscription.is_active ? (
-          <CheckCircleIcon size={16} />
-        ) : (
-          <XCircleIcon size={16} />
-        )}
-      </Button>
-    </div>
+    </>
   );
 };

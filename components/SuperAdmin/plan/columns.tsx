@@ -5,11 +5,24 @@ import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { Plan } from "@/types"
 import { ColumnDef } from "@tanstack/react-table"
-import { PencilIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from "lucide-react"
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react"
 import Link from "next/link"
 import axios from "axios"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,6 +93,7 @@ export const columns: ColumnDef<Plan>[] = [
   {
     id: "actions",
     header: "Actions",
+    enableHiding: false,
     cell: ({ row }) => <ActionCell subscription={row.original} />,
   },
 ]
@@ -117,56 +131,55 @@ const ActionCell = ({ subscription }: { subscription: Plan }) => {
   })
 
   return (
-    <div className="flex gap-2">
-      {/* Edit Button */}
-      <Link href={`/plans/manage?action=edit&id=${subscription.id}`}>
-        <Button
-          size="icon"
-          variant="outline"
-          className="rounded text-blue-600"
-        >
-          <PencilIcon size={16} />
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
-      </Link>
-
-      {/* Delete Button */}
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button
-            size="icon"
-            variant="outline"
-            className="rounded text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <TrashIcon size={16} />
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the plan "{subscription.name}".
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteSubscription()} className="bg-red-600 hover:bg-red-700">
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link href={`/plans/manage?action=edit&id=${subscription.id}`}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => toggleActive()}>
+          {subscription.is_active ? (
+            <XCircle className="mr-2 h-4 w-4" />
+          ) : (
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+          )}
+          {subscription.is_active ? "Deactivate" : "Activate"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <DropdownMenuItem
+              onSelect={(e) => e.preventDefault()}
+              className="text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
               Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Toggle Active */}
-      <Button
-        size="icon"
-        variant="outline"
-        onClick={() => toggleActive()}
-        className={`rounded ${subscription.is_active ? "text-green-500 hover:text-green-600 hover:bg-green-50" : "text-gray-400 hover:text-green-500 hover:bg-gray-50"
-          }`}
-        title={subscription.is_active ? "Deactivate" : "Activate"}
-      >
-        {subscription.is_active ? <CheckCircleIcon size={16} /> : <XCircleIcon size={16} />}
-      </Button>
-    </div>
+            </DropdownMenuItem>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the plan "{subscription.name}".
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => deleteSubscription()} className="bg-red-600 hover:bg-red-700">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

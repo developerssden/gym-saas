@@ -203,6 +203,8 @@ export const columns: ColumnDef<MemberSubscription>[] = [
   },
   {
     id: "actions",
+    header: "Actions",
+    enableHiding: false,
     cell: ({ row }) => {
       return <MemberSubscriptionActionsCell subscription={row.original} />;
     },

@@ -73,6 +73,8 @@ export const columns: ColumnDef<Member>[] = [
   },
   {
     id: "actions",
+    header: "Actions",
+    enableHiding: false,
     cell: ({ row }) => {
       const member = row.original;
       const queryClient = useQueryClient();

@@ -5,9 +5,15 @@ import { Button } from "@/components/ui/button";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import type { Payment } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
-import { FileTextIcon } from "lucide-react";
+import { FileText, MoreHorizontal } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const formatDate = (value: unknown) => {
   const d = value instanceof Date ? value : new Date(value as any);
@@ -93,6 +99,7 @@ export const columns: ColumnDef<Payment>[] = [
   {
     id: "actions",
     header: "Actions",
+    enableHiding: false,
     cell: ({ row }) => <ActionCell payment={row.original} />,
   },
 ];
@@ -123,19 +130,21 @@ const ActionCell = ({ payment }: { payment: Payment }) => {
     }
   };
 
-  // Show invoice button for both owner and member subscription payments
   return (
-    <div className="flex gap-2">
-      <Button
-        size="icon"
-        variant="outline"
-        onClick={handleGenerateInvoice}
-        className="rounded text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-        title="Generate Invoice"
-      >
-        <FileTextIcon size={16} />
-      </Button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleGenerateInvoice}>
+          <FileText className="mr-2 h-4 w-4" />
+          Generate Invoice
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
