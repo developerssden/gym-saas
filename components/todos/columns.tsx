@@ -126,13 +126,6 @@ export const columns: ColumnDef<Todo>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(todo.id)}
-            >
-              Copy todo ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href={`/todos/manage?action=edit&id=${todo.id}`}>
                 Edit todo
@@ -161,4 +154,3 @@ export const columns: ColumnDef<Todo>[] = [
     },
   },
 ];
-
