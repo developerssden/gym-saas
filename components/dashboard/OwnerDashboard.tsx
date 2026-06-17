@@ -36,6 +36,8 @@ import {
 } from "@/components/ui/chart"
 import DataFetchError from "@/components/common/DataFetchError"
 import DateRangePicker from "@/components/date-range-picker"
+import RenewMemberModal from "@/components/dashboard/RenewMemberModal"
+import OwnerSubscriptionBanner from "@/components/dashboard/OwnerSubscriptionBanner"
 import { addDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
 
@@ -64,6 +66,7 @@ type OwnerDashboardOverview = {
 
 type SubscriptionRow = {
   id: string
+  memberId: string
   memberName: string
   memberEmail: string
   price: number
@@ -330,6 +333,39 @@ const OwnerDashboard = () => {
   const [activeSearch, setActiveSearch] = React.useState("")
   const [expiredSearch, setExpiredSearch] = React.useState("")
   const [paymentsSearch, setPaymentsSearch] = React.useState("")
+  const [renewTarget, setRenewTarget] = React.useState<{
+    memberId: string
+    memberName: string
+    price: number
+    billingModel: string
+  } | null>(null)
+
+  const expiredSubscriptionColumns = React.useMemo<ColumnDef<SubscriptionRow>[]>(
+    () => [
+      ...subscriptionColumns,
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              setRenewTarget({
+                memberId: row.original.memberId,
+                memberName: row.original.memberName,
+                price: row.original.price,
+                billingModel: row.original.billingModel,
+              })
+            }
+          >
+            Renew
+          </Button>
+        ),
+      },
+    ],
+    []
+  )
 
   if (isLoading && !data) return <OwnerDashboardSkeleton />
 
@@ -381,6 +417,8 @@ const OwnerDashboard = () => {
             </Button>
           </div>
         </div>
+
+        <OwnerSubscriptionBanner />
 
         {error && (
           <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
@@ -604,7 +642,7 @@ const OwnerDashboard = () => {
             </CardHeader>
             <CardContent>
               <DataTable
-                columns={subscriptionColumns}
+                columns={expiredSubscriptionColumns}
                 data={data.tables.expiredSubscriptions}
                 searchableColumns={["member", "billingModel"]}
                 pagination={expiredPagination}
@@ -634,6 +672,17 @@ const OwnerDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {renewTarget && (
+        <RenewMemberModal
+          open={!!renewTarget}
+          onClose={() => setRenewTarget(null)}
+          memberId={renewTarget.memberId}
+          memberName={renewTarget.memberName}
+          defaultPrice={renewTarget.price}
+          defaultBillingModel={renewTarget.billingModel}
+        />
+      )}
     </PageContainer>
   )
 }

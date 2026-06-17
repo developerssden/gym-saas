@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   Select,
   SelectContent,
@@ -90,6 +91,22 @@ const ManageOwnerSubscriptionContent = () => {
     });
     return map;
   }, [owners]);
+
+  const ownerOptions = useMemo(
+    () =>
+      owners.map((o) => {
+        const label =
+          ownerLabelById.get(o.id) ||
+          `${o.first_name} ${o.last_name}`.trim() ||
+          o.id;
+        return {
+          value: o.id,
+          label,
+          searchValue: `${label} ${o.email ?? ""}`.trim(),
+        };
+      }),
+    [owners, ownerLabelById]
+  );
 
   const createMutation = useMutation({
     mutationFn: (values: any) =>
@@ -249,24 +266,15 @@ const ManageOwnerSubscriptionContent = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
             <div className="space-y-2">
               <Label>Owner</Label>
-              <Select
+              <SearchableSelect
+                options={ownerOptions}
                 value={formik.values.owner_id || ""}
                 onValueChange={(val) => formik.setFieldValue("owner_id", val)}
+                placeholder={ownersLoading ? "Loading..." : "Select owner"}
+                searchPlaceholder="Search owners..."
+                emptyMessage="No owners found."
                 disabled={action === "view" || ownersLoading}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue
-                    placeholder={ownersLoading ? "Loading..." : "Select owner"}
-                  />
-                </SelectTrigger>
-                <SelectContent className="w-full">
-                  {owners.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>
-                      {ownerLabelById.get(o.id) || o.id}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
               {formik.touched.owner_id && formik.errors.owner_id && (
                 <p className="text-red-500 text-sm">
                   {String(formik.errors.owner_id)}

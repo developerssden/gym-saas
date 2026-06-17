@@ -6,13 +6,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Switch } from "@/components/ui/switch";
 import {
   Popover,
@@ -115,6 +109,22 @@ const ManageMemberSubscriptionContent = () => {
     });
     return map;
   }, [members]);
+
+  const memberOptions = useMemo(
+    () =>
+      members.map((m: any) => {
+        const label =
+          memberLabelById.get(m.id) ||
+          `${m.user?.first_name ?? ""} ${m.user?.last_name ?? ""}`.trim() ||
+          m.id;
+        return {
+          value: m.id,
+          label,
+          searchValue: `${label} ${m.user?.email ?? ""} ${m.user?.phone_number ?? ""}`.trim(),
+        };
+      }),
+    [members, memberLabelById]
+  );
 
   // Calculate end date from months if not using custom dates
   const calculateEndDate = (startDate: Date, months: number) => {
@@ -244,22 +254,15 @@ const ManageMemberSubscriptionContent = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
             <div className="space-y-2 md:col-span-2">
               <Label>Member *</Label>
-              <Select
+              <SearchableSelect
+                options={memberOptions}
                 value={formik.values.member_id || ""}
                 onValueChange={handleMemberChange}
+                placeholder="Select member"
+                searchPlaceholder="Search members..."
+                emptyMessage="No members found."
                 disabled={action === "view"}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select member" />
-                </SelectTrigger>
-                <SelectContent>
-                  {members.map((m: any) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {memberLabelById.get(m.id) || m.id}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
               {formik.touched.member_id && formik.errors.member_id && (
                 <p className="text-red-500 text-sm">{String(formik.errors.member_id)}</p>
               )}

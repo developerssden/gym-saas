@@ -28,6 +28,7 @@ declare module 'next-auth' {
       max_equipment?: number | null;
       subscription_active?: boolean;
       subscription_expired?: boolean;
+      subscription_end_date?: string | null;
       subscription_limits?: {
         max_gyms: number;
         max_locations: number;

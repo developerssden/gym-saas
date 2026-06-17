@@ -278,6 +278,7 @@ export const options: NextAuthOptions = {
           if (activeSubscription?.plan) {
             session.user.subscription_active = true;
             session.user.subscription_expired = false;
+            session.user.subscription_end_date = activeSubscription.end_date.toISOString();
             session.user.subscription_limits = {
               max_gyms: activeSubscription.plan.max_gyms,
               max_locations: activeSubscription.plan.max_locations,
@@ -287,6 +288,7 @@ export const options: NextAuthOptions = {
           } else {
             session.user.subscription_active = false;
             session.user.subscription_expired = true;
+            session.user.subscription_end_date = null;
             session.user.subscription_limits = {
               max_gyms: 0,
               max_locations: 0,

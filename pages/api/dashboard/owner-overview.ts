@@ -26,6 +26,7 @@ type OwnerOverviewResponse = {
   tables: {
     activeSubscriptions: Array<{
       id: string
+      memberId: string
       memberName: string
       memberEmail: string
       price: number
@@ -39,6 +40,7 @@ type OwnerOverviewResponse = {
     }>
     expiredSubscriptions: Array<{
       id: string
+      memberId: string
       memberName: string
       memberEmail: string
       price: number
@@ -406,6 +408,7 @@ export default async function handler(
 
       return {
         id: s.id,
+        memberId: s.member_id,
         memberName,
         memberEmail,
         price: s.price ?? 0,
