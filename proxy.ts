@@ -13,28 +13,20 @@ type RouteGate = {
 const ROUTE_GATES: RouteGate[] = [
   {
     routes: ['/dashboard'],
-    roles: ['SUPER_ADMIN','GYM_OWNER']
+    roles: ['SUPER_ADMIN', 'GYM_OWNER'],
   },
   {
-    routes: ['/clients'],
-    roles: ['SUPER_ADMIN']
+    routes: ['/clients', '/subscriptions', '/plans'],
+    roles: ['SUPER_ADMIN'],
   },
   {
-    routes: ['/subscriptions'],
-    roles: ['SUPER_ADMIN']
+    routes: ['/gyms', '/locations', '/payments', '/announcements'],
+    roles: ['SUPER_ADMIN', 'GYM_OWNER'],
   },
   {
-    routes: ['/plans'],
-    roles: ['SUPER_ADMIN']
+    routes: ['/members', '/membersubscriptions', '/equipment', '/todos', '/profile'],
+    roles: ['GYM_OWNER'],
   },
-  {
-    routes: ['/payments'],
-    roles: ['SUPER_ADMIN', 'GYM_OWNER']
-  },
-  {
-    routes: ['/announcements'],
-    roles: ['SUPER_ADMIN', 'GYM_OWNER']
-  }
 ];
 
 const matchesPath = (pathname: string, route: string) => {

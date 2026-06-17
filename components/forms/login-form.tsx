@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { GalleryVerticalEnd, Loader2 } from 'lucide-react';
 
@@ -36,9 +36,15 @@ export function LoginForm({
       if (result?.error) {
         setError('Invalid email or password');
       } else {
-        // Redirect to dashboard on successful login
-        router.push('/dashboard');
-        router.refresh();
+        const updatedSession = await getSession();
+        const userRole = updatedSession?.user?.role;
+
+        if (userRole === 'SUPER_ADMIN' || userRole === 'GYM_OWNER') {
+          router.push('/dashboard');
+          router.refresh();
+        } else {
+          router.push('/unauthorized');
+        }
       }
     } catch (error) {
       setError('An unexpected error occurred. Please try again.');
