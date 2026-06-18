@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  InviteToken: 'InviteToken',
   Todo: 'Todo',
   Gym: 'Gym',
   Location: 'Location',
@@ -98,11 +99,25 @@ export const UserScalarFieldEnum = {
   role: 'role',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
+  onboarding_completed: 'onboarding_completed',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const InviteTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  email: 'email',
+  used: 'used',
+  expires_at: 'expires_at',
+  user_id: 'user_id',
+  createdAt: 'createdAt'
+} as const
+
+export type InviteTokenScalarFieldEnum = (typeof InviteTokenScalarFieldEnum)[keyof typeof InviteTokenScalarFieldEnum]
 
 
 export const TodoScalarFieldEnum = {

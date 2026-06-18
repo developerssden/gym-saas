@@ -72,15 +72,15 @@ export type Payment = {
 
 export type Client = {
     id: string;
-    first_name: string;
-    last_name: string;
-    phone_number: string;
-    address: string;
-    city: string;
-    state: string;
-    zip_code: string;
-    country: string;
-    date_of_birth: Date;
+    first_name: string | null;
+    last_name: string | null;
+    phone_number: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zip_code: string | null;
+    country: string | null;
+    date_of_birth: Date | null;
     cnic?: string | null;
     profile_picture?: string | null;
     email?: string | null;
@@ -88,6 +88,7 @@ export type Client = {
     role: string; // or Role enum if you're importing Role from Prisma
     is_active: boolean;
     is_deleted: boolean;
+    onboarding_completed?: boolean;
     createdAt: Date;
     updatedAt: Date;
 

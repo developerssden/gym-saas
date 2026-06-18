@@ -11,6 +11,7 @@ import {
   Trash2,
   CheckCircle2,
   XCircle,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
@@ -54,12 +55,14 @@ export const columns: ColumnDef<Client>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="First Name" />
     ),
+    cell: ({ row }) => row.original.first_name ?? "—",
   },
   {
     accessorKey: "last_name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Last Name" />
     ),
+    cell: ({ row }) => row.original.last_name ?? "—",
   },
   {
     accessorKey: "email",
@@ -113,8 +116,12 @@ export const columns: ColumnDef<Client>[] = [
   },
 ];
 
+const isPendingInvite = (client: Client) =>
+  !client.is_active && client.onboarding_completed === false;
+
 const ActionCell = ({ client }: { client: Client }) => {
   const queryClient = useQueryClient();
+  const pendingInvite = isPendingInvite(client);
 
   const { mutate: deleteClient } = useMutation({
     mutationFn: async () => {
@@ -134,10 +141,6 @@ const ActionCell = ({ client }: { client: Client }) => {
       await axios.post("/api/client/activeclient", { id: client.id });
     },
     onSuccess: () => {
-      // data is response from axios? No, axios returns object. mutationFn returns void above, wait.
-      // Let's fix mutationFn to return data so we can use it, or just use message from toast.
-      // actually axios.post returns a promise that resolves to response.
-      // Let's check api response. "message" and "subscription".
       toast.success("Client status updated");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
     },
@@ -145,6 +148,19 @@ const ActionCell = ({ client }: { client: Client }) => {
       toast.error(
         error.response?.data?.message || "Failed to update client status"
       );
+    },
+  });
+
+  const { mutate: resendInvite, isPending: isResending } = useMutation({
+    mutationFn: async () => {
+      await axios.post("/api/clients/resend-invite", { id: client.id });
+    },
+    onSuccess: () => {
+      toast.success("Invite resent successfully");
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to resend invite");
     },
   });
 
@@ -163,6 +179,15 @@ const ActionCell = ({ client }: { client: Client }) => {
             Edit
           </Link>
         </DropdownMenuItem>
+        {pendingInvite && (
+          <DropdownMenuItem
+            onClick={() => resendInvite()}
+            disabled={isResending}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            {isResending ? "Sending..." : "Resend Invite"}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={() => toggleActive()}>
           {client.is_active ? (
             <XCircle className="mr-2 h-4 w-4" />
@@ -187,7 +212,7 @@ const ActionCell = ({ client }: { client: Client }) => {
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
                 This action cannot be undone. This will permanently delete the
-                client &quot;{client.first_name} {client.last_name}&quot;.
+                client &quot;{client.first_name ?? "Pending"} {client.last_name ?? ""}&quot;.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

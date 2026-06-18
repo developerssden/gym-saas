@@ -35,8 +35,8 @@ type OwnerSubscriptionInput = {
   second_reminder_sent: boolean;
   owner: {
     email: string | null;
-    first_name: string;
-    last_name: string;
+    first_name: string | null;
+    last_name: string | null;
   };
   plan: { name: string };
 };
@@ -50,8 +50,8 @@ type MemberSubscriptionInput = {
   member: {
     user: {
       email: string | null;
-      first_name: string;
-      last_name: string;
+      first_name: string | null;
+      last_name: string | null;
     };
   };
 };
@@ -61,7 +61,7 @@ export function computeOwnerActions(
 ): CronAction[] {
   return subscriptions.map((sub) => {
     const daysLeft = getDaysUntilExpiration(sub.end_date);
-    const ownerName = `${sub.owner.first_name} ${sub.owner.last_name}`;
+    const ownerName = `${sub.owner.first_name ?? ""} ${sub.owner.last_name ?? ""}`.trim() || "Owner";
 
     if (isExpiredOrToday(sub.end_date) && !sub.notification_sent) {
       return {
@@ -102,7 +102,7 @@ export function computeMemberActions(
   return subscriptions.map((sub) => {
     const daysLeft = getDaysUntilExpiration(sub.end_date);
     const email = sub.member?.user?.email ?? "";
-    const name = `${sub.member.user.first_name} ${sub.member.user.last_name}`;
+    const name = `${sub.member.user.first_name ?? ""} ${sub.member.user.last_name ?? ""}`.trim() || "Member";
 
     if (isExpiredOrToday(sub.end_date) && !sub.notification_sent) {
       return {

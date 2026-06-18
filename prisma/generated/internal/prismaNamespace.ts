@@ -385,6 +385,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   User: 'User',
+  InviteToken: 'InviteToken',
   Todo: 'Todo',
   Gym: 'Gym',
   Location: 'Location',
@@ -410,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "todo" | "gym" | "location" | "member" | "equipment" | "plan" | "announcement" | "ownerSubscription" | "memberSubscription" | "payment"
+    modelProps: "user" | "inviteToken" | "todo" | "gym" | "location" | "member" | "equipment" | "plan" | "announcement" | "ownerSubscription" | "memberSubscription" | "payment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -485,6 +486,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.UserCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType> | number
+        }
+      }
+    }
+    InviteToken: {
+      payload: Prisma.$InviteTokenPayload<ExtArgs>
+      fields: Prisma.InviteTokenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InviteTokenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InviteTokenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+        }
+        findFirst: {
+          args: Prisma.InviteTokenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InviteTokenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+        }
+        findMany: {
+          args: Prisma.InviteTokenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload>[]
+        }
+        create: {
+          args: Prisma.InviteTokenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+        }
+        createMany: {
+          args: Prisma.InviteTokenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InviteTokenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload>[]
+        }
+        delete: {
+          args: Prisma.InviteTokenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+        }
+        update: {
+          args: Prisma.InviteTokenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+        }
+        deleteMany: {
+          args: Prisma.InviteTokenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InviteTokenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InviteTokenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload>[]
+        }
+        upsert: {
+          args: Prisma.InviteTokenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+        }
+        aggregate: {
+          args: Prisma.InviteTokenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInviteToken>
+        }
+        groupBy: {
+          args: Prisma.InviteTokenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InviteTokenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InviteTokenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InviteTokenCountAggregateOutputType> | number
         }
       }
     }
@@ -1285,11 +1360,25 @@ export const UserScalarFieldEnum = {
   role: 'role',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
+  onboarding_completed: 'onboarding_completed',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const InviteTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  email: 'email',
+  used: 'used',
+  expires_at: 'expires_at',
+  user_id: 'user_id',
+  createdAt: 'createdAt'
+} as const
+
+export type InviteTokenScalarFieldEnum = (typeof InviteTokenScalarFieldEnum)[keyof typeof InviteTokenScalarFieldEnum]
 
 
 export const TodoScalarFieldEnum = {
@@ -1796,6 +1885,7 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
+  inviteToken?: Prisma.InviteTokenOmit
   todo?: Prisma.TodoOmit
   gym?: Prisma.GymOmit
   location?: Prisma.LocationOmit

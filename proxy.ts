@@ -1,7 +1,9 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', ];
+const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboarding'];
+
+const PUBLIC_API_PATHS = ['/api/clients/complete-invite'];
 
 type Role = 'SUPER_ADMIN' | 'GYM_OWNER' | 'MEMBER';
 
@@ -34,8 +36,11 @@ const matchesPath = (pathname: string, route: string) => {
   return pathname === route || pathname.startsWith(`${route}/`);
 };
 
+const isPublicApi = (pathname: string) =>
+  PUBLIC_API_PATHS.some(route => matchesPath(pathname, route));
+
 const isPublic = (pathname: string) =>
-  PUBLIC_PATHS.some(route => matchesPath(pathname, route));
+  isPublicApi(pathname) || PUBLIC_PATHS.some(route => matchesPath(pathname, route));
 
 const findGate = (pathname: string) =>
   ROUTE_GATES.find(gate =>

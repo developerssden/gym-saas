@@ -31,31 +31,44 @@ enum AnnouncementAudience {
 
 // User model
 model User {
-  id                String        @id @default(uuid())
-  first_name        String
-  last_name         String
-  phone_number      String
-  address           String
-  city              String
-  state             String
-  zip_code          String
-  country           String
-  date_of_birth     DateTime
-  cnic              String?
-  profile_picture   String?
-  email             String?
-  password          String?
-  role              Role          @default(MEMBER)
-  is_active         Boolean       @default(true)
-  is_deleted        Boolean       @default(false)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  todos             Todo[]
-  gyms_owned        Gym[]         @relation("UserGyms")
-  member            Member?
+  id                   String        @id @default(uuid())
+  first_name           String?
+  last_name            String?
+  phone_number         String?
+  address              String?
+  city                 String?
+  state                String?
+  zip_code             String?
+  country              String?
+  date_of_birth        DateTime?
+  cnic                 String?
+  profile_picture      String?
+  email                String?
+  password             String?
+  role                 Role          @default(MEMBER)
+  is_active            Boolean       @default(true)
+  is_deleted           Boolean       @default(false)
+  onboarding_completed Boolean       @default(true)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  todos                Todo[]
+  gyms_owned           Gym[]         @relation("UserGyms")
+  member               Member?
 
   ownerSubscriptions OwnerSubscription[]
   recordedPayments   Payment[]             @relation("RecordedPayments")
+  inviteTokens       InviteToken[]
+}
+
+model InviteToken {
+  id         String   @id @default(uuid())
+  token      String   @unique
+  email      String
+  used       Boolean  @default(false)
+  expires_at DateTime
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+  createdAt  DateTime @default(now())
 }
 
 model Todo {

@@ -975,10 +975,6 @@ export type NullableEnumEquipmentConditionFieldUpdateOperationsInput = {
   set?: $Enums.EquipmentCondition | null
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type NullableFloatFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
