@@ -13,7 +13,7 @@ import DataFetchError from "@/components/common/DataFetchError";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
-import { columns } from "@/components/membersubscriptions/columns";
+import { columns, type MemberSubscription } from "@/components/membersubscriptions/columns";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 
 const MemberSubscriptionsPage = () => {
@@ -39,15 +39,12 @@ const MemberSubscriptionsPage = () => {
   // Client-side only: API returns all subs ordered by createdAt desc;
   // keep first row per member_id (= latest). Pagination totalCount unchanged.
   const latestByMember = useMemo(() => {
-    const subs = data?.data ?? [];
+    const subs: MemberSubscription[] = data?.data ?? [];
     return Object.values(
-      subs.reduce(
-        (acc, sub) => {
-          if (!acc[sub.member_id]) acc[sub.member_id] = sub;
-          return acc;
-        },
-        {} as Record<string, (typeof subs)[number]>
-      )
+      subs.reduce<Record<string, MemberSubscription>>((acc, sub) => {
+        if (!acc[sub.member_id]) acc[sub.member_id] = sub;
+        return acc;
+      }, {})
     );
   }, [data?.data]);
 

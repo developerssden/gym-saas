@@ -31,7 +31,7 @@ import RenewMemberModal from "@/components/dashboard/RenewMemberModal";
 import ChurnReasonModal from "@/components/membersubscriptions/ChurnReasonModal";
 import { MemberSubscriptionHistoryDrawer } from "@/components/membersubscriptions/MemberSubscriptionHistoryDrawer";
 
-type MemberSubscription = {
+export type MemberSubscription = {
   id: string;
   member_id: string;
   member: {
