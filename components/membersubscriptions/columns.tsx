@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { MoreHorizontal, Pencil, RotateCw, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, RotateCw, Trash2, History } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import RenewMemberModal from "@/components/dashboard/RenewMemberModal";
 import ChurnReasonModal from "@/components/membersubscriptions/ChurnReasonModal";
+import { MemberSubscriptionHistoryDrawer } from "@/components/membersubscriptions/MemberSubscriptionHistoryDrawer";
 
 type MemberSubscription = {
   id: string;
@@ -53,6 +54,7 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
   const queryClient = useQueryClient();
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [showChurnModal, setShowChurnModal] = useState(false);
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
 
   const memberName =
     `${subscription.member?.user?.first_name ?? ""} ${subscription.member?.user?.last_name ?? ""}`.trim() ||
@@ -87,7 +89,14 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
               Edit
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowRenewModal(true)}>
+          <DropdownMenuItem onClick={() => setShowHistoryDrawer(true)}>
+            <History className="mr-2 h-4 w-4" />
+            View History
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setShowRenewModal(true)}
+            disabled={subscription.is_active && !subscription.is_expired}
+          >
             <RotateCw className="mr-2 h-4 w-4" />
             Renew
           </DropdownMenuItem>
@@ -143,6 +152,13 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
         memberName={memberName}
         defaultPrice={subscription.price}
         defaultBillingModel={subscription.billing_model}
+      />
+
+      <MemberSubscriptionHistoryDrawer
+        open={showHistoryDrawer}
+        onClose={() => setShowHistoryDrawer(false)}
+        memberId={subscription.member_id}
+        memberName={memberName}
       />
 
       <ChurnReasonModal

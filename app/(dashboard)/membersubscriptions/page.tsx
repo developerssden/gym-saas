@@ -7,7 +7,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import DataFetchError from "@/components/common/DataFetchError";
 import { useQuery } from "@tanstack/react-query";
@@ -35,6 +35,21 @@ const MemberSubscriptionsPage = () => {
     },
     enabled: status === "authenticated" && session?.user?.role === "GYM_OWNER",
   });
+
+  // Client-side only: API returns all subs ordered by createdAt desc;
+  // keep first row per member_id (= latest). Pagination totalCount unchanged.
+  const latestByMember = useMemo(() => {
+    const subs = data?.data ?? [];
+    return Object.values(
+      subs.reduce(
+        (acc, sub) => {
+          if (!acc[sub.member_id]) acc[sub.member_id] = sub;
+          return acc;
+        },
+        {} as Record<string, (typeof subs)[number]>
+      )
+    );
+  }, [data?.data]);
 
   // Early returns after all hooks
   if (status === "loading") {
@@ -76,7 +91,7 @@ const MemberSubscriptionsPage = () => {
       {data && (
         <DataTable
           columns={columns}
-          data={data.data}
+          data={latestByMember}
           searchableColumns={[
             "member.user.first_name",
             "member.user.last_name",

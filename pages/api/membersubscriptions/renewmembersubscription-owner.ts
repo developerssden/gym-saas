@@ -70,6 +70,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       orderBy: { createdAt: "desc" },
     });
 
+    if (existingSubscription?.is_active && !existingSubscription.is_expired) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          "Cannot renew an active subscription. Wait until it expires or becomes inactive.",
+      });
+    }
+
     let finalStartDate: Date;
     let finalEndDate: Date;
 

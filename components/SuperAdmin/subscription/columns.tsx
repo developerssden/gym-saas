@@ -30,6 +30,7 @@ import {
   XCircle,
   RotateCw,
   Pencil,
+  History,
 } from "lucide-react";
 import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -54,6 +55,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { OwnerSubscriptionHistoryDrawer } from "./OwnerSubscriptionHistoryDrawer";
 
 const formatDate = (value: unknown) => {
   const d = value instanceof Date ? value : new Date(value as any);
@@ -115,18 +117,20 @@ export const columns: ColumnDef<OwnerSubscription>[] = [
     cell: ({ row }) => formatDate(row.original.end_date),
   },
   {
-    accessorKey: "is_expired",
+    accessorKey: "status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Expired" />
+      <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => (row.original.is_expired ? "Yes" : "No"),
-  },
-  {
-    accessorKey: "is_active",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Active" />
-    ),
-    cell: ({ row }) => (row.original.is_active ? "Yes" : "No"),
+    cell: ({ row }) => {
+      const sub = row.original;
+      if (sub.is_expired) {
+        return <span className="text-red-500 font-medium">Expired</span>;
+      }
+      if (sub.is_active) {
+        return <span className="text-green-500 font-medium">Active</span>;
+      }
+      return <span className="text-gray-500 font-medium">Inactive</span>;
+    },
   },
   {
     id: "actions",
@@ -139,6 +143,11 @@ export const columns: ColumnDef<OwnerSubscription>[] = [
 const ActionCell = ({ subscription }: { subscription: OwnerSubscription }) => {
   const queryClient = useQueryClient();
   const [renewOpen, setRenewOpen] = useState(false);
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
+
+  const ownerName =
+    `${subscription.owner?.first_name ?? ""} ${subscription.owner?.last_name ?? ""}`.trim() ||
+    "Owner";
 
   const suggestedAmount = useMemo(() => {
     const plan = subscription.plan;
@@ -237,6 +246,10 @@ const ActionCell = ({ subscription }: { subscription: OwnerSubscription }) => {
               Edit
             </Link>
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowHistoryDrawer(true)}>
+            <History className="mr-2 h-4 w-4" />
+            View History
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
               setRenewForm((prev) => ({
@@ -300,6 +313,13 @@ const ActionCell = ({ subscription }: { subscription: OwnerSubscription }) => {
           </AlertDialog>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <OwnerSubscriptionHistoryDrawer
+        open={showHistoryDrawer}
+        onClose={() => setShowHistoryDrawer(false)}
+        ownerId={subscription.owner_id}
+        ownerName={ownerName}
+      />
 
       <Dialog open={renewOpen} onOpenChange={setRenewOpen}>
         <DialogContent>
