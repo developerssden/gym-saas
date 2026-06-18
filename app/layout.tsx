@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gym SaaS Startup",
+  title: {
+    default: "Gym SaaS",
+    template: "%s | Gym SaaS",
+  },
   description: "The all-in-one platform for modern gym management.",
 };
 
