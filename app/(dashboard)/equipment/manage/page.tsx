@@ -6,7 +6,6 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -23,35 +22,29 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { toast } from "sonner";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
-import { CalendarIcon, Upload, X } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const EquipmentSchema = Yup.object({
   name: Yup.string().required("Item Name is required"),
   category: Yup.string().required("Category is required"),
-  brand: Yup.string(),
-  model_number: Yup.string(),
-  serial_number: Yup.string(),
+  type: Yup.string().required("Type is required"),
   quantity: Yup.number().required("Quantity is required").min(0, "Quantity must be 0 or greater"),
-  min_stock_level: Yup.number().min(0, "Minimum stock level must be 0 or greater"),
   condition: Yup.string(),
+  status: Yup.string(),
+  weight_value: Yup.number().min(0, "Weight must be 0 or greater"),
+  weight_unit: Yup.string().oneOf(["kg", "lbs"]),
+  brand: Yup.string(),
   purchase_date: Yup.date(),
   purchase_cost: Yup.number().min(0, "Purchase cost must be 0 or greater"),
-  supplier_name: Yup.string(),
   last_maintenance_date: Yup.date(),
   next_maintenance_due: Yup.date(),
-  maintenance_notes: Yup.string(),
-  usage_frequency: Yup.string(),
-  equipment_location: Yup.string(),
-  status: Yup.string(),
-  type: Yup.string().required("Type is required"),
-  weight: Yup.string(),
 });
 
 const CATEGORIES = [
@@ -69,27 +62,38 @@ const CONDITIONS = [
   { value: "OUT_OF_ORDER", label: "Out of Order" },
 ];
 
-const USAGE_FREQUENCIES = [
-  { value: "LOW", label: "Low" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "HIGH", label: "High" },
-];
-
-const EQUIPMENT_LOCATIONS = [
-  "Cardio Area",
-  "Weight Room",
-  "Storage",
-  "Yoga Studio",
-  "Locker Room",
-  "Reception",
-  "Other",
-];
-
 const STATUSES = [
   { value: "ACTIVE", label: "Active" },
   { value: "IN_REPAIR", label: "In Repair" },
   { value: "RETIRED", label: "Retired" },
 ];
+
+const WEIGHT_UNITS = [
+  { value: "kg", label: "kg" },
+  { value: "lbs", label: "lbs" },
+] as const;
+
+const parseWeight = (
+  weightStr: string | null | undefined
+): { value: string; unit: "kg" | "lbs" } => {
+  if (!weightStr?.trim()) return { value: "", unit: "kg" };
+  const trimmed = weightStr.trim();
+  const lbsMatch = trimmed.match(/^([\d.]+)\s*(lbs?|lb\.?)$/i);
+  if (lbsMatch) return { value: lbsMatch[1], unit: "lbs" };
+  const kgMatch = trimmed.match(/^([\d.]+)\s*(kgs?|kg\.?)?$/i);
+  if (kgMatch) return { value: kgMatch[1], unit: "kg" };
+  const numMatch = trimmed.match(/^([\d.]+)/);
+  if (numMatch) return { value: numMatch[1], unit: "kg" };
+  return { value: "", unit: "kg" };
+};
+
+const formatWeight = (
+  value: string | number,
+  unit: "kg" | "lbs"
+): string | undefined => {
+  if (value === "" || value === null || value === undefined) return undefined;
+  return `${value} ${unit}`;
+};
 
 const formatDate = (date: Date | string | undefined): string => {
   if (!date) return "";
@@ -107,6 +111,7 @@ const ManageEquipmentContent = () => {
   const equipmentId = searchParams?.get("id") || null;
 
   const [saving, setSaving] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
   const [limitExceeded, setLimitExceeded] = useState<{
     show: boolean;
@@ -116,22 +121,13 @@ const ManageEquipmentContent = () => {
   }>({ show: false });
   const [showExpiredModal, setShowExpiredModal] = useState(false);
 
-  // Date picker states
   const [purchaseDateOpen, setPurchaseDateOpen] = useState(false);
   const [lastMaintenanceDateOpen, setLastMaintenanceDateOpen] = useState(false);
   const [nextMaintenanceDateOpen, setNextMaintenanceDateOpen] = useState(false);
 
-  // File upload states
-  const [itemImage, setItemImage] = useState<File | null>(null);
-  const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
-  const [itemImagePreview, setItemImagePreview] = useState<string | null>(null);
-  const [invoicePreview, setInvoicePreview] = useState<string | null>(null);
-
-  // Get selected gym and location from session
   const selectedGymIdFromSession = session?.user?.selected_gym_id;
   const selectedLocationIdFromSession = session?.user?.selected_location_id;
 
-  // Fetch equipment data
   const { data: equipmentData, isLoading: loadingEquipment } = useQuery({
     queryKey: ["equipment", equipmentId],
     queryFn: async () => {
@@ -141,20 +137,21 @@ const ManageEquipmentContent = () => {
     enabled: !!equipmentId && (action === "edit" || action === "view"),
   });
 
-  // Initialize image previews from equipment data
-  useMemo(() => {
-    if (equipmentData?.image_url) {
-      setItemImagePreview(equipmentData.image_url);
-    }
-    if (equipmentData?.invoice_url) {
-      setInvoicePreview(equipmentData.invoice_url);
+  useEffect(() => {
+    if (equipmentData) {
+      const hasAdvanced = !!(
+        equipmentData.brand ||
+        equipmentData.purchase_date ||
+        equipmentData.purchase_cost ||
+        equipmentData.last_maintenance_date ||
+        equipmentData.next_maintenance_due
+      );
+      if (hasAdvanced) setShowAdvanced(true);
     }
   }, [equipmentData]);
 
   const createMutation = useMutation({
     mutationFn: async (values: any) => {
-      // For now, we'll send JSON. File uploads can be handled separately later
-      // TODO: Implement file upload to storage service (e.g., S3, Cloudinary) and store URLs
       return axios.post("/api/equipment/createequipment", values);
     },
     onSuccess: () => {
@@ -178,8 +175,6 @@ const ManageEquipmentContent = () => {
 
   const updateMutation = useMutation({
     mutationFn: async (values: any) => {
-      // For now, we'll send JSON. File uploads can be handled separately later
-      // TODO: Implement file upload to storage service (e.g., S3, Cloudinary) and store URLs
       return axios.post("/api/equipment/updateequipment", {
         id: equipmentId,
         ...values,
@@ -205,39 +200,34 @@ const ManageEquipmentContent = () => {
     },
   });
 
-  // Determine gym_id and location_id based on action
   const gymId = action === "create" ? selectedGymIdFromSession : equipmentData?.gym_id || "";
-  const locationId = action === "create" ? selectedLocationIdFromSession : equipmentData?.location_id || "";
+  const locationId =
+    action === "create" ? selectedLocationIdFromSession : equipmentData?.location_id || "";
 
-  // Memoize initial values
-  const initialValues = useMemo(
-    () => ({
+  const initialValues = useMemo(() => {
+    const parsedWeight = parseWeight(equipmentData?.weight);
+    return {
       name: equipmentData?.name || "",
       category: equipmentData?.category || "",
-      brand: equipmentData?.brand || "",
-      model_number: equipmentData?.model_number || "",
-      serial_number: equipmentData?.serial_number || "",
+      type: equipmentData?.type || "",
       quantity: equipmentData?.quantity ? Number(equipmentData.quantity) : "",
-      min_stock_level: equipmentData?.min_stock_level || "",
       condition: equipmentData?.condition || "",
-      purchase_date: equipmentData?.purchase_date ? new Date(equipmentData.purchase_date) : undefined,
+      status: equipmentData?.status || "ACTIVE",
+      weight_value: parsedWeight.value !== "" ? Number(parsedWeight.value) : "",
+      weight_unit: parsedWeight.unit,
+      brand: equipmentData?.brand || "",
+      purchase_date: equipmentData?.purchase_date
+        ? new Date(equipmentData.purchase_date)
+        : undefined,
       purchase_cost: equipmentData?.purchase_cost || "",
-      supplier_name: equipmentData?.supplier_name || "",
       last_maintenance_date: equipmentData?.last_maintenance_date
         ? new Date(equipmentData.last_maintenance_date)
         : undefined,
       next_maintenance_due: equipmentData?.next_maintenance_due
         ? new Date(equipmentData.next_maintenance_due)
         : undefined,
-      maintenance_notes: equipmentData?.maintenance_notes || "",
-      usage_frequency: equipmentData?.usage_frequency || "",
-      equipment_location: equipmentData?.equipment_location || "",
-      status: equipmentData?.status || "ACTIVE",
-      type: equipmentData?.type || "",
-      weight: equipmentData?.weight || "",
-    }),
-    [equipmentData]
-  );
+    };
+  }, [equipmentData]);
 
   const formik = useFormik({
     initialValues,
@@ -249,7 +239,6 @@ const ManageEquipmentContent = () => {
         return;
       }
 
-      // Validate gym and location selection for create action
       if (action === "create") {
         if (!selectedGymIdFromSession) {
           toast.error("Please select a gym and location from the header selector.");
@@ -264,24 +253,22 @@ const ManageEquipmentContent = () => {
       setSaving(true);
       try {
         const submitValues: any = {
-          ...values,
-          quantity: String(values.quantity), // Convert to string for API
+          name: values.name,
+          category: values.category,
+          type: values.type,
+          quantity: String(values.quantity),
+          condition: values.condition || undefined,
+          status: values.status,
+          weight: formatWeight(values.weight_value, values.weight_unit as "kg" | "lbs"),
+          brand: values.brand || undefined,
+          purchase_date: values.purchase_date?.toISOString(),
+          purchase_cost: values.purchase_cost !== "" ? values.purchase_cost : undefined,
+          last_maintenance_date: values.last_maintenance_date?.toISOString(),
+          next_maintenance_due: values.next_maintenance_due?.toISOString(),
           gym_id: gymId,
           location_id: locationId || null,
         };
 
-        // Convert dates to ISO strings
-        if (submitValues.purchase_date) {
-          submitValues.purchase_date = submitValues.purchase_date.toISOString();
-        }
-        if (submitValues.last_maintenance_date) {
-          submitValues.last_maintenance_date = submitValues.last_maintenance_date.toISOString();
-        }
-        if (submitValues.next_maintenance_due) {
-          submitValues.next_maintenance_due = submitValues.next_maintenance_due.toISOString();
-        }
-
-        // Double-check gym_id is present
         if (!submitValues.gym_id) {
           toast.error("Gym is required.");
           setSaving(false);
@@ -291,12 +278,9 @@ const ManageEquipmentContent = () => {
         if (action === "create") {
           await createMutation.mutateAsync(submitValues);
         } else if (action === "edit") {
-          await updateMutation.mutateAsync({
-            id: equipmentId,
-            ...submitValues,
-          });
+          await updateMutation.mutateAsync(submitValues);
         }
-      } catch (error) {
+      } catch {
         // Error is already handled in mutation onError
       } finally {
         setSaving(false);
@@ -304,48 +288,8 @@ const ManageEquipmentContent = () => {
     },
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setItemImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setItemImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleInvoiceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setInvoiceFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setInvoicePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeImage = () => {
-    setItemImage(null);
-    setItemImagePreview(null);
-    formik.setFieldValue("image_url", "");
-  };
-
-  const removeInvoice = () => {
-    setInvoiceFile(null);
-    setInvoicePreview(null);
-    formik.setFieldValue("invoice_url", "");
-  };
-
   const resetForm = () => {
     formik.resetForm();
-    setItemImage(null);
-    setInvoiceFile(null);
-    setItemImagePreview(null);
-    setInvoicePreview(null);
   };
 
   if (status === "loading" || (loadingEquipment && action !== "create")) {
@@ -366,8 +310,8 @@ const ManageEquipmentContent = () => {
             {action === "create"
               ? "Add Inventory Item"
               : action === "edit"
-              ? "Update Inventory Item"
-              : "View Inventory Item"}
+                ? "Update Inventory Item"
+                : "View Inventory Item"}
           </h1>
           {!isViewMode && (
             <Button type="button" variant="outline" onClick={resetForm}>
@@ -385,32 +329,24 @@ const ManageEquipmentContent = () => {
         )}
 
         {(action === "edit" || action === "view") && equipmentData && (
-          <>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="space-y-2">
-                <Label>Gym</Label>
-                <Input
-                  value={equipmentData.gym?.name || ""}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Location</Label>
-                <Input
-                  value={equipmentData.location?.name || "None"}
-                  disabled
-                  className="bg-muted"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="space-y-2">
+              <Label>Gym</Label>
+              <Input value={equipmentData.gym?.name || ""} disabled className="bg-muted" />
             </div>
-          </>
+            <div className="space-y-2">
+              <Label>Location</Label>
+              <Input
+                value={equipmentData.location?.name || "None"}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+          </div>
         )}
 
         <form onSubmit={formik.handleSubmit} className="space-y-8">
-          {/* Section 1: Basic Item Information */}
           <div className="space-y-6 p-6 border rounded-lg bg-card">
-            <h2 className="text-xl font-semibold">1. Basic Item Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Item Name *</Label>
@@ -452,45 +388,6 @@ const ManageEquipmentContent = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="brand">Brand / Manufacturer</Label>
-                <Input
-                  id="brand"
-                  name="brand"
-                  value={formik.values.brand}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled={isDisabled}
-                  placeholder="e.g., Life Fitness"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="model_number">Model Number</Label>
-                <Input
-                  id="model_number"
-                  name="model_number"
-                  value={formik.values.model_number}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled={isDisabled}
-                  placeholder="e.g., LF-5000"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="serial_number">Serial Number</Label>
-                <Input
-                  id="serial_number"
-                  name="serial_number"
-                  value={formik.values.serial_number}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled={isDisabled}
-                  placeholder="e.g., SN123456789"
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="type">Type *</Label>
                 <Input
                   id="type"
@@ -505,13 +402,7 @@ const ManageEquipmentContent = () => {
                   <p className="text-sm text-red-500">{formik.errors.type}</p>
                 )}
               </div>
-            </div>
-          </div>
 
-          {/* Section 2: Inventory Details */}
-          <div className="space-y-6 p-6 border rounded-lg bg-card">
-            <h2 className="text-xl font-semibold">2. Inventory Details</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="quantity">Quantity Available *</Label>
                 <Input
@@ -527,24 +418,6 @@ const ManageEquipmentContent = () => {
                 />
                 {formik.touched.quantity && formik.errors.quantity && (
                   <p className="text-sm text-red-500">{formik.errors.quantity}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="min_stock_level">Minimum Stock Level</Label>
-                <Input
-                  id="min_stock_level"
-                  name="min_stock_level"
-                  type="number"
-                  min="0"
-                  value={formik.values.min_stock_level}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled={isDisabled}
-                  placeholder="0"
-                />
-                {formik.touched.min_stock_level && typeof formik.errors.min_stock_level === "string" && (
-                  <p className="text-sm text-red-500">{formik.errors.min_stock_level}</p>
                 )}
               </div>
 
@@ -569,219 +442,6 @@ const ManageEquipmentContent = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Purchase Date</Label>
-                <Popover open={purchaseDateOpen} onOpenChange={setPurchaseDateOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formik.values.purchase_date && "text-muted-foreground"
-                      )}
-                      disabled={isDisabled}
-                      type="button"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formik.values.purchase_date
-                        ? formatDate(formik.values.purchase_date)
-                        : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formik.values.purchase_date}
-                      onSelect={(date) => {
-                        if (date) {
-                          formik.setFieldValue("purchase_date", date);
-                          setPurchaseDateOpen(false);
-                        }
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="purchase_cost">Purchase Cost</Label>
-                <Input
-                  id="purchase_cost"
-                  name="purchase_cost"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formik.values.purchase_cost}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled={isDisabled}
-                  placeholder="0.00"
-                />
-                {formik.touched.purchase_cost && typeof formik.errors.purchase_cost === "string" && (
-                  <p className="text-sm text-red-500">{formik.errors.purchase_cost}</p>
-                )}
-                <Label htmlFor="supplier_name">Supplier Name</Label>
-                <Input
-                  id="supplier_name"
-                  name="supplier_name"
-                  value={formik.values.supplier_name}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled={isDisabled}
-                  placeholder="e.g., Fitness Supply Co."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="weight">Weight (Optional)</Label>
-                <Input
-                  id="weight"
-                  name="weight"
-                  value={formik.values.weight}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled={isDisabled}
-                  placeholder="e.g., 50kg"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 3: Maintenance & Usage */}
-          <div className="space-y-6 p-6 border rounded-lg bg-card">
-            <h2 className="text-xl font-semibold">3. Maintenance & Usage</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Last Maintenance Date</Label>
-                <Popover open={lastMaintenanceDateOpen} onOpenChange={setLastMaintenanceDateOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formik.values.last_maintenance_date && "text-muted-foreground"
-                      )}
-                      disabled={isDisabled}
-                      type="button"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formik.values.last_maintenance_date
-                        ? formatDate(formik.values.last_maintenance_date)
-                        : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formik.values.last_maintenance_date}
-                      onSelect={(date) => {
-                        if (date) {
-                          formik.setFieldValue("last_maintenance_date", date);
-                          setLastMaintenanceDateOpen(false);
-                        }
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Next Maintenance Due</Label>
-                <Popover open={nextMaintenanceDateOpen} onOpenChange={setNextMaintenanceDateOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formik.values.next_maintenance_due && "text-muted-foreground"
-                      )}
-                      disabled={isDisabled}
-                      type="button"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formik.values.next_maintenance_due
-                        ? formatDate(formik.values.next_maintenance_due)
-                        : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formik.values.next_maintenance_due}
-                      onSelect={(date) => {
-                        if (date) {
-                          formik.setFieldValue("next_maintenance_due", date);
-                          setNextMaintenanceDateOpen(false);
-                        }
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="maintenance_notes">Maintenance Notes</Label>
-                <Textarea
-                  id="maintenance_notes"
-                  name="maintenance_notes"
-                  value={formik.values.maintenance_notes}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled={isDisabled}
-                  placeholder="Enter maintenance notes, issues, or service history..."
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="usage_frequency">Usage Frequency</Label>
-                <Select
-                  value={formik.values.usage_frequency}
-                  onValueChange={(value) => formik.setFieldValue("usage_frequency", value)}
-                  disabled={isDisabled}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {USAGE_FREQUENCIES.map((freq) => (
-                      <SelectItem key={freq.value} value={freq.value}>
-                        {freq.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 4: Location & Status */}
-          <div className="space-y-6 p-6 border rounded-lg bg-card">
-            <h2 className="text-xl font-semibold">4. Location & Status</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="equipment_location">Equipment Location</Label>
-                <Select
-                  value={formik.values.equipment_location}
-                  onValueChange={(value) => formik.setFieldValue("equipment_location", value)}
-                  disabled={isDisabled}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EQUIPMENT_LOCATIONS.map((loc) => (
-                      <SelectItem key={loc} value={loc}>
-                        {loc}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={formik.values.status}
@@ -792,104 +452,217 @@ const ManageEquipmentContent = () => {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {STATUSES.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
+                    {STATUSES.map((statusOption) => (
+                      <SelectItem key={statusOption.value} value={statusOption.value}>
+                        {statusOption.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="weight_value">Weight (Optional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="weight_value"
+                    name="weight_value"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={formik.values.weight_value}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    disabled={isDisabled}
+                    placeholder="0"
+                    className="flex-1"
+                  />
+                  <Select
+                    value={formik.values.weight_unit}
+                    onValueChange={(value) => formik.setFieldValue("weight_unit", value)}
+                    disabled={isDisabled}
+                  >
+                    <SelectTrigger className="w-[100px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WEIGHT_UNITS.map((unit) => (
+                        <SelectItem key={unit.value} value={unit.value}>
+                          {unit.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {formik.touched.weight_value &&
+                  typeof formik.errors.weight_value === "string" && (
+                    <p className="text-sm text-red-500">{formik.errors.weight_value}</p>
+                  )}
+              </div>
             </div>
           </div>
 
-          {/* Section 5: Attachments */}
-          <div className="space-y-6 p-6 border rounded-lg bg-card">
-            <h2 className="text-xl font-semibold">5. Attachments</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <Label htmlFor="item_image">Item Image</Label>
+          <div className="p-6 border rounded-lg bg-card">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((prev) => !prev)}
+              className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
+            >
+              {showAdvanced ? "Hide advanced details" : "Show advanced details"}
+            </button>
+
+            {showAdvanced && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
+                  <Label htmlFor="brand">Brand / Manufacturer</Label>
                   <Input
-                    id="item_image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
+                    id="brand"
+                    name="brand"
+                    value={formik.values.brand}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
                     disabled={isDisabled}
-                    className="cursor-pointer"
+                    placeholder="e.g., Life Fitness"
                   />
-                  {itemImagePreview && (
-                    <div className="relative w-full h-48 border rounded-lg overflow-hidden">
-                      <img
-                        src={itemImagePreview}
-                        alt="Item preview"
-                        className="w-full h-full object-cover"
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Purchase Date</Label>
+                  <Popover open={purchaseDateOpen} onOpenChange={setPurchaseDateOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !formik.values.purchase_date && "text-muted-foreground"
+                        )}
+                        disabled={isDisabled}
+                        type="button"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formik.values.purchase_date
+                          ? formatDate(formik.values.purchase_date)
+                          : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={formik.values.purchase_date}
+                        onSelect={(date) => {
+                          if (date) {
+                            formik.setFieldValue("purchase_date", date);
+                            setPurchaseDateOpen(false);
+                          }
+                        }}
+                        initialFocus
                       />
-                      {!isDisabled && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-2 right-2"
-                          onClick={removeImage}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                    </PopoverContent>
+                  </Popover>
                 </div>
-              </div>
 
-              <div className="space-y-4">
-                <Label htmlFor="invoice_file">Invoice / Warranty (Optional)</Label>
                 <div className="space-y-2">
+                  <Label htmlFor="purchase_cost">Purchase Cost</Label>
                   <Input
-                    id="invoice_file"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleInvoiceUpload}
+                    id="purchase_cost"
+                    name="purchase_cost"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formik.values.purchase_cost}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
                     disabled={isDisabled}
-                    className="cursor-pointer"
+                    placeholder="0.00"
                   />
-                  {invoicePreview && (
-                    <div className="relative w-full h-48 border rounded-lg overflow-hidden">
-                      {invoicePreview.endsWith(".pdf") ? (
-                        <div className="w-full h-full flex items-center justify-center bg-muted">
-                          <p className="text-sm text-muted-foreground">PDF Document</p>
-                        </div>
-                      ) : (
-                        <img
-                          src={invoicePreview}
-                          alt="Invoice preview"
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                      {!isDisabled && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-2 right-2"
-                          onClick={removeInvoice}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                  {formik.touched.purchase_cost &&
+                    typeof formik.errors.purchase_cost === "string" && (
+                      <p className="text-sm text-red-500">{formik.errors.purchase_cost}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Last Maintenance Date</Label>
+                  <Popover
+                    open={lastMaintenanceDateOpen}
+                    onOpenChange={setLastMaintenanceDateOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !formik.values.last_maintenance_date && "text-muted-foreground"
+                        )}
+                        disabled={isDisabled}
+                        type="button"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formik.values.last_maintenance_date
+                          ? formatDate(formik.values.last_maintenance_date)
+                          : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={formik.values.last_maintenance_date}
+                        onSelect={(date) => {
+                          if (date) {
+                            formik.setFieldValue("last_maintenance_date", date);
+                            setLastMaintenanceDateOpen(false);
+                          }
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Next Maintenance Due</Label>
+                  <Popover open={nextMaintenanceDateOpen} onOpenChange={setNextMaintenanceDateOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !formik.values.next_maintenance_due && "text-muted-foreground"
+                        )}
+                        disabled={isDisabled}
+                        type="button"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formik.values.next_maintenance_due
+                          ? formatDate(formik.values.next_maintenance_due)
+                          : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={formik.values.next_maintenance_due}
+                        onSelect={(date) => {
+                          if (date) {
+                            formik.setFieldValue("next_maintenance_due", date);
+                            setNextMaintenanceDateOpen(false);
+                          }
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Actions */}
           <div className="flex gap-4 pt-4">
             {!isViewMode && (
               <>
-                <Button 
-                  type="submit" 
-                  disabled={saving || (isDisabled && !subscriptionExpired)} 
+                <Button
+                  type="submit"
+                  disabled={saving || (isDisabled && !subscriptionExpired)}
                   size="lg"
                   onClick={(e) => {
                     if (!isSubscriptionActive || subscriptionExpired) {
@@ -901,8 +674,8 @@ const ManageEquipmentContent = () => {
                   {saving
                     ? "Saving..."
                     : action === "create"
-                    ? "Save Item"
-                    : "Update Item"}
+                      ? "Save Item"
+                      : "Update Item"}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => router.back()} size="lg">
                   Cancel
