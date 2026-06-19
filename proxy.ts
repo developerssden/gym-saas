@@ -1,9 +1,9 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboarding'];
+const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboarding', '/checkout-success'];
 
-const PUBLIC_API_PATHS = ['/api/clients/complete-invite'];
+const PUBLIC_API_PATHS = ['/api/clients/complete-invite', '/api/webhooks/polar'];
 
 type Role = 'SUPER_ADMIN' | 'GYM_OWNER' | 'MEMBER';
 

@@ -221,6 +221,9 @@ model Plan {
   updatedAt           DateTime              @updatedAt
   is_active           Boolean               @default(true)
   is_deleted          Boolean               @default(false)
+  polar_product_id            String?               @unique
+  polar_checkout_url_monthly  String?
+  polar_checkout_url_yearly   String?
 
   ownerSubscriptions OwnerSubscription[]
 }
@@ -249,6 +252,7 @@ model OwnerSubscription {
   second_reminder_sent Boolean       @default(false)
   is_active           Boolean       @default(true)
   is_deleted          Boolean       @default(false)
+  polar_subscription_id String?     @unique
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   

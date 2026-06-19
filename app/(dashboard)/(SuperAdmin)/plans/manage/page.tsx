@@ -36,6 +36,17 @@ const SubscriptionSchema = Yup.object({
     .typeError("Must be a number")
     .required("Max equipment is required"),
   is_active: Yup.boolean(),
+  polar_product_id: Yup.string()
+    .transform((v) => (v === "" ? null : v))
+    .nullable(),
+  polar_checkout_url_monthly: Yup.string()
+    .transform((v) => (v === "" ? null : v))
+    .nullable()
+    .url("Must be a valid URL"),
+  polar_checkout_url_yearly: Yup.string()
+    .transform((v) => (v === "" ? null : v))
+    .nullable()
+    .url("Must be a valid URL"),
 });
 
 const ManageSubscriptionsContent = () => {
@@ -94,6 +105,9 @@ const ManageSubscriptionsContent = () => {
       max_members: subscriptionData?.max_members || "",
       max_equipment: subscriptionData?.max_equipment || "",
       is_active: subscriptionData?.is_active || true,
+      polar_product_id: subscriptionData?.polar_product_id || "",
+      polar_checkout_url_monthly: subscriptionData?.polar_checkout_url_monthly || "",
+      polar_checkout_url_yearly: subscriptionData?.polar_checkout_url_yearly || "",
     },
 
     validationSchema: SubscriptionSchema,
@@ -250,6 +264,52 @@ const ManageSubscriptionsContent = () => {
                 }
                 disabled={action === "view"}
               />
+            </div>
+
+            {/* Polar Product ID */}
+            <div className="space-y-1 md:col-span-2">
+              <Label>Polar Product ID</Label>
+              <Input
+                name="polar_product_id"
+                value={formik.values.polar_product_id}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+                placeholder="prod_..."
+              />
+            </div>
+
+            {/* Polar Checkout URL — Monthly */}
+            <div className="space-y-1 md:col-span-2">
+              <Label>Polar Checkout URL (Monthly)</Label>
+              <Input
+                name="polar_checkout_url_monthly"
+                value={formik.values.polar_checkout_url_monthly}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+                placeholder="https://buy.polar.sh/..."
+              />
+              {typeof formik.errors.polar_checkout_url_monthly === "string" && (
+                <p className="text-red-500 text-sm">
+                  {formik.errors.polar_checkout_url_monthly}
+                </p>
+              )}
+            </div>
+
+            {/* Polar Checkout URL — Yearly */}
+            <div className="space-y-1 md:col-span-2">
+              <Label>Polar Checkout URL (Yearly)</Label>
+              <Input
+                name="polar_checkout_url_yearly"
+                value={formik.values.polar_checkout_url_yearly}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+                placeholder="https://buy.polar.sh/..."
+              />
+              {typeof formik.errors.polar_checkout_url_yearly === "string" && (
+                <p className="text-red-500 text-sm">
+                  {formik.errors.polar_checkout_url_yearly}
+                </p>
+              )}
             </div>
           </div>
 

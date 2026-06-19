@@ -1491,7 +1491,10 @@ export const PlanScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   is_active: 'is_active',
-  is_deleted: 'is_deleted'
+  is_deleted: 'is_deleted',
+  polar_product_id: 'polar_product_id',
+  polar_checkout_url_monthly: 'polar_checkout_url_monthly',
+  polar_checkout_url_yearly: 'polar_checkout_url_yearly'
 } as const
 
 export type PlanScalarFieldEnum = (typeof PlanScalarFieldEnum)[keyof typeof PlanScalarFieldEnum]
@@ -1524,6 +1527,7 @@ export const OwnerSubscriptionScalarFieldEnum = {
   second_reminder_sent: 'second_reminder_sent',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
+  polar_subscription_id: 'polar_subscription_id',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

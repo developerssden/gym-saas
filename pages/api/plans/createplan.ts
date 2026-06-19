@@ -20,6 +20,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       max_locations,
       max_members,
       max_equipment,
+      polar_product_id,
+      polar_checkout_url_monthly,
+      polar_checkout_url_yearly,
     } = req.body;
 
     const plan = await prisma.plan.create({
@@ -31,6 +34,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         max_locations,
         max_members,
         max_equipment,
+        polar_product_id: polar_product_id || null,
+        polar_checkout_url_monthly: polar_checkout_url_monthly || null,
+        polar_checkout_url_yearly: polar_checkout_url_yearly || null,
       },
     });
 
