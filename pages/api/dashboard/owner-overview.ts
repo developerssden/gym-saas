@@ -109,6 +109,30 @@ export default async function handler(
 
   try {
     const ownerId = session.user.id
+    const { gym_id, location_id } = req.body as {
+      gym_id?: string
+      location_id?: string
+    }
+
+    const memberWhere = {
+      gym: {
+        owner_id: ownerId,
+        is_deleted: false,
+        ...(gym_id ? { id: gym_id } : {}),
+      },
+      ...(location_id ? { location_id } : {}),
+    }
+
+    const memberNested = {
+      ...(gym_id ? { gym_id } : {}),
+      ...(location_id ? { location_id } : {}),
+      gym: {
+        owner_id: ownerId,
+        is_deleted: false,
+        ...(gym_id ? { id: gym_id } : {}),
+      },
+    }
+
     const now = new Date()
     const thisMonthStart = startOfMonth(now)
     const lastMonthStart = addMonths(thisMonthStart, -1)
@@ -141,18 +165,14 @@ export default async function handler(
     ] = await Promise.all([
       // Total members
       prisma.member.count({
-        where: {
-          gym: {
-            owner_id: ownerId,
-            is_deleted: false,
-          },
-        },
+        where: memberWhere,
       }),
       // Total gyms
       prisma.gym.count({
         where: {
           owner_id: ownerId,
           is_deleted: false,
+          ...(gym_id ? { id: gym_id } : {}),
         },
       }),
       // Total locations
@@ -161,8 +181,10 @@ export default async function handler(
           gym: {
             owner_id: ownerId,
             is_deleted: false,
+            ...(gym_id ? { id: gym_id } : {}),
           },
           is_deleted: false,
+          ...(location_id ? { id: location_id } : {}),
         },
       }),
       // Total equipment
@@ -171,8 +193,11 @@ export default async function handler(
           gym: {
             owner_id: ownerId,
             is_deleted: false,
+            ...(gym_id ? { id: gym_id } : {}),
           },
           is_deleted: false,
+          ...(gym_id ? { gym_id } : {}),
+          ...(location_id ? { location_id } : {}),
         },
       }),
       // Active member subscriptions
@@ -181,12 +206,7 @@ export default async function handler(
           is_deleted: false,
           is_active: true,
           is_expired: false,
-          member: {
-            gym: {
-              owner_id: ownerId,
-              is_deleted: false,
-            },
-          },
+          member: memberNested,
         },
       }),
       // Expired member subscriptions
@@ -194,12 +214,7 @@ export default async function handler(
         where: {
           is_deleted: false,
           is_expired: true,
-          member: {
-            gym: {
-              owner_id: ownerId,
-              is_deleted: false,
-            },
-          },
+          member: memberNested,
         },
       }),
       // Payments this month
@@ -208,12 +223,7 @@ export default async function handler(
           subscription_type: SubscriptionTypeEnum.MEMBER,
           payment_date: { gte: thisMonthStart, lte: now },
           memberSubscription: {
-            member: {
-              gym: {
-                owner_id: ownerId,
-                is_deleted: false,
-              },
-            },
+            member: memberNested,
           },
         },
         select: { amount: true, payment_date: true },
@@ -224,12 +234,7 @@ export default async function handler(
           subscription_type: SubscriptionTypeEnum.MEMBER,
           payment_date: { gte: lastMonthStart, lte: lastMonthEnd },
           memberSubscription: {
-            member: {
-              gym: {
-                owner_id: ownerId,
-                is_deleted: false,
-              },
-            },
+            member: memberNested,
           },
         },
         select: { amount: true, payment_date: true },
@@ -240,12 +245,7 @@ export default async function handler(
           subscription_type: SubscriptionTypeEnum.MEMBER,
           payment_date: { gte: chartFrom, lte: chartTo },
           memberSubscription: {
-            member: {
-              gym: {
-                owner_id: ownerId,
-                is_deleted: false,
-              },
-            },
+            member: memberNested,
           },
         },
         select: { amount: true, payment_date: true },
@@ -254,10 +254,7 @@ export default async function handler(
       // Members created for charts
       prisma.member.findMany({
         where: {
-          gym: {
-            owner_id: ownerId,
-            is_deleted: false,
-          },
+          ...memberWhere,
           joinedAt: { gte: chartFrom, lte: chartTo },
         },
         select: { joinedAt: true },
@@ -268,12 +265,7 @@ export default async function handler(
           is_deleted: false,
           is_active: true,
           is_expired: false,
-          member: {
-            gym: {
-              owner_id: ownerId,
-              is_deleted: false,
-            },
-          },
+          member: memberNested,
         },
         include: {
           member: {
@@ -295,12 +287,7 @@ export default async function handler(
         where: {
           is_deleted: false,
           is_expired: true,
-          member: {
-            gym: {
-              owner_id: ownerId,
-              is_deleted: false,
-            },
-          },
+          member: memberNested,
         },
         include: {
           member: {
@@ -322,12 +309,7 @@ export default async function handler(
         where: {
           subscription_type: SubscriptionTypeEnum.MEMBER,
           memberSubscription: {
-            member: {
-              gym: {
-                owner_id: ownerId,
-                is_deleted: false,
-              },
-            },
+            member: memberNested,
           },
         },
         include: {

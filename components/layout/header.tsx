@@ -6,7 +6,7 @@ import ProfileDropdown from "./profile"
 import { AnimatedThemeToggler } from "../ui/animated-theme-toggler"
 import { GymLocationSelector } from "./gym-location-selector"
 import { useSession } from "next-auth/react"
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback } from "react"
 
 export function SiteHeader() {
   const { data: session, update } = useSession()
@@ -40,33 +40,6 @@ export function SiteHeader() {
       }
     })
   }, [session?.user, update])
-
-  // Track if we've initialized defaults to prevent re-running
-  const hasInitializedDefaults = useRef(false)
-
-  // Set default selections on mount if not already set
-  useEffect(() => {
-    if (
-      isGymOwner && 
-      gyms.length > 0 && 
-      !selectedGymId && 
-      session?.user &&
-      !hasInitializedDefaults.current
-    ) {
-      const firstGym = gyms[0]
-      const firstGymLocations = locations.filter(loc => loc.gymId === firstGym.id)
-      const firstLocationId = firstGymLocations.length > 0 ? firstGymLocations[0].id : null
-      
-      hasInitializedDefaults.current = true
-      update({
-        user: {
-          ...session.user,
-          selected_gym_id: firstGym.id,
-          selected_location_id: firstLocationId
-        }
-      })
-    }
-  }, [isGymOwner, gyms, locations, selectedGymId, session?.user, update])
 
   // Map locations to match the expected type (convert null to undefined)
   const mappedLocations = locations.map(loc => ({

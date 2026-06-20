@@ -24,17 +24,29 @@ const MembersPage = () => {
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
 
+  const selectedGymId = session?.user?.selected_gym_id;
+  const selectedLocationId = session?.user?.selected_location_id;
+
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["members", pagination.pageIndex + 1, pagination.pageSize, debouncedFilter],
+    queryKey: [
+      "members",
+      pagination.pageIndex + 1,
+      pagination.pageSize,
+      debouncedFilter,
+      selectedGymId,
+      selectedLocationId,
+    ],
     queryFn: async () => {
       const res = await axios.post("/api/members/getmembers", {
         page: pagination.pageIndex + 1,
         limit: pagination.pageSize,
         search: debouncedFilter,
+        gym_id: selectedGymId || undefined,
+        location_id: selectedLocationId || undefined,
       });
       return res.data;
     },
-    enabled: status === "authenticated" && session?.user?.role === "GYM_OWNER",
+    enabled: status === "authenticated" && session?.user?.role === "GYM_OWNER" && !!selectedGymId,
   });
 
   if (status === "loading") {
@@ -58,6 +70,14 @@ const MembersPage = () => {
           </Link>
         )}
       </div>
+
+      {!selectedGymId && (
+        <div className="mb-4 p-4 bg-muted rounded-md">
+          <p className="text-sm text-muted-foreground">
+            Please select a gym and location from the header to view members.
+          </p>
+        </div>
+      )}
 
       {isLoading && !data && (
         <div className="flex justify-center items-center h-64">

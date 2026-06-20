@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import axios from "axios"
+import { useSession } from "next-auth/react"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
 import {
@@ -283,6 +284,10 @@ const paymentColumns: ColumnDef<PaymentRow>[] = [
 ]
 
 const OwnerDashboard = () => {
+  const { data: session } = useSession()
+  const selectedGymId = session?.user?.selected_gym_id
+  const selectedLocationId = session?.user?.selected_location_id
+
   const [chartRange, setChartRange] = React.useState<DateRange | undefined>({
     from: addDays(new Date(), -30),
     to: new Date(),
@@ -296,11 +301,15 @@ const OwnerDashboard = () => {
       "ownerDashboardOverview",
       chartRange?.from?.toISOString() ?? null,
       chartRange?.to?.toISOString() ?? null,
+      selectedGymId,
+      selectedLocationId,
     ],
     queryFn: async () => {
       const res = await axios.post<OwnerDashboardOverview>("/api/dashboard/owner-overview", {
         from: chartRange?.from?.toISOString(),
         to: chartRange?.to?.toISOString(),
+        gym_id: selectedGymId || undefined,
+        location_id: selectedLocationId || undefined,
       })
       return res.data
     },

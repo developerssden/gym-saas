@@ -18,6 +18,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       member_id,
       page = 1,
       limit = 10,
+      search,
+      gym_id,
+      location_id,
     } = req.body;
 
     const skip = (page - 1) * limit;
@@ -37,7 +40,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         gym: {
           owner_id: session.user.id,
           is_deleted: false,
+          ...(gym_id ? { id: gym_id } : {}),
         },
+        ...(location_id ? { location_id } : {}),
+        ...(search?.trim()
+          ? {
+              user: {
+                OR: [
+                  { first_name: { contains: search.trim(), mode: "insensitive" } },
+                  { last_name: { contains: search.trim(), mode: "insensitive" } },
+                  { email: { contains: search.trim(), mode: "insensitive" } },
+                ],
+              },
+            }
+          : {}),
       };
     }
 

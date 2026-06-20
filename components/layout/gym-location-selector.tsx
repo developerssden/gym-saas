@@ -45,14 +45,10 @@ export function GymLocationSelector({
   const filteredLocations = selectedGymId ? locations.filter((loc) => loc.gymId === selectedGymId) : []
   const selectedLocation = filteredLocations.find((loc) => loc.id === selectedLocationId)
 
-  // Reset location when gym changes
   const handleGymChange = (gymId: string) => {
     onGymChange(gymId)
-    // If current location doesn't belong to new gym, clear it
-    const newLocations = locations.filter((loc) => loc.gymId === gymId)
-    if (selectedLocationId && !newLocations.find((loc) => loc.id === selectedLocationId)) {
-      onLocationChange("")
-    }
+    // Parent (header.tsx) sets the correct location inside onGymChange.
+    // Do NOT call onLocationChange here — it races with header's session.update().
   }
 
   return (
