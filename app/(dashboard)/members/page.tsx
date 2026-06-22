@@ -65,9 +65,14 @@ const MembersPage = () => {
             Create Member
           </Button>
         ) : (
-          <Link href={`/members/manage?action=create`}>
-            <Button>Create Member</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/members/import">
+              <Button variant="outline">Bulk import</Button>
+            </Link>
+            <Link href={`/members/manage?action=create`}>
+              <Button>Create Member</Button>
+            </Link>
+          </div>
         )}
       </div>
 
