@@ -58,6 +58,7 @@ model User {
   ownerSubscriptions OwnerSubscription[]
   recordedPayments   Payment[]             @relation("RecordedPayments")
   inviteTokens       InviteToken[]
+  pushSubscriptions  PushSubscription[]
 }
 
 model InviteToken {
@@ -69,6 +70,17 @@ model InviteToken {
   user_id    String
   user       User     @relation(fields: [user_id], references: [id])
   createdAt  DateTime @default(now())
+}
+
+model PushSubscription {
+  id         String   @id @default(uuid())
+  user_id    String
+  endpoint   String   @unique
+  p256dh_key String
+  auth_key   String
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Todo {

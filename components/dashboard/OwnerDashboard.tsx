@@ -293,7 +293,20 @@ const OwnerDashboard = () => {
     to: new Date(),
   })
 
-  const { data, isLoading, error, refetch, isFetching } = useQuery<
+  const [isOnline, setIsOnline] = React.useState(true)
+
+  React.useEffect(() => {
+    const updateOnline = () => setIsOnline(navigator.onLine)
+    updateOnline()
+    window.addEventListener("online", updateOnline)
+    window.addEventListener("offline", updateOnline)
+    return () => {
+      window.removeEventListener("online", updateOnline)
+      window.removeEventListener("offline", updateOnline)
+    }
+  }, [])
+
+  const { data, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery<
     OwnerDashboardOverview,
     Error
   >({
@@ -315,6 +328,7 @@ const OwnerDashboard = () => {
     },
     placeholderData: keepPreviousData,
     refetchOnWindowFocus: false,
+    networkMode: "offlineFirst",
   })
 
   const revenueTicks = React.useMemo(() => {
@@ -384,13 +398,22 @@ const OwnerDashboard = () => {
         <DataFetchError
           error={error}
           onRetry={() => refetch()}
-          message="Error loading dashboard"
+          message={
+            !isOnline
+              ? "No cached dashboard data for this gym/location selection while offline"
+              : "Error loading dashboard"
+          }
         />
       </PageContainer>
     )
   }
 
   if (!data) return null
+
+  const cachedAtLabel =
+    dataUpdatedAt > 0
+      ? new Date(dataUpdatedAt).toLocaleString()
+      : "an earlier session"
 
   const growthLabel =
     data.totals.revenueGrowthPct === null
@@ -428,6 +451,14 @@ const OwnerDashboard = () => {
         </div>
 
         <OwnerSubscriptionBanner />
+
+        {!isOnline && (
+          <div className="border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
+            <span>
+              Showing cached data from {cachedAtLabel} — reconnect to refresh.
+            </span>
+          </div>
+        )}
 
         {error && (
           <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">

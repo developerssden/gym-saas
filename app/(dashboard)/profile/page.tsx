@@ -27,6 +27,7 @@ import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { CountryDropdown } from "@/components/ui/country-dropdown";
 import { cn } from "@/lib/utils";
+import PushNotificationToggle from "@/components/profile/PushNotificationToggle";
 
 const ProfileSchema = Yup.object({
   first_name: Yup.string().required("First name is required"),
@@ -163,9 +164,10 @@ const ProfilePage = () => {
         <h1 className="h1 text-center">Profile Settings</h1>
 
         <Tabs defaultValue="profile" className="max-w-2xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">Profile Information</TabsTrigger>
             <TabsTrigger value="password">Change Password</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-6">
@@ -441,6 +443,16 @@ const ProfilePage = () => {
                 </Button>
               </div>
             </form>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-6">
+            <div className="space-y-2">
+              <h2 className="text-lg font-medium">Push notifications</h2>
+              <p className="text-sm text-muted-foreground">
+                Enable browser notifications for subscription reminders on this device.
+              </p>
+            </div>
+            <PushNotificationToggle />
           </TabsContent>
         </Tabs>
       </div>

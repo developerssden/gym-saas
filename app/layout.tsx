@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers/providers";
@@ -19,6 +19,22 @@ export const metadata: Metadata = {
     template: "%s | Gym SaaS",
   },
   description: "The all-in-one platform for modern gym management.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Gym SaaS",
+  },
+  icons: {
+    icon: [{ url: "/favicon.ico" }],
+    apple: [{ url: "/icons/apple-touch-icon.png" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#BDDE63",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

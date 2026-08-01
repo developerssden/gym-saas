@@ -5,6 +5,12 @@ const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboa
 
 const PUBLIC_API_PATHS = ['/api/clients/complete-invite', '/api/webhooks/polar'];
 
+const PWA_PUBLIC_PATHS = [
+  '/manifest.webmanifest',
+  '/sw.js',
+  '/offline',
+];
+
 type Role = 'SUPER_ADMIN' | 'GYM_OWNER' | 'MEMBER';
 
 type RouteGate = {
@@ -40,7 +46,10 @@ const isPublicApi = (pathname: string) =>
   PUBLIC_API_PATHS.some(route => matchesPath(pathname, route));
 
 const isPublic = (pathname: string) =>
-  isPublicApi(pathname) || PUBLIC_PATHS.some(route => matchesPath(pathname, route));
+  isPublicApi(pathname) ||
+  PUBLIC_PATHS.some(route => matchesPath(pathname, route)) ||
+  PWA_PUBLIC_PATHS.some(route => matchesPath(pathname, route)) ||
+  pathname.startsWith('/icons/');
 
 const findGate = (pathname: string) =>
   ROUTE_GATES.find(gate =>
@@ -93,6 +102,8 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|assets|.*\\.svg$).*)']
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|assets|icons|sw.js|manifest.webmanifest|.*\\.svg$).*)',
+  ],
 };
 

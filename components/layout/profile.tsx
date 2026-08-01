@@ -3,6 +3,7 @@
 import { LogOut, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -26,6 +27,7 @@ const getInitials = (name?: string | null) => {
 
 export default function ProfileDropdown() {
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const user = session?.user;
 
   const displayName =
@@ -38,8 +40,10 @@ export default function ProfileDropdown() {
   const avatarFallback =
     getInitials(displayName) || <User className="h-5 w-5" />;
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/sign-in" });
+  const handleLogout = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await signOut({ callbackUrl: "/sign-in" });
   };
 
   return (

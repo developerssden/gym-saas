@@ -17,6 +17,7 @@ import {
   getOwnerReminderEmail,
   getSuperAdminSummaryEmail,
 } from "@/lib/email/subscription-emails";
+import { sendPushToUser } from "@/lib/push/send-push";
 
 type DeliveryMetrics = {
   expiredMarked: number;
@@ -28,6 +29,9 @@ type DeliveryMetrics = {
   summariesSent: number;
   summariesFailed: number;
   invalidSubscriptions: number;
+  pushSent: number;
+  pushFailed: number;
+  pushRemoved: number;
 };
 
 const createMetrics = (): DeliveryMetrics => ({
@@ -40,6 +44,9 @@ const createMetrics = (): DeliveryMetrics => ({
   summariesSent: 0,
   summariesFailed: 0,
   invalidSubscriptions: 0,
+  pushSent: 0,
+  pushFailed: 0,
+  pushRemoved: 0,
 });
 
 function getCronSecret(req: NextApiRequest): string | undefined {
@@ -62,6 +69,23 @@ function reminderFlag(action: CronAction) {
     return { second_reminder_sent: true };
   }
   return null;
+}
+
+async function recordPushMetrics(
+  metrics: DeliveryMetrics,
+  userId: string | undefined,
+  payload: { title: string; body: string; url?: string }
+) {
+  if (!userId) return;
+  try {
+    const result = await sendPushToUser(userId, payload);
+    metrics.pushSent += result.sent;
+    metrics.pushFailed += result.failed;
+    metrics.pushRemoved += result.removed;
+  } catch (error) {
+    metrics.pushFailed += 1;
+    console.error(`Failed push notification for user ${userId}:`, error);
+  }
 }
 
 export default async function handler(
@@ -171,6 +195,14 @@ export default async function handler(
             result.error
           );
         }
+
+        if (result.sent || result.stateChanged) {
+          await recordPushMetrics(ownerMetrics, subscription.owner.id, {
+            title: "Gym subscription expired",
+            body: `Your ${action.planName || "gym"} subscription has expired.`,
+            url: "/dashboard",
+          });
+        }
         continue;
       }
 
@@ -197,6 +229,14 @@ export default async function handler(
       if (result.failed) {
         ownerMetrics.remindersFailed++;
         console.error(`Failed owner reminder for ${action.id}:`, result.error);
+      }
+
+      if (result.sent) {
+        await recordPushMetrics(ownerMetrics, subscription.owner.id, {
+          title: `Subscription expires in ${action.daysLeft} day${action.daysLeft === 1 ? "" : "s"}`,
+          body: `Your ${action.planName || "gym"} subscription expires soon.`,
+          url: "/dashboard",
+        });
       }
     }
 
@@ -328,6 +368,18 @@ export default async function handler(
             result.error
           );
         }
+
+        if (result.sent || result.stateChanged) {
+          await recordPushMetrics(
+            memberMetrics,
+            subscription.member.user.id,
+            {
+              title: "Gym membership expired",
+              body: "Your gym membership has expired. Please renew to continue access.",
+              url: "/dashboard",
+            }
+          );
+        }
         continue;
       }
 
@@ -353,6 +405,14 @@ export default async function handler(
       if (result.failed) {
         memberMetrics.remindersFailed++;
         console.error(`Failed member reminder for ${action.id}:`, result.error);
+      }
+
+      if (result.sent) {
+        await recordPushMetrics(memberMetrics, subscription.member.user.id, {
+          title: `Membership expires in ${action.daysLeft} day${action.daysLeft === 1 ? "" : "s"}`,
+          body: "Your gym membership expires soon. Please renew to avoid interruption.",
+          url: "/dashboard",
+        });
       }
     }
 

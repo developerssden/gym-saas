@@ -28,6 +28,11 @@ export type User = Prisma.UserModel
  */
 export type InviteToken = Prisma.InviteTokenModel
 /**
+ * Model PushSubscription
+ * 
+ */
+export type PushSubscription = Prisma.PushSubscriptionModel
+/**
  * Model Todo
  * 
  */

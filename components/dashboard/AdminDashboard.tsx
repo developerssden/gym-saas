@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import axios from "axios"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
 import {
   Bar,
@@ -222,6 +222,7 @@ const subscriptionColumns: ColumnDef<SubscriptionRow>[] = [
 ]
 
 const AdminDashboard = () => {
+  const queryClient = useQueryClient()
   const [chartRange, setChartRange] = React.useState<DateRange | undefined>({
     from: addDays(new Date(), -30),
     to: new Date(),
@@ -316,7 +317,14 @@ const AdminDashboard = () => {
               <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
               Refresh
             </Button>
-            <Button variant="outline" onClick={() => signOut()}>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await queryClient.cancelQueries()
+                queryClient.clear()
+                await signOut()
+              }}
+            >
               Sign out
             </Button>
           </div>
