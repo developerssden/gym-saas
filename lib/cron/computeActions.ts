@@ -1,4 +1,7 @@
-import { getDaysUntilExpiration, isExpiredOrToday } from "@/lib/date-utils";
+import {
+  DEFAULT_BUSINESS_TIME_ZONE,
+  getDaysUntilExpiration,
+} from "@/lib/date-utils";
 import { REMINDER_DAYS } from "@/lib/constants";
 
 export type CronAction =
@@ -57,13 +60,19 @@ type MemberSubscriptionInput = {
 };
 
 export function computeOwnerActions(
-  subscriptions: OwnerSubscriptionInput[]
+  subscriptions: OwnerSubscriptionInput[],
+  referenceDate = new Date(),
+  timeZone = DEFAULT_BUSINESS_TIME_ZONE
 ): CronAction[] {
   return subscriptions.map((sub) => {
-    const daysLeft = getDaysUntilExpiration(sub.end_date);
+    const daysLeft = getDaysUntilExpiration(
+      sub.end_date,
+      referenceDate,
+      timeZone
+    );
     const ownerName = `${sub.owner.first_name ?? ""} ${sub.owner.last_name ?? ""}`.trim() || "Owner";
 
-    if (isExpiredOrToday(sub.end_date) && !sub.notification_sent) {
+    if (daysLeft <= 0 && !sub.notification_sent) {
       return {
         type: "EXPIRE",
         id: sub.id,
@@ -72,7 +81,11 @@ export function computeOwnerActions(
         planName: sub.plan.name,
       };
     }
-    if (daysLeft === REMINDER_DAYS.SECOND && !sub.second_reminder_sent) {
+    if (
+      daysLeft > 0 &&
+      daysLeft <= REMINDER_DAYS.SECOND &&
+      !sub.second_reminder_sent
+    ) {
       return {
         type: "SECOND_REMINDER",
         id: sub.id,
@@ -82,7 +95,11 @@ export function computeOwnerActions(
         planName: sub.plan.name,
       };
     }
-    if (daysLeft === REMINDER_DAYS.FIRST && !sub.first_reminder_sent) {
+    if (
+      daysLeft > REMINDER_DAYS.SECOND &&
+      daysLeft <= REMINDER_DAYS.FIRST &&
+      !sub.first_reminder_sent
+    ) {
       return {
         type: "FIRST_REMINDER",
         id: sub.id,
@@ -97,14 +114,20 @@ export function computeOwnerActions(
 }
 
 export function computeMemberActions(
-  subscriptions: MemberSubscriptionInput[]
+  subscriptions: MemberSubscriptionInput[],
+  referenceDate = new Date(),
+  timeZone = DEFAULT_BUSINESS_TIME_ZONE
 ): CronAction[] {
   return subscriptions.map((sub) => {
-    const daysLeft = getDaysUntilExpiration(sub.end_date);
+    const daysLeft = getDaysUntilExpiration(
+      sub.end_date,
+      referenceDate,
+      timeZone
+    );
     const email = sub.member?.user?.email ?? "";
     const name = `${sub.member.user.first_name ?? ""} ${sub.member.user.last_name ?? ""}`.trim() || "Member";
 
-    if (isExpiredOrToday(sub.end_date) && !sub.notification_sent) {
+    if (daysLeft <= 0 && !sub.notification_sent) {
       return {
         type: "EXPIRE",
         id: sub.id,
@@ -112,7 +135,11 @@ export function computeMemberActions(
         ownerName: name,
       };
     }
-    if (daysLeft === REMINDER_DAYS.SECOND && !sub.second_reminder_sent) {
+    if (
+      daysLeft > 0 &&
+      daysLeft <= REMINDER_DAYS.SECOND &&
+      !sub.second_reminder_sent
+    ) {
       return {
         type: "SECOND_REMINDER",
         id: sub.id,
@@ -121,7 +148,11 @@ export function computeMemberActions(
         daysLeft,
       };
     }
-    if (daysLeft === REMINDER_DAYS.FIRST && !sub.first_reminder_sent) {
+    if (
+      daysLeft > REMINDER_DAYS.SECOND &&
+      daysLeft <= REMINDER_DAYS.FIRST &&
+      !sub.first_reminder_sent
+    ) {
       return {
         type: "FIRST_REMINDER",
         id: sub.id,

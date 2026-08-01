@@ -1,4 +1,5 @@
 import sendEmail from "@/lib/sendEmail";
+import { escapeHtml } from "@/lib/email/escape-html";
 
 export function getInviteBaseUrl(): string {
   return (process.env.NEXTAUTH_URL ?? process.env.APP_URL ?? "").replace(
@@ -20,11 +21,13 @@ export function buildInviteEmailHtml(inviteUrl: string, isResend = false): strin
     ? "Your previous invite link expired. Use the button below to complete your profile and set your password."
     : "You've been added as a gym owner. Click the button below to complete your profile and set your password.";
 
+  const safeInviteUrl = escapeHtml(inviteUrl);
+
   return `
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
       <h2 style="color: #1a1a1a;">${heading}</h2>
       <p style="color: #444;">${intro}</p>
-      <a href="${inviteUrl}"
+      <a href="${safeInviteUrl}"
          style="display:inline-block;margin-top:16px;padding:12px 24px;background:#e07b39;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
         Complete My Profile
       </a>

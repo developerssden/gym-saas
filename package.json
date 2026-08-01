@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate && prisma db push --accept-data-loss && prisma db seed"
+    "test": "tsx --test tests/date-utils.test.ts tests/compute-actions.test.ts tests/email.test.ts tests/subscription-lifecycle.test.ts",
+    "postinstall": "prisma generate",
+    "db:push:dev": "prisma db push",
+    "db:seed": "prisma db seed"
   },
   "prisma": {
     "seed": "tsx ./prisma/seed.ts"

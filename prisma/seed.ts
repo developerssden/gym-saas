@@ -2,13 +2,19 @@ import { hashPassword } from '@/lib/authHelper';
 import prisma from '@/lib/prisma';
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'Refusing to run the development seed in production. Create production accounts through an approved administrative flow.'
+    );
+  }
+
   const password = await hashPassword('password');
 
   const admin = await prisma.user.findFirst({
     where: { email: 'ironsamurai786@gmail.com' }
   });
   if (!admin) {
-    const superAdmin = await prisma.user.create({
+    await prisma.user.create({
       data: {
         first_name: 'Super',
         last_name: 'Admin',

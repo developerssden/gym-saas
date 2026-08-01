@@ -26,9 +26,6 @@ const sendEmail = async (
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD, // Use App Password, not regular password
       },
-      tls: {
-        rejectUnauthorized: false,
-      },
       connectionTimeout: SMTP.CONNECTION_TIMEOUT,
       greetingTimeout: SMTP.GREETING_TIMEOUT,
     } as TransportOptions);

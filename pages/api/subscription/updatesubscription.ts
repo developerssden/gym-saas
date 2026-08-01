@@ -5,6 +5,8 @@ import { StatusCodes } from "http-status-codes";
 import { requireSuperAdmin } from "@/lib/adminsessioncheck";
 import { BillingModel, PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
 import { calculateEndDate, getPlanPrice } from "@/lib/subscription-helpers";
+import { isExpiredOrToday } from "@/lib/date-utils";
+import { notificationLifecycleReset } from "@/lib/subscription-lifecycle";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -77,10 +79,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (start_date !== undefined) {
       updateData.start_date = new Date(start_date);
+      if (Number.isNaN(updateData.start_date.getTime())) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ error: "Invalid start_date" });
+      }
     }
 
     if (end_date !== undefined) {
       updateData.end_date = new Date(end_date);
+      if (Number.isNaN(updateData.end_date.getTime())) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ error: "Invalid end_date" });
+      }
     }
 
     // If start_date or billing_model changed and end_date not explicitly provided, recalc end_date
@@ -89,6 +101,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       (updateData.billing_model ?? existing.billing_model) as BillingModel;
     if ((start_date !== undefined || billing_model !== undefined) && end_date === undefined) {
       updateData.end_date = calculateEndDate(nextStartDate, nextBillingModel);
+    }
+
+    if (updateData.end_date) {
+      updateData.is_expired = isExpiredOrToday(updateData.end_date);
+      Object.assign(
+        updateData,
+        notificationLifecycleReset(existing.end_date, updateData.end_date)
+      );
     }
 
     const shouldRecordPayment = payment_method !== undefined || amount !== undefined;

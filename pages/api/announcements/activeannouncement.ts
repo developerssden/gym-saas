@@ -5,14 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { requireSuperAdmin } from "@/lib/adminsessioncheck";
 import sendEmail from "@/lib/sendEmail";
 import { AnnouncementAudience, Role } from "@/prisma/generated/client";
-
-const escapeHtml = (unsafe: string) =>
-  unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+import { escapeHtml } from "@/lib/email/escape-html";
 
 async function sendAnnouncementEmails(input: {
   title: string;

@@ -3,36 +3,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireGymOwner } from "@/lib/ownersessioncheck";
-import { isSubscriptionExpired } from "@/lib/subscription-helpers";
 import sendEmail from "@/lib/sendEmail";
-import { getDaysUntilExpiration } from "@/lib/date-utils";
+import { getDaysUntilExpiration, isExpiredOrToday } from "@/lib/date-utils";
 import { REMINDER_DAYS } from "@/lib/constants";
-
-// Email template for member reminders
-const getMemberReminderEmail = (memberName: string, daysLeft: number) => {
-  const subject = daysLeft === 0
-    ? "Your Gym Membership Has Expired"
-    : `Your Gym Membership Expires in ${daysLeft} Day${daysLeft > 1 ? "s" : ""}`;
-  
-  const text = daysLeft === 0
-    ? `Dear ${memberName},\n\nYour gym membership has expired. Please renew your membership to continue accessing the gym.\n\nThank you.`
-    : `Dear ${memberName},\n\nThis is a reminder that your gym membership will expire in ${daysLeft} day${daysLeft > 1 ? "s" : ""}.\n\nPlease renew your membership to avoid any interruption in service.\n\nThank you.`;
-  
-  const html = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #333;">${subject}</h2>
-      <p>Dear ${memberName},</p>
-      ${daysLeft === 0
-        ? `<p>Your gym membership has expired. Please renew your membership to continue accessing the gym.</p>`
-        : `<p>This is a reminder that your gym membership will expire in <strong>${daysLeft} day${daysLeft > 1 ? "s" : ""}</strong>.</p>
-           <p>Please renew your membership to avoid any interruption in service.</p>`
-      }
-      <p>Thank you.</p>
-    </div>
-  `;
-  
-  return { subject, text, html };
-};
+import { getMemberReminderEmail } from "@/lib/email/subscription-emails";
+import { notificationLifecycleReset } from "@/lib/subscription-lifecycle";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -161,13 +136,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const endDateObj = new Date(endDateToCheck);
 
     // Automatically recalculate is_expired based on end_date
-    updateData.is_expired = isSubscriptionExpired(endDateObj);
+    updateData.is_expired = isExpiredOrToday(endDateObj);
 
-    // If subscription is extended (no longer expired), reset reminder flags
-    if (existing.is_expired && !updateData.is_expired) {
-      updateData.first_reminder_sent = false;
-      updateData.second_reminder_sent = false;
-      updateData.notification_sent = false;
+    if (updateData.end_date) {
+      Object.assign(
+        updateData,
+        notificationLifecycleReset(existing.end_date, updateData.end_date)
+      );
     }
 
     const updated = await prisma.memberSubscription.update({
@@ -228,24 +203,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           });
         } catch (error) {
           console.error(`Failed to send reminder email to ${updated.member.user.email}:`, error);
-        }
-      } else if (daysLeft === 0) {
-        const memberName = `${updated.member.user.first_name} ${updated.member.user.last_name}`;
-        const { subject, text, html } = getMemberReminderEmail(memberName, 0);
-        
-        try {
-          await sendEmail(updated.member.user.email, subject, text, html);
-          
-          // Mark as expired and notification sent
-          await prisma.memberSubscription.update({
-            where: { id },
-            data: {
-              is_expired: true,
-              notification_sent: true,
-            },
-          });
-        } catch (error) {
-          console.error(`Failed to send expiration email to ${updated.member.user.email}:`, error);
         }
       }
     }

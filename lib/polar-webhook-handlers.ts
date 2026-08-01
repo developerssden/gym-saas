@@ -7,6 +7,7 @@ import {
 } from "@/prisma/generated/client";
 import type { Order } from "@polar-sh/sdk/models/components/order";
 import type { Subscription } from "@polar-sh/sdk/models/components/subscription";
+import { notificationLifecycleReset } from "@/lib/subscription-lifecycle";
 
 function billingModelFromInterval(
   interval: Subscription["recurringInterval"]
@@ -45,6 +46,10 @@ export async function handlePolarSubscriptionCreated(subscription: Subscription)
         end_date: subscription.currentPeriodEnd,
         is_active: isActive,
         is_expired: isExpired,
+        ...notificationLifecycleReset(
+          existing.end_date,
+          subscription.currentPeriodEnd
+        ),
       },
     });
     return;
@@ -105,6 +110,10 @@ export async function handlePolarSubscriptionUpdated(subscription: Subscription)
       end_date: subscription.currentPeriodEnd,
       is_active: isActive,
       is_expired: isExpired,
+      ...notificationLifecycleReset(
+        ownerSub.end_date,
+        subscription.currentPeriodEnd
+      ),
     },
   });
 }

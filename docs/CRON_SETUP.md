@@ -4,7 +4,7 @@ This document explains how to set up the subscription expiration reminder cron j
 
 ## Overview
 
-The cron job runs daily at 12:00 AM (midnight) to:
+The cron job runs daily at 19:00 UTC, which is midnight in Pakistan (UTC+5), to:
 - Check owner subscriptions and send reminders (2 days before, 1 day before, and on expiration)
 - Check member subscriptions and send reminders (2 days before, 1 day before, and on expiration)
 - Mark expired subscriptions and send notifications
@@ -20,7 +20,7 @@ The cron job runs daily at 12:00 AM (midnight) to:
      "crons": [
        {
          "path": "/api/cron/check-subscriptions",
-         "schedule": "0 0 * * *"
+        "schedule": "0 19 * * *"
        }
      ]
    }
@@ -40,7 +40,7 @@ If you're not using Vercel, you can use external cron services like:
 - **Cronitor**
 
 1. Create a cron job that calls: `https://your-domain.com/api/cron/check-subscriptions`
-2. Set the schedule to: `0 0 * * *` (runs daily at midnight)
+2. Set the schedule to: `0 19 * * *` (runs at 19:00 UTC / midnight UTC+5)
 3. Set the HTTP method to: `GET`
 4. Add one of these authorization headers:
    - `Authorization: Bearer YOUR_CRON_SECRET`
@@ -69,6 +69,7 @@ Make sure these environment variables are set:
 - `GMAIL_USER`: Your Gmail address for sending emails
 - `GMAIL_APP_PASSWORD`: Gmail App Password (not your regular password)
 - `CRON_SECRET`: **Required.** Long random secret used to authenticate cron requests. Set the same value locally and in production.
+- `APP_TIME_ZONE`: Optional IANA business timezone used for expiration-day calculations. Defaults to `Asia/Karachi`.
 
 Example `.env`:
 
@@ -76,6 +77,7 @@ Example `.env`:
 CRON_SECRET=your-long-random-secret-here
 GMAIL_USER=your-email@gmail.com
 GMAIL_APP_PASSWORD=your-app-password
+APP_TIME_ZONE=Asia/Karachi
 ```
 
 ## How It Works
@@ -155,11 +157,21 @@ To test the cron job manually:
 
 ## Schedule Format
 
-The cron schedule `0 0 * * *` means:
+The cron schedule `0 19 * * *` means:
 - `0` - minute (0th minute)
-- `0` - hour (0th hour = midnight)
+- `19` - hour (19:00 UTC)
 - `*` - day of month (every day)
 - `*` - month (every month)
 - `*` - day of week (every day of week)
 
-This runs at 12:00 AM UTC daily. Adjust timezone if needed.
+This runs at 19:00 UTC daily, which is 12:00 AM the following calendar day in
+Pakistan (UTC+5). Calendar-day comparisons use `APP_TIME_ZONE` rather than the
+server's local timezone.
+
+## Delivery guarantees
+
+Reminder delivery is at-least-once. Delivery flags are written only after the
+SMTP provider accepts an email, so a crash between delivery and the database
+write can cause a duplicate on the next run. Failed expiration emails remain
+eligible for retry; subscription expiration state is updated independently of
+email delivery.
