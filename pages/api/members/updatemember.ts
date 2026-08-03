@@ -4,6 +4,11 @@ import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAdminOrOwner } from "@/lib/sessioncheck";
 import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
+import {
+  normalizeOptionalString,
+  resolveMemberGeoFields,
+  type GeoFields,
+} from "@/lib/members/location-geo-fallback";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -139,24 +144,174 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Update user fields if provided
-    if (data.first_name || data.last_name || data.email || data.phone_number) {
+    const nextFirstName =
+      data.first_name !== undefined
+        ? normalizeOptionalString(data.first_name)
+        : normalizeOptionalString(existing.user.first_name);
+    const nextAddress =
+      data.address !== undefined
+        ? normalizeOptionalString(data.address)
+        : normalizeOptionalString(existing.user.address);
+    const nextEmail =
+      data.email !== undefined
+        ? normalizeOptionalString(data.email)
+        : normalizeOptionalString(existing.user.email);
+    const nextPhone =
+      data.phone_number !== undefined
+        ? normalizeOptionalString(data.phone_number)
+        : normalizeOptionalString(existing.user.phone_number);
+
+    if (!nextFirstName) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "First name is required",
+      });
+    }
+
+    if (!nextAddress) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "Address is required",
+      });
+    }
+
+    if (!nextEmail && !nextPhone) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "Email or phone number is required",
+      });
+    }
+
+    if (nextEmail && nextEmail !== existing.user.email) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          email: nextEmail,
+          is_deleted: false,
+          NOT: { id: existing.user_id },
+        },
+      });
+      if (existingUser) {
+        return res.status(StatusCodes.CONFLICT).json({
+          error: "User with this email already exists",
+        });
+      }
+    }
+
+    const targetLocationId =
+      data.location_id !== undefined ? data.location_id : existing.location_id;
+    const targetGymId =
+      data.gym_id !== undefined ? data.gym_id : existing.gym_id;
+
+    if (nextPhone && nextPhone !== existing.user.phone_number) {
+      const phoneTaken = await prisma.member.findFirst({
+        where: {
+          location_id: targetLocationId,
+          id: { not: existing.id },
+          user: {
+            phone_number: nextPhone,
+            is_deleted: false,
+          },
+        },
+      });
+      if (phoneTaken) {
+        return res.status(StatusCodes.CONFLICT).json({
+          error: `Phone number already registered at this location: ${nextPhone}`,
+        });
+      }
+    }
+
+    let locationGeo: GeoFields = existing.location;
+    let gymGeo: GeoFields = existing.gym;
+
+    if (
+      targetLocationId !== existing.location_id ||
+      targetGymId !== existing.gym_id
+    ) {
+      const locationWithGym = await prisma.location.findUnique({
+        where: { id: targetLocationId },
+        select: {
+          city: true,
+          state: true,
+          zip_code: true,
+          country: true,
+          gym: {
+            select: {
+              city: true,
+              state: true,
+              zip_code: true,
+              country: true,
+            },
+          },
+        },
+      });
+      if (locationWithGym) {
+        locationGeo = locationWithGym;
+        gymGeo = locationWithGym.gym;
+      }
+    }
+
+    const shouldApplyGeoFill =
+      data.city !== undefined ||
+      data.state !== undefined ||
+      data.zip_code !== undefined ||
+      data.country !== undefined;
+
+    const geo = shouldApplyGeoFill
+      ? resolveMemberGeoFields(
+          {
+            city: data.city !== undefined ? data.city : existing.user.city,
+            state: data.state !== undefined ? data.state : existing.user.state,
+            zip_code:
+              data.zip_code !== undefined
+                ? data.zip_code
+                : existing.user.zip_code,
+            country:
+              data.country !== undefined
+                ? data.country
+                : existing.user.country,
+          },
+          locationGeo,
+          gymGeo
+        )
+      : null;
+
+    const userFieldsProvided =
+      data.first_name !== undefined ||
+      data.last_name !== undefined ||
+      data.email !== undefined ||
+      data.phone_number !== undefined ||
+      data.address !== undefined ||
+      data.city !== undefined ||
+      data.state !== undefined ||
+      data.zip_code !== undefined ||
+      data.country !== undefined ||
+      data.date_of_birth !== undefined ||
+      data.cnic !== undefined;
+
+    if (userFieldsProvided) {
       await prisma.user.update({
         where: { id: existing.user_id },
         data: {
-          ...(data.first_name !== undefined && { first_name: data.first_name }),
-          ...(data.last_name !== undefined && { last_name: data.last_name }),
-          ...(data.email !== undefined && { email: data.email }),
-          ...(data.phone_number !== undefined && { phone_number: data.phone_number }),
-          ...(data.address !== undefined && { address: data.address }),
-          ...(data.city !== undefined && { city: data.city }),
-          ...(data.state !== undefined && { state: data.state }),
-          ...(data.zip_code !== undefined && { zip_code: data.zip_code }),
-          ...(data.country !== undefined && { country: data.country }),
-          ...(data.date_of_birth !== undefined && {
-            date_of_birth: new Date(data.date_of_birth),
+          ...(data.first_name !== undefined && { first_name: nextFirstName }),
+          ...(data.last_name !== undefined && {
+            last_name: normalizeOptionalString(data.last_name),
           }),
-          ...(data.cnic !== undefined && { cnic: data.cnic }),
+          ...(data.email !== undefined && { email: nextEmail }),
+          ...(data.phone_number !== undefined && {
+            phone_number: nextPhone ?? "",
+          }),
+          ...(data.address !== undefined && { address: nextAddress }),
+          ...(geo && {
+            city: geo.city ?? "",
+            state: geo.state ?? "",
+            zip_code: geo.zip_code ?? "",
+            country: geo.country ?? "",
+          }),
+          ...(data.date_of_birth !== undefined && {
+            date_of_birth: data.date_of_birth
+              ? new Date(data.date_of_birth)
+              : null,
+          }),
+          ...(data.cnic !== undefined && {
+            cnic: normalizeOptionalString(data.cnic),
+          }),
         },
       });
     }
@@ -184,4 +339,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: message });
   }
 }
-

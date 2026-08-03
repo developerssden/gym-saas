@@ -30,17 +30,47 @@ import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 
+const emailOrPhoneRequired = function (
+  this: Yup.TestContext,
+  value: string | undefined
+) {
+  const { email, phone_number } = this.parent as {
+    email?: string;
+    phone_number?: string;
+  };
+  const hasEmail = Boolean(
+    (this.path === "email" ? value : email)?.toString().trim()
+  );
+  const hasPhone = Boolean(
+    (this.path === "phone_number" ? value : phone_number)?.toString().trim()
+  );
+  return hasEmail || hasPhone;
+};
+
 const MemberSchema = Yup.object({
-  first_name: Yup.string().required("First name is required"),
-  last_name: Yup.string().required("Last name is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  phone_number: Yup.string().required("Phone number is required"),
-  date_of_birth: Yup.date().required("Date of birth is required"),
-  address: Yup.string().required("Address is required"),
-  city: Yup.string().required("City is required"),
-  state: Yup.string().required("State is required"),
-  country: Yup.string().required("Country is required"),
-  zip_code: Yup.string().required("Zip code is required"),
+  first_name: Yup.string().trim().required("First name is required"),
+  last_name: Yup.string().notRequired(),
+  email: Yup.string()
+    .transform((value) =>
+      typeof value === "string" && value.trim() === "" ? undefined : value
+    )
+    .email("Invalid email")
+    .test(
+      "email-or-phone",
+      "Email or phone number is required",
+      emailOrPhoneRequired
+    ),
+  phone_number: Yup.string().test(
+    "email-or-phone",
+    "Email or phone number is required",
+    emailOrPhoneRequired
+  ),
+  date_of_birth: Yup.date().nullable().notRequired(),
+  address: Yup.string().trim().required("Address is required"),
+  city: Yup.string().notRequired(),
+  state: Yup.string().notRequired(),
+  country: Yup.string().notRequired(),
+  zip_code: Yup.string().notRequired(),
   cnic: Yup.string().notRequired(),
 });
 
@@ -140,7 +170,7 @@ const ManageMemberContent = () => {
       phone_number: memberData?.user?.phone_number || "",
       date_of_birth: memberData?.user?.date_of_birth
         ? new Date(memberData.user.date_of_birth)
-        : new Date(),
+        : null,
       address: memberData?.user?.address || "",
       city: memberData?.user?.city || "",
       state: memberData?.user?.state || "",
@@ -267,7 +297,7 @@ const ManageMemberContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Last Name *</Label>
+              <Label>Last Name</Label>
               <Input
                 name="last_name"
                 value={formik.values.last_name}
@@ -282,7 +312,7 @@ const ManageMemberContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Email *</Label>
+              <Label>Email (or phone) *</Label>
               <Input
                 name="email"
                 type="email"
@@ -298,7 +328,7 @@ const ManageMemberContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Phone Number *</Label>
+              <Label>Phone Number (or email) *</Label>
               <Input
                 name="phone_number"
                 value={formik.values.phone_number}
@@ -313,7 +343,7 @@ const ManageMemberContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Date of Birth *</Label>
+              <Label>Date of Birth</Label>
               <Popover open={dateOfBirthOpen} onOpenChange={setDateOfBirthOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -334,7 +364,7 @@ const ManageMemberContent = () => {
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={formik.values.date_of_birth}
+                    selected={formik.values.date_of_birth ?? undefined}
                     onSelect={(date) => {
                       if (date) {
                         formik.setFieldValue("date_of_birth", date);
@@ -379,14 +409,14 @@ const ManageMemberContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>City *</Label>
+              <Label>City</Label>
               <Input
                 name="city"
                 value={formik.values.city}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 disabled={action === "view"}
-                placeholder="City"
+                placeholder="City (defaults to location)"
               />
               {formik.touched.city && formik.errors.city && (
                 <p className="text-red-500 text-sm">{String(formik.errors.city)}</p>
@@ -394,14 +424,14 @@ const ManageMemberContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>State *</Label>
+              <Label>State</Label>
               <Input
                 name="state"
                 value={formik.values.state}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 disabled={action === "view"}
-                placeholder="State"
+                placeholder="State (defaults to location)"
               />
               {formik.touched.state && formik.errors.state && (
                 <p className="text-red-500 text-sm">{String(formik.errors.state)}</p>
@@ -409,14 +439,14 @@ const ManageMemberContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Zip Code *</Label>
+              <Label>Zip Code</Label>
               <Input
                 name="zip_code"
                 value={formik.values.zip_code}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 disabled={action === "view"}
-                placeholder="Zip code"
+                placeholder="Zip code (defaults to location)"
               />
               {formik.touched.zip_code && formik.errors.zip_code && (
                 <p className="text-red-500 text-sm">{String(formik.errors.zip_code)}</p>
@@ -424,7 +454,7 @@ const ManageMemberContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Country *</Label>
+              <Label>Country</Label>
               <CountryDropdown
                 placeholder="Select country"
                 defaultValue={formik.values.country}

@@ -97,12 +97,41 @@ export function getSuperAdminSummaryEmail(
   return { subject, text, html };
 }
 
+export type GymOwnerExpiredMember = {
+  name: string;
+  email: string;
+  phone_number?: string | null;
+  address?: string | null;
+  start_date?: Date | string | null;
+  end_date?: Date | string | null;
+};
+
+function formatDigestDate(value?: Date | string | null): string {
+  if (!value) return "—";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-CA", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatMemberDigestLine(member: GymOwnerExpiredMember): string {
+  const email = member.email?.trim() || "No email";
+  const phone = member.phone_number?.trim() || "No phone";
+  const address = member.address?.trim() || "—";
+  const start = formatDigestDate(member.start_date);
+  const end = formatDigestDate(member.end_date);
+  return `${member.name} | Email: ${email} | Phone: ${phone} | Address: ${address} | Start: ${start} | End: ${end}`;
+}
+
 export function getGymOwnerSummaryEmail(
-  expiredMembers: Array<{ name: string; email: string }>
+  expiredMembers: Array<GymOwnerExpiredMember>
 ): EmailContent {
   const subject = `Daily Membership Expiration Report - ${expiredMembers.length} Member${expiredMembers.length !== 1 ? "s" : ""} Expired`;
   const text = `Daily Membership Expiration Report\n\n${expiredMembers.length} member subscription${expiredMembers.length !== 1 ? "s have" : " has"} expired today:\n\n${expiredMembers
-    .map((member) => `- ${member.name} (${member.email})`)
+    .map((member) => `- ${formatMemberDigestLine(member)}`)
     .join("\n")}\n\nPlease follow up with these members to renew their memberships.`;
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
@@ -110,10 +139,20 @@ export function getGymOwnerSummaryEmail(
       <p><strong>${expiredMembers.length}</strong> member subscription${expiredMembers.length !== 1 ? "s have" : " has"} expired today:</p>
       <ul>
         ${expiredMembers
-          .map(
-            (member) =>
-              `<li><strong>${escapeHtml(member.name)}</strong> (${escapeHtml(member.email)})</li>`
-          )
+          .map((member) => {
+            const email = member.email?.trim() || "No email";
+            const phone = member.phone_number?.trim() || "No phone";
+            const address = member.address?.trim() || "—";
+            const start = formatDigestDate(member.start_date);
+            const end = formatDigestDate(member.end_date);
+            return `<li>
+              <strong>${escapeHtml(member.name)}</strong><br/>
+              Email: ${escapeHtml(email)}<br/>
+              Phone: ${escapeHtml(phone)}<br/>
+              Address: ${escapeHtml(address)}<br/>
+              Start: ${escapeHtml(start)} | End: ${escapeHtml(end)}
+            </li>`;
+          })
           .join("")}
       </ul>
       <p>Please follow up with these members to renew their memberships.</p>

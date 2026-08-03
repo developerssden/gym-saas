@@ -283,6 +283,8 @@ export default async function handler(
                 email: true,
                 first_name: true,
                 last_name: true,
+                phone_number: true,
+                address: true,
               },
             },
             gym: {
@@ -304,7 +306,15 @@ export default async function handler(
 
     const newlyExpiredMembersByOwner = new Map<
       string,
-      Array<{ name: string; email: string; ownerEmail: string }>
+      Array<{
+        name: string;
+        email: string;
+        phone_number: string | null;
+        address: string | null;
+        start_date: Date;
+        end_date: Date;
+        ownerEmail: string;
+      }>
     >();
 
     for (const subscription of memberSubscriptions) {
@@ -355,6 +365,10 @@ export default async function handler(
           expiredMembers.push({
             name: action.ownerName || "Member",
             email: action.ownerEmail || "No email",
+            phone_number: subscription.member.user.phone_number,
+            address: subscription.member.user.address,
+            start_date: subscription.start_date,
+            end_date: subscription.end_date,
             ownerEmail: subscription.member.gym.owner.email || "",
           });
           newlyExpiredMembersByOwner.set(ownerId, expiredMembers);

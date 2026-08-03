@@ -5,6 +5,10 @@ import { StatusCodes } from "http-status-codes";
 import { requireGymOwner } from "@/lib/ownersessioncheck";
 import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
 import { hashPassword } from "@/lib/authHelper";
+import {
+  normalizeOptionalString,
+  resolveMemberGeoFields,
+} from "@/lib/members/location-geo-fallback";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -31,16 +35,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cnic,
     } = req.body as Record<string, any>;
 
-    if (!gym_id || !location_id || !first_name || !last_name) {
+    const normalizedFirstName = normalizeOptionalString(first_name);
+    const normalizedAddress = normalizeOptionalString(address);
+    const normalizedEmail = normalizeOptionalString(email);
+    const normalizedPhone = normalizeOptionalString(phone_number);
+    const normalizedLastName = normalizeOptionalString(last_name);
+    const normalizedCnic = normalizeOptionalString(cnic);
+
+    if (!gym_id || !location_id || !normalizedFirstName || !normalizedAddress) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error: "Missing required fields: gym_id, location_id, first_name, last_name",
+        error:
+          "Missing required fields: gym_id, location_id, first_name, address",
+      });
+    }
+
+    if (!normalizedEmail && !normalizedPhone) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "Email or phone number is required",
       });
     }
 
     // Validate gym belongs to owner
     const gym = await prisma.gym.findUnique({
       where: { id: gym_id },
-      select: { id: true, owner_id: true, is_deleted: true },
+      select: {
+        id: true,
+        owner_id: true,
+        is_deleted: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+      },
     });
 
     if (!gym || gym.is_deleted || gym.owner_id !== session.user.id) {
@@ -53,7 +79,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Validate location belongs to gym and owner
     const location = await prisma.location.findUnique({
       where: { id: location_id },
-      select: { id: true, gym_id: true, is_deleted: true },
+      select: {
+        id: true,
+        gym_id: true,
+        is_deleted: true,
+        city: true,
+        state: true,
+        zip_code: true,
+        country: true,
+      },
     });
 
     if (!location || location.is_deleted || location.gym_id !== gym_id) {
@@ -61,6 +95,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         error: "Invalid location_id or location does not belong to the selected gym",
       });
     }
+
+    const geo = resolveMemberGeoFields(
+      { city, state, zip_code, country },
+      location,
+      gym
+    );
 
     // Check subscription limits (per location)
     const limitCheck = await checkLimitExceeded(session.user.id, "member", location_id);
@@ -96,6 +136,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
+    if (normalizedPhone) {
+      const phoneTaken = await prisma.member.findFirst({
+        where: {
+          location_id,
+          user: {
+            phone_number: normalizedPhone,
+            is_deleted: false,
+          },
+        },
+      });
+      if (phoneTaken) {
+        return res.status(StatusCodes.CONFLICT).json({
+          error: `Phone number already registered at this location: ${normalizedPhone}`,
+        });
+      }
+    }
+
     // Create or update user
     let finalUserId: string;
     if (user_id) {
@@ -103,53 +160,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await prisma.user.update({
         where: { id: user_id },
         data: {
-          first_name,
-          last_name,
-          email: email || null,
-          phone_number: phone_number || undefined,
-          address: address || undefined,
-          city: city || undefined,
-          state: state || undefined,
-          zip_code: zip_code || undefined,
-          country: country || undefined,
+          first_name: normalizedFirstName,
+          last_name: normalizedLastName,
+          email: normalizedEmail,
+          phone_number: normalizedPhone ?? "",
+          address: normalizedAddress,
+          city: geo.city ?? "",
+          state: geo.state ?? "",
+          zip_code: geo.zip_code ?? "",
+          country: geo.country ?? "",
           date_of_birth: date_of_birth ? new Date(date_of_birth) : undefined,
-          cnic: cnic || null,
+          cnic: normalizedCnic,
           role: "MEMBER",
         },
       });
       finalUserId = user_id;
     } else {
-      // Create new user
-      if (!email) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          error: "Email is required when creating a new member",
+      if (normalizedEmail) {
+        const existingUser = await prisma.user.findFirst({
+          where: { email: normalizedEmail, is_deleted: false },
         });
-      }
 
-      // Check if email already exists
-      const existingUser = await prisma.user.findFirst({
-        where: { email, is_deleted: false },
-      });
-
-      if (existingUser) {
-        return res.status(StatusCodes.CONFLICT).json({
-          error: "User with this email already exists",
-        });
+        if (existingUser) {
+          return res.status(StatusCodes.CONFLICT).json({
+            error: "User with this email already exists",
+          });
+        }
       }
 
       const newUser = await prisma.user.create({
         data: {
-          first_name,
-          last_name,
-          email,
-          phone_number: phone_number || "",
-          address: address || "",
-          city: city || "",
-          state: state || "",
-          zip_code: zip_code || "",
-          country: country || "",
-          date_of_birth: date_of_birth ? new Date(date_of_birth) : new Date(),
-          cnic: cnic || null,
+          first_name: normalizedFirstName,
+          last_name: normalizedLastName,
+          email: normalizedEmail,
+          phone_number: normalizedPhone ?? "",
+          address: normalizedAddress,
+          city: geo.city ?? "",
+          state: geo.state ?? "",
+          zip_code: geo.zip_code ?? "",
+          country: geo.country ?? "",
+          date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
+          cnic: normalizedCnic,
           role: "MEMBER",
           // Generate a random password (member can reset it later)
           password: await hashPassword(Math.random().toString(36).slice(-12)),
@@ -181,4 +232,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: message });
   }
 }
-
