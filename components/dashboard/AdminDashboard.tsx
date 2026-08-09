@@ -27,6 +27,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
+import { CurrencyAmount } from "@/components/common/CurrencyAmount"
+import { formatCurrency } from "@/lib/currency"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   ChartContainer,
@@ -72,15 +74,6 @@ type SubscriptionRow = {
   isExpired: boolean
   lastPaymentAmount: number | null
   lastPaymentDate: string | null
-}
-
-function formatCurrency(amount: number) {
-  const safe = Number.isFinite(amount) ? amount : 0
-  return new Intl.NumberFormat("en-PK", {
-    style: "currency",
-    currency: "PKR",
-    maximumFractionDigits: 0,
-  }).format(safe)
 }
 
 function formatPct(pct: number) {
@@ -211,7 +204,7 @@ const subscriptionColumns: ColumnDef<SubscriptionRow>[] = [
         <span className="font-mono tabular-nums">
           {row.original.lastPaymentAmount === null
             ? "-"
-            : formatCurrency(row.original.lastPaymentAmount)}
+            : <CurrencyAmount amount={row.original.lastPaymentAmount} />}
         </span>
         <span className="text-xs text-muted-foreground">
           {formatDate(row.original.lastPaymentDate)}

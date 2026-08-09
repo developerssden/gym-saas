@@ -38,12 +38,14 @@ declare module 'next-auth' {
       gyms?: Array<{
         id: string;
         name: string;
+        country?: string | null;
       }>;
       locations?: Array<{
         id: string;
         name: string;
         gymId: string;
         address?: string | null;
+        country?: string | null;
       }>;
     };
   }

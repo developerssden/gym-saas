@@ -6,6 +6,7 @@ import { requireAdminOrOwner } from "@/lib/sessioncheck";
 import { SubscriptionTypeEnum } from "@/prisma/generated/client";
 import PDFDocument from "pdfkit";
 import { Readable } from "stream";
+import { formatCurrency, resolveGymCountry } from "@/lib/currency";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -119,15 +120,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.send(pdfBuffer);
     });
 
-    // Helper function to format currency (PKR)
-    const formatCurrency = (amount: number) => {
-      const safe = Number.isFinite(amount) ? amount : 0;
-      return new Intl.NumberFormat("en-PK", {
-        style: "currency",
-        currency: "PKR",
-        maximumFractionDigits: 0,
-      }).format(safe);
-    };
+    // Helper function to format currency from gym/owner country
+    const invoiceCountry =
+      (isMemberSubscription
+        ? resolveGymCountry(gym?.country, sub?.member?.location?.country)
+        : customer?.country) || null;
+    const formatMoney = (amount: number) =>
+      formatCurrency(amount, { countryCode: invoiceCountry });
 
     // Helper function to format date
     const formatDate = (date: Date) => {
@@ -294,7 +293,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ellipsis: true,
       });
     }
-    doc.text(formatCurrency(payment.amount), amountX, rowY + 10, { width: amountWidth - 10, align: "right" });
+    doc.text(formatMoney(payment.amount), amountX, rowY + 10, { width: amountWidth - 10, align: "right" });
 
     // Notes section (if exists)
     let notesY = rowY + rowHeight + 20;
@@ -320,10 +319,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .fontSize(10)
       .font("Helvetica")
       .text("Subtotal:", totalBoxX + 10, totalY + 10)
-      .text(formatCurrency(payment.amount), totalBoxX + 100, totalY + 10, { align: "right" })
+      .text(formatMoney(payment.amount), totalBoxX + 100, totalY + 10, { align: "right" })
       .font("Helvetica-Bold")
       .text("Total:", totalBoxX + 10, totalY + 35)
-      .text(formatCurrency(payment.amount), totalBoxX + 100, totalY + 35, { align: "right" });
+      .text(formatMoney(payment.amount), totalBoxX + 100, totalY + 35, { align: "right" });
 
     // Footer
     const footerY = 750;

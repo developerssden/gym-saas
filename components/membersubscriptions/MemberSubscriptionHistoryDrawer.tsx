@@ -10,6 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { CurrencyAmount } from "@/components/common/CurrencyAmount";
 
 interface Props {
   open: boolean;
@@ -84,7 +85,7 @@ export function MemberSubscriptionHistoryDrawer({
                   <Badge variant={color}>{label}</Badge>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  Rs {sub.price.toLocaleString()} · {sub.billing_model}
+                  <CurrencyAmount amount={sub.price} /> · {sub.billing_model}
                 </span>
               </div>
             );

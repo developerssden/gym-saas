@@ -28,6 +28,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
+import { CurrencyAmount } from "@/components/common/CurrencyAmount"
+import { useGymCurrency } from "@/hooks/useGymCurrency"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   ChartContainer,
@@ -87,15 +89,6 @@ type PaymentRow = {
   paymentMethod: string
   paymentDate: string
   subscriptionType: string
-}
-
-function formatCurrency(amount: number) {
-  const safe = Number.isFinite(amount) ? amount : 0
-  return new Intl.NumberFormat("en-PK", {
-    style: "currency",
-    currency: "PKR",
-    maximumFractionDigits: 0,
-  }).format(safe)
 }
 
 function formatPct(pct: number) {
@@ -175,7 +168,7 @@ const subscriptionColumns: ColumnDef<SubscriptionRow>[] = [
     ),
     cell: ({ row }) => (
       <span className="font-mono tabular-nums">
-        {formatCurrency(row.original.price)}
+        <CurrencyAmount amount={row.original.price} />
       </span>
     ),
   },
@@ -228,7 +221,7 @@ const subscriptionColumns: ColumnDef<SubscriptionRow>[] = [
         <span className="font-mono tabular-nums">
           {row.original.lastPaymentAmount === null
             ? "-"
-            : formatCurrency(row.original.lastPaymentAmount)}
+            : <CurrencyAmount amount={row.original.lastPaymentAmount} />}
         </span>
         <span className="text-xs text-muted-foreground">
           {formatDate(row.original.lastPaymentDate)}
@@ -255,7 +248,7 @@ const paymentColumns: ColumnDef<PaymentRow>[] = [
     ),
     cell: ({ row }) => (
       <span className="font-mono tabular-nums">
-        {formatCurrency(row.original.amount)}
+        <CurrencyAmount amount={row.original.amount} />
       </span>
     ),
   },
@@ -285,6 +278,7 @@ const paymentColumns: ColumnDef<PaymentRow>[] = [
 
 const OwnerDashboard = () => {
   const { data: session } = useSession()
+  const { format: formatMoney } = useGymCurrency()
   const selectedGymId = session?.user?.selected_gym_id
   const selectedLocationId = session?.user?.selected_location_id
 
@@ -492,7 +486,7 @@ const OwnerDashboard = () => {
               <CardDescription>This month so far</CardDescription>
             </CardHeader>
             <CardContent className="text-2xl font-semibold">
-              {formatCurrency(data.totals.revenueThisMonth)}
+              {formatMoney(data.totals.revenueThisMonth)}
             </CardContent>
           </Card>
 
@@ -579,7 +573,7 @@ const OwnerDashboard = () => {
               <CardDescription>Last month total</CardDescription>
             </CardHeader>
             <CardContent className="text-2xl font-semibold">
-              {formatCurrency(data.totals.revenueLastMonth)}
+              {formatMoney(data.totals.revenueLastMonth)}
             </CardContent>
           </Card>
         </div>
@@ -620,7 +614,7 @@ const OwnerDashboard = () => {
                     allowDecimals={false}
                     ticks={revenueTicks}
                     domain={[0, revenueTicks[revenueTicks.length - 1] ?? 5000]}
-                    tickFormatter={(v) => formatCurrency(Number(v))}
+                    tickFormatter={(v) => formatMoney(Number(v))}
                   />
                   <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                   <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />

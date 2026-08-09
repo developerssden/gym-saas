@@ -249,14 +249,16 @@ export const options: NextAuthOptions = {
           
           session.user.gyms = gyms.map(gym => ({
             id: gym.id,
-            name: gym.name
+            name: gym.name,
+            country: gym.country,
           }));
           
           session.user.locations = locations.map(loc => ({
             id: loc.id,
             name: loc.name,
             gymId: loc.gym_id,
-            address: loc.address
+            address: loc.address,
+            country: loc.country,
           }));
 
           // Add subscription status for GYM_OWNER

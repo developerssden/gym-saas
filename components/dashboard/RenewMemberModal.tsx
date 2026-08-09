@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useGymCurrency } from "@/hooks/useGymCurrency";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,7 @@ export default function RenewMemberModal({
   defaultBillingModel,
 }: RenewMemberModalProps) {
   const queryClient = useQueryClient();
+  const { currencyCode } = useGymCurrency();
 
   const [price, setPrice] = useState(defaultPrice);
   const [months, setMonths] = useState(
@@ -113,7 +115,7 @@ export default function RenewMemberModal({
 
         <div className="grid gap-4 py-2">
           <div className="grid gap-1.5">
-            <Label htmlFor="price">Amount (PKR)</Label>
+            <Label htmlFor="price">Amount ({currencyCode})</Label>
             <Input
               id="price"
               type="number"

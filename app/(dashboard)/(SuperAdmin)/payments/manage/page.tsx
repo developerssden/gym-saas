@@ -24,6 +24,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
+import { useGymCurrency } from "@/hooks/useGymCurrency";
 
 const ManagePaymentSchema = Yup.object({
   subscription_type: Yup.string().oneOf(["OWNER", "MEMBER"]).required("Subscription type is required"),
@@ -53,16 +54,12 @@ const ManagePaymentContent = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const { format: formatMoney } = useGymCurrency();
 
   const action = (searchParams?.get("action") as "create" | "edit" | "view") || "create";
   const paymentId = searchParams?.get("id") || null;
 
   const [saving, setSaving] = useState(false);
-
-  if (status === "loading") return <FullScreenLoader />;
-  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER") {
-    return redirect("/unauthorized");
-  }
 
   const isGymOwner = session?.user?.role === "GYM_OWNER";
 
@@ -80,7 +77,7 @@ const ManagePaymentContent = () => {
 
   // Fetch owner subscriptions for dropdown (only for SUPER_ADMIN)
   const { data: ownerSubscriptionsData } = useOwnerSubscriptions({
-    enabled: !isGymOwner,
+    enabled: !!session && !isGymOwner,
   });
 
   // Fetch member subscriptions for dropdown (for GYM_OWNER or SUPER_ADMIN)
@@ -118,12 +115,13 @@ const ManagePaymentContent = () => {
       const member = sub.member;
       const user = member?.user;
       const label = user
-        ? `${user.first_name} ${user.last_name}`.trim() + ` - PKR ${sub.price}`
+        ? `${user.first_name} ${user.last_name}`.trim() +
+          ` - ${formatMoney(Number(sub.price))}`
         : sub.id;
       map.set(sub.id, label);
     });
     return map;
-  }, [memberSubscriptions]);
+  }, [memberSubscriptions, formatMoney]);
 
   const createMutation = useMutation({
     mutationFn: (values: any) => axios.post("/api/payments/createpayment", values),
@@ -189,6 +187,11 @@ const ManagePaymentContent = () => {
       }
     },
   });
+
+  if (status === "loading") return <FullScreenLoader />;
+  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER") {
+    return redirect("/unauthorized");
+  }
 
   if (fetchingPayment) return <FullScreenLoader label="Loading payment..." />;
 

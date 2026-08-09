@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { usePlans } from "@/hooks/use-plans";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { formatCurrency } from "@/lib/currency";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
@@ -297,8 +298,8 @@ const ManageOwnerSubscriptionContent = () => {
                 <SelectContent className="w-full">
                   {plansData?.data.map((p: any) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.name} — Monthly: ${p.monthly_price} / Yearly: $
-                      {p.yearly_price}
+                      {p.name} — Monthly: {formatCurrency(Number(p.monthly_price))} / Yearly:{" "}
+                      {formatCurrency(Number(p.yearly_price))}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -28,6 +28,7 @@ import { formatDate } from "@/lib/date-helper-functions";
 import { cn } from "@/lib/utils";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
+import { useGymCurrency } from "@/hooks/useGymCurrency";
 
 const MemberSubscriptionSchema = Yup.object({
   member_id: Yup.string().required("Member is required"),
@@ -52,6 +53,7 @@ const MemberSubscriptionSchema = Yup.object({
 
 const ManageMemberSubscriptionContent = () => {
   const { data: session, status } = useSession({ required: true });
+  const { currencyCode } = useGymCurrency();
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
@@ -269,7 +271,7 @@ const ManageMemberSubscriptionContent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Price *</Label>
+              <Label>Price ({currencyCode}) *</Label>
               <Input
                 name="price"
                 type="number"

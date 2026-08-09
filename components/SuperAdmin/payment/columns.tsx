@@ -14,20 +14,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CurrencyAmount } from "@/components/common/CurrencyAmount";
+import { resolveGymCountry } from "@/lib/currency";
 
 const formatDate = (value: unknown) => {
   const d = value instanceof Date ? value : new Date(value as any);
   return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
 };
 
-const formatCurrency = (amount: number) => {
-  const safe = Number.isFinite(amount) ? amount : 0;
-  return new Intl.NumberFormat("en-PK", {
-    style: "currency",
-    currency: "PKR",
-    maximumFractionDigits: 0,
-  }).format(safe);
-};
+function paymentCountryCode(payment: Payment): string | null {
+  if (payment.subscription_type === "MEMBER") {
+    const member = payment.memberSubscription?.member as
+      | {
+          gym?: { country?: string | null };
+          location?: { country?: string | null };
+        }
+      | undefined;
+    return resolveGymCountry(member?.gym?.country, member?.location?.country);
+  }
+  return (
+    payment.ownerSubscription?.owner?.country?.trim() ||
+    null
+  );
+}
 
 // Column definitions for TanStack table
 export const columns: ColumnDef<Payment>[] = [
@@ -71,7 +80,12 @@ export const columns: ColumnDef<Payment>[] = [
   {
     accessorKey: "amount",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
-    cell: ({ row }) => formatCurrency(row.original.amount),
+    cell: ({ row }) => (
+      <CurrencyAmount
+        amount={row.original.amount}
+        countryCode={paymentCountryCode(row.original)}
+      />
+    ),
   },
   {
     accessorKey: "payment_method",

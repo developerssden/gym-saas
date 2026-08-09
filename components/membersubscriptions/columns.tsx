@@ -28,6 +28,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import RenewMemberModal from "@/components/dashboard/RenewMemberModal";
+import { CurrencyAmount } from "@/components/common/CurrencyAmount";
 import ChurnReasonModal from "@/components/membersubscriptions/ChurnReasonModal";
 import { MemberSubscriptionHistoryDrawer } from "@/components/membersubscriptions/MemberSubscriptionHistoryDrawer";
 
@@ -183,9 +184,7 @@ export const columns: ColumnDef<MemberSubscription>[] = [
   {
     accessorKey: "price",
     header: "Price",
-    cell: ({ row }) => {
-      return `$${row.original.price.toFixed(2)}`;
-    },
+    cell: ({ row }) => <CurrencyAmount amount={row.original.price} />,
   },
   {
     accessorKey: "start_date",

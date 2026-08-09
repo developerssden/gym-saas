@@ -83,6 +83,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               member: {
                 include: {
                   user: true,
+                  gym: {
+                    select: { id: true, name: true, country: true },
+                  },
+                  location: {
+                    select: { id: true, name: true, country: true },
+                  },
                 },
               },
             },

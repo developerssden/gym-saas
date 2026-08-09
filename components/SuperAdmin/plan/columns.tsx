@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { CurrencyAmount } from "@/components/common/CurrencyAmount"
 
 
 
@@ -50,14 +51,14 @@ export const columns: ColumnDef<Plan>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Monthly Price" />
     ),
-    cell: info => `$${info.getValue<number>()}`,
+    cell: info => <CurrencyAmount amount={info.getValue<number>()} />,
   },
   {
     accessorKey: "yearly_price",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Yearly Price" />
     ),
-    cell: info => `$${info.getValue<number>()}`,
+    cell: info => <CurrencyAmount amount={info.getValue<number>()} />,
   },
   {
     accessorKey: "max_gyms",
