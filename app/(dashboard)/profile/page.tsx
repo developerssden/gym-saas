@@ -7,6 +7,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -378,13 +379,13 @@ const ProfilePage = () => {
             <form onSubmit={passwordFormik.handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label>Current Password *</Label>
-                <Input
+                <PasswordInput
                   name="current_password"
-                  type="password"
                   value={passwordFormik.values.current_password}
                   onChange={passwordFormik.handleChange}
                   onBlur={passwordFormik.handleBlur}
                   placeholder="Enter current password"
+                  autoComplete="current-password"
                 />
                 {passwordFormik.touched.current_password &&
                   passwordFormik.errors.current_password && (
@@ -396,13 +397,13 @@ const ProfilePage = () => {
 
               <div className="space-y-2">
                 <Label>New Password *</Label>
-                <Input
+                <PasswordInput
                   name="new_password"
-                  type="password"
                   value={passwordFormik.values.new_password}
                   onChange={passwordFormik.handleChange}
                   onBlur={passwordFormik.handleBlur}
                   placeholder="Enter new password (min 6 characters)"
+                  autoComplete="new-password"
                 />
                 {passwordFormik.touched.new_password && passwordFormik.errors.new_password && (
                   <p className="text-red-500 text-sm">
@@ -413,13 +414,13 @@ const ProfilePage = () => {
 
               <div className="space-y-2">
                 <Label>Confirm New Password *</Label>
-                <Input
+                <PasswordInput
                   name="confirm_password"
-                  type="password"
                   value={passwordFormik.values.confirm_password}
                   onChange={passwordFormik.handleChange}
                   onBlur={passwordFormik.handleBlur}
                   placeholder="Confirm new password"
+                  autoComplete="new-password"
                 />
                 {passwordFormik.touched.confirm_password &&
                   passwordFormik.errors.confirm_password && (

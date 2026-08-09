@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date-helper-functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -316,31 +317,31 @@ export function OnboardingForm() {
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 placeholder="Enter password"
                 value={form.password}
                 onChange={handleChange}
                 required
                 minLength={6}
                 disabled={loading}
+                autoComplete="new-password"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="confirm_password">Confirm Password</Label>
-              <Input
+              <PasswordInput
                 id="confirm_password"
                 name="confirm_password"
-                type="password"
                 placeholder="Confirm password"
                 value={form.confirm_password}
                 onChange={handleChange}
                 required
                 minLength={6}
                 disabled={loading}
+                autoComplete="new-password"
               />
             </div>
           </div>

@@ -6,6 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios from "axios";
@@ -200,13 +201,13 @@ const ManageClientContent = () => {
             {action === "create" && (
               <div className="space-y-2">
                 <Label>Password</Label>
-                <Input
+                <PasswordInput
                   name="password"
-                  type="password"
                   placeholder="Enter password"
                   value={formik.values.password}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  autoComplete="new-password"
                 />
                 {formik.touched.password && formik.errors.password && (
                   <p className="text-red-500 text-sm">
@@ -219,13 +220,13 @@ const ManageClientContent = () => {
             {action === "edit" && (
               <div className="space-y-2">
                 <Label>New Password (leave blank to keep current)</Label>
-                <Input
+                <PasswordInput
                   name="password"
-                  type="password"
                   placeholder="Enter new password"
                   value={formik.values.password}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  autoComplete="new-password"
                 />
                 {formik.touched.password && formik.errors.password && (
                   <p className="text-red-500 text-sm">
