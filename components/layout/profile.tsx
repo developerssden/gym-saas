@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, User } from "lucide-react";
+import { LogOut, Moon, Sun, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
@@ -14,6 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
+import { useAnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
 const getInitials = (name?: string | null) => {
   if (!name) return "";
@@ -28,6 +30,7 @@ const getInitials = (name?: string | null) => {
 export default function ProfileDropdown() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const { isDark, toggleTheme } = useAnimatedThemeToggler();
   const user = session?.user;
 
   const displayName =
@@ -75,6 +78,27 @@ export default function ProfileDropdown() {
             </Link>
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onSelect={(event) => {
+            event.preventDefault();
+            toggleTheme(event.currentTarget as HTMLElement);
+          }}
+        >
+          {isDark ? (
+            <Sun className="mr-2 h-4 w-4" />
+          ) : (
+            <Moon className="mr-2 h-4 w-4" />
+          )}
+          <span>Dark mode</span>
+          <Switch
+            checked={isDark}
+            tabIndex={-1}
+            aria-hidden
+            className="ml-auto pointer-events-none"
+          />
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleLogout}
           className="cursor-pointer text-destructive focus:text-destructive"

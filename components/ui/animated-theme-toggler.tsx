@@ -6,18 +6,8 @@ import { flushSync } from "react-dom"
 
 import { cn } from "@/lib/utils"
 
-interface AnimatedThemeTogglerProps
-  extends React.ComponentPropsWithoutRef<"button"> {
-  duration?: number
-}
-
-export const AnimatedThemeToggler = ({
-  className,
-  duration = 400,
-  ...props
-}: AnimatedThemeTogglerProps) => {
+export const useAnimatedThemeToggler = (duration = 400) => {
   const [isDark, setIsDark] = useState(false)
-  const buttonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const updateTheme = () => {
@@ -35,46 +25,75 @@ export const AnimatedThemeToggler = ({
     return () => observer.disconnect()
   }, [])
 
-  const toggleTheme = useCallback(async () => {
-    if (!buttonRef.current) return
+  const applyTheme = useCallback(() => {
+    const newTheme = !isDark
+    setIsDark(newTheme)
+    document.documentElement.classList.toggle("dark")
+    localStorage.setItem("theme", newTheme ? "dark" : "light")
+  }, [isDark])
 
-    await document.startViewTransition(() => {
-      flushSync(() => {
-        const newTheme = !isDark
-        setIsDark(newTheme)
-        document.documentElement.classList.toggle("dark")
-        localStorage.setItem("theme", newTheme ? "dark" : "light")
-      })
-    }).ready
+  const toggleTheme = useCallback(
+    async (origin?: HTMLElement | null) => {
+      // Read the rect up front: the origin may unmount (e.g. a closing dropdown
+      // item) before the transition settles.
+      const rect = origin?.getBoundingClientRect()
 
-    const { top, left, width, height } =
-      buttonRef.current.getBoundingClientRect()
-    const x = left + width / 2
-    const y = top + height / 2
-    const maxRadius = Math.hypot(
-      Math.max(left, window.innerWidth - left),
-      Math.max(top, window.innerHeight - top)
-    )
-
-    document.documentElement.animate(
-      {
-        clipPath: [
-          `circle(0px at ${x}px ${y}px)`,
-          `circle(${maxRadius}px at ${x}px ${y}px)`,
-        ],
-      },
-      {
-        duration,
-        easing: "ease-in-out",
-        pseudoElement: "::view-transition-new(root)",
+      if (!document.startViewTransition) {
+        applyTheme()
+        return
       }
-    )
-  }, [isDark, duration])
+
+      await document.startViewTransition(() => {
+        flushSync(applyTheme)
+      }).ready
+
+      if (!rect) return
+
+      const { top, left, width, height } = rect
+      const x = left + width / 2
+      const y = top + height / 2
+      const maxRadius = Math.hypot(
+        Math.max(left, window.innerWidth - left),
+        Math.max(top, window.innerHeight - top)
+      )
+
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${maxRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration,
+          easing: "ease-in-out",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      )
+    },
+    [applyTheme, duration]
+  )
+
+  return { isDark, toggleTheme }
+}
+
+interface AnimatedThemeTogglerProps
+  extends React.ComponentPropsWithoutRef<"button"> {
+  duration?: number
+}
+
+export const AnimatedThemeToggler = ({
+  className,
+  duration = 400,
+  ...props
+}: AnimatedThemeTogglerProps) => {
+  const { isDark, toggleTheme } = useAnimatedThemeToggler(duration)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   return (
     <button
       ref={buttonRef}
-      onClick={toggleTheme}
+      onClick={() => toggleTheme(buttonRef.current)}
       className={cn(className)}
       {...props}
     >

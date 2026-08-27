@@ -3,7 +3,6 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import BreadCrumbs from "./breadcrumbs"
 import ProfileDropdown from "./profile"
-import { AnimatedThemeToggler } from "../ui/animated-theme-toggler"
 import { GymLocationSelector } from "./gym-location-selector"
 import { useSession } from "next-auth/react"
 import { useCallback } from "react"
@@ -74,8 +73,7 @@ export function SiteHeader() {
             />
           </>
         )}
-        <div className="ml-auto flex items-center gap-2">
-          <AnimatedThemeToggler />
+        <div className="ml-auto flex items-center">
           <ProfileDropdown />
         </div>
       </div>
