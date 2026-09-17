@@ -26,9 +26,7 @@ if (!process.env.DATABASE_URL) {
 
 // Once a migrations folder exists, deploy it; until then keep the
 // `db push` workflow this project has always used.
-const args = hasMigrations()
-  ? ["migrate", "deploy"]
-  : ["db", "push", "--skip-generate"];
+const args = hasMigrations() ? ["migrate", "deploy"] : ["db", "push"];
 
 console.log(`[db-deploy] prisma ${args.join(" ")}`);
 
