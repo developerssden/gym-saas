@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "build": "node scripts/db-deploy.mjs && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test tests/date-utils.test.ts tests/compute-actions.test.ts tests/email.test.ts tests/subscription-lifecycle.test.ts",
     "postinstall": "prisma generate",
     "db:push:dev": "prisma db push",
+    "db:deploy": "node scripts/db-deploy.mjs",
     "db:seed": "prisma db seed"
   },
   "prisma": {
