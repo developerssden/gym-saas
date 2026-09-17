@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 export default function OfflinePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#FBFBF9] px-6 text-center">
