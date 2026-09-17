@@ -121,6 +121,8 @@ model Gym {
   members      Member[]
   equipment    Equipment[]
   locations    Location[]
+  staff        Staff[]
+  classes      GymClass[]
 }
 
 model Location {
@@ -141,6 +143,8 @@ model Location {
   gym          Gym        @relation(fields: [gym_id], references: [id])
   members      Member[]
   equipment    Equipment[]
+  staff        Staff[]
+  classes      GymClass[]
 }
 
 // Member model
@@ -156,6 +160,7 @@ model Member {
   gym          Gym          @relation(fields: [gym_id], references: [id])
   location     Location     @relation(fields: [location_id], references: [id])
   memberSubscriptions MemberSubscription[]
+  classAttendance     ClassAttendance[]
 }
 
 
@@ -229,6 +234,8 @@ model Plan {
   max_locations       Int                   @default(0)
   max_members         Int
   max_equipment       Int
+  max_staff           Int                   @default(0)
+  max_classes         Int                   @default(0)
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   is_active           Boolean               @default(true)
@@ -315,4 +322,101 @@ model Payment {
   ownerSubscription       OwnerSubscription?  @relation(fields: [owner_subscription_id], references: [id])
   memberSubscription     MemberSubscription? @relation(fields: [member_subscription_id], references: [id])
   recordedBy              User?               @relation("RecordedPayments", fields: [recorded_by_id], references: [id])
+}
+
+enum StaffRole {
+  MANAGER
+  TRAINER
+  INSTRUCTOR
+  FRONT_DESK
+  MAINTENANCE
+  OTHER
+}
+
+model Staff {
+  id             String     @id @default(uuid())
+  gym_id         String
+  location_id    String?
+  first_name     String
+  last_name      String?
+  role           StaffRole  @default(OTHER)
+  specialization String?
+  phone_number   String?
+  email          String?
+  shift_notes    String?
+  is_active      Boolean    @default(true)
+  is_deleted     Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  gym            Gym        @relation(fields: [gym_id], references: [id])
+  location       Location?  @relation(fields: [location_id], references: [id])
+  classesTaught  GymClass[] @relation("ClassInstructor")
+  attendanceRecordedBy ClassAttendance[] @relation("AttendanceRecordedBy")
+}
+
+enum ClassCategory {
+  YOGA
+  SPA
+  FITNESS
+  MARTIAL_ARTS
+  DANCE
+  OTHER
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model GymClass {
+  id               String            @id @default(uuid())
+  gym_id           String
+  location_id      String?
+  name             String
+  category         ClassCategory     @default(OTHER)
+  description      String?
+  instructor_id    String?
+  day_of_week      DayOfWeek?
+  start_time       String?
+  end_time         String?
+  duration_minutes Int?
+  capacity         Int?
+  is_active        Boolean           @default(true)
+  is_deleted       Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  gym              Gym               @relation(fields: [gym_id], references: [id])
+  location         Location?         @relation(fields: [location_id], references: [id])
+  instructor       Staff?            @relation("ClassInstructor", fields: [instructor_id], references: [id])
+  attendance       ClassAttendance[]
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+model ClassAttendance {
+  id              String            @id @default(uuid())
+  class_id        String
+  member_id       String
+  attendance_date DateTime
+  status          AttendanceStatus  @default(PRESENT)
+  recorded_by_id  String?
+  notes           String?
+  createdAt       DateTime          @default(now())
+
+  class           GymClass          @relation(fields: [class_id], references: [id])
+  member          Member            @relation(fields: [member_id], references: [id])
+  recordedBy      Staff?            @relation("AttendanceRecordedBy", fields: [recorded_by_id], references: [id])
+
+  @@unique([class_id, member_id, attendance_date])
 }

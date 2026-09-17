@@ -35,6 +35,12 @@ const SubscriptionSchema = Yup.object({
   max_equipment: Yup.number()
     .typeError("Must be a number")
     .required("Max equipment is required"),
+  max_staff: Yup.number()
+    .typeError("Must be a number")
+    .required("Max staff is required"),
+  max_classes: Yup.number()
+    .typeError("Must be a number")
+    .required("Max classes is required"),
   is_active: Yup.boolean(),
   polar_product_id: Yup.string()
     .transform((v) => (v === "" ? null : v))
@@ -104,6 +110,8 @@ const ManageSubscriptionsContent = () => {
       max_locations: subscriptionData?.max_locations || "",
       max_members: subscriptionData?.max_members || "",
       max_equipment: subscriptionData?.max_equipment || "",
+      max_staff: subscriptionData?.max_staff || "",
+      max_classes: subscriptionData?.max_classes || "",
       is_active: subscriptionData?.is_active || true,
       polar_product_id: subscriptionData?.polar_product_id || "",
       polar_checkout_url_monthly: subscriptionData?.polar_checkout_url_monthly || "",
@@ -250,6 +258,38 @@ const ManageSubscriptionsContent = () => {
               {formik.errors.max_equipment === "string" && (
                 <p className="text-red-500 text-sm">
                   {formik.errors.max_equipment}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <Label>Max Staff</Label>
+              <Input
+                name="max_staff"
+                type="number"
+                value={formik.values.max_staff}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {formik.errors.max_staff === "string" && (
+                <p className="text-red-500 text-sm">
+                  {formik.errors.max_staff}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <Label>Max Classes</Label>
+              <Input
+                name="max_classes"
+                type="number"
+                value={formik.values.max_classes}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {formik.errors.max_classes === "string" && (
+                <p className="text-red-500 text-sm">
+                  {formik.errors.max_classes}
                 </p>
               )}
             </div>

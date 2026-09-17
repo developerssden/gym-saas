@@ -20,6 +20,8 @@ import {
   TrendingUp,
   Users,
   Dumbbell,
+  UserCog,
+  CalendarDays,
 } from "lucide-react"
 
 import { PageContainer } from "@/components/layout/page-container"
@@ -50,6 +52,8 @@ type OwnerDashboardOverview = {
     totalGyms: number
     totalLocations: number
     totalEquipment: number
+    totalStaff: number
+    totalClasses: number
     activeMemberSubscriptions: number
     expiredMemberSubscriptions: number
     revenueThisMonth: number
@@ -429,7 +433,7 @@ const OwnerDashboard = () => {
               )}
             </div>
             <p className="text-muted-foreground text-sm">
-              Overview of your gyms: members, subscriptions, revenue, and equipment.
+              Overview of your gyms: members, subscriptions, revenue, equipment, staff, and classes.
             </p>
           </div>
           <div className="flex gap-2">
@@ -539,6 +543,32 @@ const OwnerDashboard = () => {
             </CardHeader>
             <CardContent className="text-2xl font-semibold">
               {data.totals.totalEquipment.toLocaleString()}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <UserCog className="size-4 text-muted-foreground" />
+                Total staff
+              </CardTitle>
+              <CardDescription>Directory records</CardDescription>
+            </CardHeader>
+            <CardContent className="text-2xl font-semibold">
+              {data.totals.totalStaff.toLocaleString()}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <CalendarDays className="size-4 text-muted-foreground" />
+                Total classes
+              </CardTitle>
+              <CardDescription>Scheduled classes</CardDescription>
+            </CardHeader>
+            <CardContent className="text-2xl font-semibold">
+              {data.totals.totalClasses.toLocaleString()}
             </CardContent>
           </Card>
 

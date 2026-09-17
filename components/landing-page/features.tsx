@@ -12,13 +12,13 @@ const features = [
     {
         name: "Dashboard",
         description:
-            "Get a real-time overview of your gym's performance. Track active members, revenue, and daily check-ins at a glance.",
+            "Get a real-time overview of your gym's performance. Track active members, revenue, staff, and classes at a glance.",
         icon: LayoutDashboard,
     },
     {
         name: "Member Management",
         description:
-            "Easily manage member profiles, memberships, and attendance. Keep track of payments and renewals effortlessly.",
+            "Easily manage member profiles, memberships, and class attendance. Keep track of payments and renewals effortlessly.",
         icon: Users,
     },
     {
@@ -28,9 +28,9 @@ const features = [
         icon: Package,
     },
     {
-        name: "Task Management",
+        name: "Staff Directory",
         description:
-            "Assign tasks to your staff and track their progress. Ensure your gym is always clean and well-maintained.",
+            "Keep a directory of trainers, instructors, and front-desk staff with roles, contact details, and shift notes — no extra logins required.",
         icon: CheckSquare,
     },
     {

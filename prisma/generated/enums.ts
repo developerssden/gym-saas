@@ -88,3 +88,49 @@ export const EquipmentStatus = {
 } as const
 
 export type EquipmentStatus = (typeof EquipmentStatus)[keyof typeof EquipmentStatus]
+
+
+export const StaffRole = {
+  MANAGER: 'MANAGER',
+  TRAINER: 'TRAINER',
+  INSTRUCTOR: 'INSTRUCTOR',
+  FRONT_DESK: 'FRONT_DESK',
+  MAINTENANCE: 'MAINTENANCE',
+  OTHER: 'OTHER'
+} as const
+
+export type StaffRole = (typeof StaffRole)[keyof typeof StaffRole]
+
+
+export const ClassCategory = {
+  YOGA: 'YOGA',
+  SPA: 'SPA',
+  FITNESS: 'FITNESS',
+  MARTIAL_ARTS: 'MARTIAL_ARTS',
+  DANCE: 'DANCE',
+  OTHER: 'OTHER'
+} as const
+
+export type ClassCategory = (typeof ClassCategory)[keyof typeof ClassCategory]
+
+
+export const DayOfWeek = {
+  MONDAY: 'MONDAY',
+  TUESDAY: 'TUESDAY',
+  WEDNESDAY: 'WEDNESDAY',
+  THURSDAY: 'THURSDAY',
+  FRIDAY: 'FRIDAY',
+  SATURDAY: 'SATURDAY',
+  SUNDAY: 'SUNDAY'
+} as const
+
+export type DayOfWeek = (typeof DayOfWeek)[keyof typeof DayOfWeek]
+
+
+export const AttendanceStatus = {
+  PRESENT: 'PRESENT',
+  ABSENT: 'ABSENT',
+  LATE: 'LATE'
+} as const
+
+export type AttendanceStatus = (typeof AttendanceStatus)[keyof typeof AttendanceStatus]

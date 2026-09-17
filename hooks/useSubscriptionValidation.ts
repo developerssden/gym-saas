@@ -16,11 +16,13 @@ export function useSubscriptionValidation() {
       max_locations: 0,
       max_members: 0,
       max_equipment: 0,
+      max_staff: 0,
+      max_classes: 0,
     }
   }, [session])
 
   const checkLimitBeforeAction = async (
-    resourceType: "gym" | "location" | "member" | "equipment",
+    resourceType: "gym" | "location" | "member" | "equipment" | "staff" | "class",
     locationId?: string
   ): Promise<{ exceeded: boolean; limitInfo?: any }> => {
     if (!isSubscriptionActive) {

@@ -285,7 +285,9 @@ export const options: NextAuthOptions = {
               max_gyms: activeSubscription.plan.max_gyms,
               max_locations: activeSubscription.plan.max_locations,
               max_members: activeSubscription.plan.max_members,
-              max_equipment: activeSubscription.plan.max_equipment
+              max_equipment: activeSubscription.plan.max_equipment,
+              max_staff: activeSubscription.plan.max_staff,
+              max_classes: activeSubscription.plan.max_classes
             };
           } else {
             session.user.subscription_active = false;
@@ -295,7 +297,9 @@ export const options: NextAuthOptions = {
               max_gyms: 0,
               max_locations: 0,
               max_members: 0,
-              max_equipment: 0
+              max_equipment: 0,
+              max_staff: 0,
+              max_classes: 0
             };
           }
         }

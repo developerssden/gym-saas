@@ -82,3 +82,18 @@ export type MemberSubscription = Prisma.MemberSubscriptionModel
  * 
  */
 export type Payment = Prisma.PaymentModel
+/**
+ * Model Staff
+ * 
+ */
+export type Staff = Prisma.StaffModel
+/**
+ * Model GymClass
+ * 
+ */
+export type GymClass = Prisma.GymClassModel
+/**
+ * Model ClassAttendance
+ * 
+ */
+export type ClassAttendance = Prisma.ClassAttendanceModel

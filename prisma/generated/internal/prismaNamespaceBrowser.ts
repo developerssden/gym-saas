@@ -63,7 +63,10 @@ export const ModelName = {
   Announcement: 'Announcement',
   OwnerSubscription: 'OwnerSubscription',
   MemberSubscription: 'MemberSubscription',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  Staff: 'Staff',
+  GymClass: 'GymClass',
+  ClassAttendance: 'ClassAttendance'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -72,12 +75,12 @@ export type ModelName = (typeof ModelName)[keyof typeof ModelName]
  * Enums
  */
 
-export const TransactionIsolationLevel = {
+export const TransactionIsolationLevel = runtime.makeStrictEnum({
   ReadUncommitted: 'ReadUncommitted',
   ReadCommitted: 'ReadCommitted',
   RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
-} as const
+} as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
@@ -240,6 +243,8 @@ export const PlanScalarFieldEnum = {
   max_locations: 'max_locations',
   max_members: 'max_members',
   max_equipment: 'max_equipment',
+  max_staff: 'max_staff',
+  max_classes: 'max_classes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   is_active: 'is_active',
@@ -325,6 +330,62 @@ export const PaymentScalarFieldEnum = {
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const StaffScalarFieldEnum = {
+  id: 'id',
+  gym_id: 'gym_id',
+  location_id: 'location_id',
+  first_name: 'first_name',
+  last_name: 'last_name',
+  role: 'role',
+  specialization: 'specialization',
+  phone_number: 'phone_number',
+  email: 'email',
+  shift_notes: 'shift_notes',
+  is_active: 'is_active',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StaffScalarFieldEnum = (typeof StaffScalarFieldEnum)[keyof typeof StaffScalarFieldEnum]
+
+
+export const GymClassScalarFieldEnum = {
+  id: 'id',
+  gym_id: 'gym_id',
+  location_id: 'location_id',
+  name: 'name',
+  category: 'category',
+  description: 'description',
+  instructor_id: 'instructor_id',
+  day_of_week: 'day_of_week',
+  start_time: 'start_time',
+  end_time: 'end_time',
+  duration_minutes: 'duration_minutes',
+  capacity: 'capacity',
+  is_active: 'is_active',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GymClassScalarFieldEnum = (typeof GymClassScalarFieldEnum)[keyof typeof GymClassScalarFieldEnum]
+
+
+export const ClassAttendanceScalarFieldEnum = {
+  id: 'id',
+  class_id: 'class_id',
+  member_id: 'member_id',
+  attendance_date: 'attendance_date',
+  status: 'status',
+  recorded_by_id: 'recorded_by_id',
+  notes: 'notes',
+  createdAt: 'createdAt'
+} as const
+
+export type ClassAttendanceScalarFieldEnum = (typeof ClassAttendanceScalarFieldEnum)[keyof typeof ClassAttendanceScalarFieldEnum]
 
 
 export const SortOrder = {

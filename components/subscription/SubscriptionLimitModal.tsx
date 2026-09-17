@@ -37,6 +37,8 @@ export function SubscriptionLimitModal({
     location: "Locations",
     member: "Members",
     equipment: "Equipment/Inventory",
+    staff: "Staff",
+    class: "Classes",
   }
 
   const resourceLabel = resourceLabels[resourceType] || resourceType

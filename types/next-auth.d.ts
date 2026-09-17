@@ -34,6 +34,8 @@ declare module 'next-auth' {
         max_locations: number;
         max_members: number;
         max_equipment: number;
+        max_staff: number;
+        max_classes: number;
       };
       gyms?: Array<{
         id: string;

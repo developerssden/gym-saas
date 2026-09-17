@@ -20,6 +20,8 @@ export default async function handler(
       max_locations: true,
       max_members: true,
       max_equipment: true,
+      max_staff: true,
+      max_classes: true,
       polar_product_id: true,
       polar_checkout_url_monthly: true,
       polar_checkout_url_yearly: true,

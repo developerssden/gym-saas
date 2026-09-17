@@ -11,6 +11,8 @@ export type PublicPlan = {
   max_locations: number;
   max_members: number;
   max_equipment: number;
+  max_staff: number;
+  max_classes: number;
   polar_product_id: string | null;
   polar_checkout_url_monthly: string | null;
   polar_checkout_url_yearly: string | null;
@@ -48,6 +50,8 @@ export function getPlanFeatures(plan: PublicPlan): string[] {
     `Up to ${plan.max_locations} location${plan.max_locations > 1 ? "s" : ""}`,
     `${plan.max_members} members per location`,
     `${plan.max_equipment} equipment items per location`,
+    `${plan.max_staff} staff per location`,
+    `${plan.max_classes} classes per location`,
     "Automated expiry reminders",
     "PDF invoices",
     "Member payment tracking",

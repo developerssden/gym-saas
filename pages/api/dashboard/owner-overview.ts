@@ -13,6 +13,8 @@ type OwnerOverviewResponse = {
     totalGyms: number
     totalLocations: number
     totalEquipment: number
+    totalStaff: number
+    totalClasses: number
     activeMemberSubscriptions: number
     expiredMemberSubscriptions: number
     revenueThisMonth: number
@@ -153,6 +155,8 @@ export default async function handler(
       totalGyms,
       totalLocations,
       totalEquipment,
+      totalStaff,
+      totalClasses,
       activeMemberSubscriptions,
       expiredMemberSubscriptions,
       paymentsThisMonth,
@@ -189,6 +193,30 @@ export default async function handler(
       }),
       // Total equipment
       prisma.equipment.count({
+        where: {
+          gym: {
+            owner_id: ownerId,
+            is_deleted: false,
+            ...(gym_id ? { id: gym_id } : {}),
+          },
+          is_deleted: false,
+          ...(gym_id ? { gym_id } : {}),
+          ...(location_id ? { location_id } : {}),
+        },
+      }),
+      prisma.staff.count({
+        where: {
+          gym: {
+            owner_id: ownerId,
+            is_deleted: false,
+            ...(gym_id ? { id: gym_id } : {}),
+          },
+          is_deleted: false,
+          ...(gym_id ? { gym_id } : {}),
+          ...(location_id ? { location_id } : {}),
+        },
+      }),
+      prisma.gymClass.count({
         where: {
           gym: {
             owner_id: ownerId,
@@ -423,6 +451,8 @@ export default async function handler(
         totalGyms,
         totalLocations,
         totalEquipment,
+        totalStaff,
+        totalClasses,
         activeMemberSubscriptions,
         expiredMemberSubscriptions,
         revenueThisMonth,

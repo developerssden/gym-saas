@@ -158,7 +158,7 @@ export type MemberGroupByOutputType = {
   _max: MemberMaxAggregateOutputType | null
 }
 
-type GetMemberGroupByPayload<T extends MemberGroupByArgs> = Prisma.PrismaPromise<
+export type GetMemberGroupByPayload<T extends MemberGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<MemberGroupByOutputType, T['by']> &
       {
@@ -186,6 +186,7 @@ export type MemberWhereInput = {
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
   location?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
   memberSubscriptions?: Prisma.MemberSubscriptionListRelationFilter
+  classAttendance?: Prisma.ClassAttendanceListRelationFilter
 }
 
 export type MemberOrderByWithRelationInput = {
@@ -198,6 +199,7 @@ export type MemberOrderByWithRelationInput = {
   gym?: Prisma.GymOrderByWithRelationInput
   location?: Prisma.LocationOrderByWithRelationInput
   memberSubscriptions?: Prisma.MemberSubscriptionOrderByRelationAggregateInput
+  classAttendance?: Prisma.ClassAttendanceOrderByRelationAggregateInput
 }
 
 export type MemberWhereUniqueInput = Prisma.AtLeast<{
@@ -213,6 +215,7 @@ export type MemberWhereUniqueInput = Prisma.AtLeast<{
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
   location?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
   memberSubscriptions?: Prisma.MemberSubscriptionListRelationFilter
+  classAttendance?: Prisma.ClassAttendanceListRelationFilter
 }, "id" | "user_id">
 
 export type MemberOrderByWithAggregationInput = {
@@ -244,6 +247,7 @@ export type MemberCreateInput = {
   gym: Prisma.GymCreateNestedOneWithoutMembersInput
   location: Prisma.LocationCreateNestedOneWithoutMembersInput
   memberSubscriptions?: Prisma.MemberSubscriptionCreateNestedManyWithoutMemberInput
+  classAttendance?: Prisma.ClassAttendanceCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUncheckedCreateInput = {
@@ -253,6 +257,7 @@ export type MemberUncheckedCreateInput = {
   location_id: string
   joinedAt?: Date | string
   memberSubscriptions?: Prisma.MemberSubscriptionUncheckedCreateNestedManyWithoutMemberInput
+  classAttendance?: Prisma.ClassAttendanceUncheckedCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUpdateInput = {
@@ -262,6 +267,7 @@ export type MemberUpdateInput = {
   gym?: Prisma.GymUpdateOneRequiredWithoutMembersNestedInput
   location?: Prisma.LocationUpdateOneRequiredWithoutMembersNestedInput
   memberSubscriptions?: Prisma.MemberSubscriptionUpdateManyWithoutMemberNestedInput
+  classAttendance?: Prisma.ClassAttendanceUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateInput = {
@@ -271,6 +277,7 @@ export type MemberUncheckedUpdateInput = {
   location_id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberSubscriptions?: Prisma.MemberSubscriptionUncheckedUpdateManyWithoutMemberNestedInput
+  classAttendance?: Prisma.ClassAttendanceUncheckedUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberCreateManyInput = {
@@ -468,12 +475,27 @@ export type MemberUpdateOneRequiredWithoutMemberSubscriptionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.MemberUpdateToOneWithWhereWithoutMemberSubscriptionsInput, Prisma.MemberUpdateWithoutMemberSubscriptionsInput>, Prisma.MemberUncheckedUpdateWithoutMemberSubscriptionsInput>
 }
 
+export type MemberCreateNestedOneWithoutClassAttendanceInput = {
+  create?: Prisma.XOR<Prisma.MemberCreateWithoutClassAttendanceInput, Prisma.MemberUncheckedCreateWithoutClassAttendanceInput>
+  connectOrCreate?: Prisma.MemberCreateOrConnectWithoutClassAttendanceInput
+  connect?: Prisma.MemberWhereUniqueInput
+}
+
+export type MemberUpdateOneRequiredWithoutClassAttendanceNestedInput = {
+  create?: Prisma.XOR<Prisma.MemberCreateWithoutClassAttendanceInput, Prisma.MemberUncheckedCreateWithoutClassAttendanceInput>
+  connectOrCreate?: Prisma.MemberCreateOrConnectWithoutClassAttendanceInput
+  upsert?: Prisma.MemberUpsertWithoutClassAttendanceInput
+  connect?: Prisma.MemberWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MemberUpdateToOneWithWhereWithoutClassAttendanceInput, Prisma.MemberUpdateWithoutClassAttendanceInput>, Prisma.MemberUncheckedUpdateWithoutClassAttendanceInput>
+}
+
 export type MemberCreateWithoutUserInput = {
   id?: string
   joinedAt?: Date | string
   gym: Prisma.GymCreateNestedOneWithoutMembersInput
   location: Prisma.LocationCreateNestedOneWithoutMembersInput
   memberSubscriptions?: Prisma.MemberSubscriptionCreateNestedManyWithoutMemberInput
+  classAttendance?: Prisma.ClassAttendanceCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUncheckedCreateWithoutUserInput = {
@@ -482,6 +504,7 @@ export type MemberUncheckedCreateWithoutUserInput = {
   location_id: string
   joinedAt?: Date | string
   memberSubscriptions?: Prisma.MemberSubscriptionUncheckedCreateNestedManyWithoutMemberInput
+  classAttendance?: Prisma.ClassAttendanceUncheckedCreateNestedManyWithoutMemberInput
 }
 
 export type MemberCreateOrConnectWithoutUserInput = {
@@ -506,6 +529,7 @@ export type MemberUpdateWithoutUserInput = {
   gym?: Prisma.GymUpdateOneRequiredWithoutMembersNestedInput
   location?: Prisma.LocationUpdateOneRequiredWithoutMembersNestedInput
   memberSubscriptions?: Prisma.MemberSubscriptionUpdateManyWithoutMemberNestedInput
+  classAttendance?: Prisma.ClassAttendanceUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateWithoutUserInput = {
@@ -514,6 +538,7 @@ export type MemberUncheckedUpdateWithoutUserInput = {
   location_id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberSubscriptions?: Prisma.MemberSubscriptionUncheckedUpdateManyWithoutMemberNestedInput
+  classAttendance?: Prisma.ClassAttendanceUncheckedUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberCreateWithoutGymInput = {
@@ -522,6 +547,7 @@ export type MemberCreateWithoutGymInput = {
   user: Prisma.UserCreateNestedOneWithoutMemberInput
   location: Prisma.LocationCreateNestedOneWithoutMembersInput
   memberSubscriptions?: Prisma.MemberSubscriptionCreateNestedManyWithoutMemberInput
+  classAttendance?: Prisma.ClassAttendanceCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUncheckedCreateWithoutGymInput = {
@@ -530,6 +556,7 @@ export type MemberUncheckedCreateWithoutGymInput = {
   location_id: string
   joinedAt?: Date | string
   memberSubscriptions?: Prisma.MemberSubscriptionUncheckedCreateNestedManyWithoutMemberInput
+  classAttendance?: Prisma.ClassAttendanceUncheckedCreateNestedManyWithoutMemberInput
 }
 
 export type MemberCreateOrConnectWithoutGymInput = {
@@ -575,6 +602,7 @@ export type MemberCreateWithoutLocationInput = {
   user: Prisma.UserCreateNestedOneWithoutMemberInput
   gym: Prisma.GymCreateNestedOneWithoutMembersInput
   memberSubscriptions?: Prisma.MemberSubscriptionCreateNestedManyWithoutMemberInput
+  classAttendance?: Prisma.ClassAttendanceCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUncheckedCreateWithoutLocationInput = {
@@ -583,6 +611,7 @@ export type MemberUncheckedCreateWithoutLocationInput = {
   gym_id: string
   joinedAt?: Date | string
   memberSubscriptions?: Prisma.MemberSubscriptionUncheckedCreateNestedManyWithoutMemberInput
+  classAttendance?: Prisma.ClassAttendanceUncheckedCreateNestedManyWithoutMemberInput
 }
 
 export type MemberCreateOrConnectWithoutLocationInput = {
@@ -617,6 +646,7 @@ export type MemberCreateWithoutMemberSubscriptionsInput = {
   user: Prisma.UserCreateNestedOneWithoutMemberInput
   gym: Prisma.GymCreateNestedOneWithoutMembersInput
   location: Prisma.LocationCreateNestedOneWithoutMembersInput
+  classAttendance?: Prisma.ClassAttendanceCreateNestedManyWithoutMemberInput
 }
 
 export type MemberUncheckedCreateWithoutMemberSubscriptionsInput = {
@@ -625,6 +655,7 @@ export type MemberUncheckedCreateWithoutMemberSubscriptionsInput = {
   gym_id: string
   location_id: string
   joinedAt?: Date | string
+  classAttendance?: Prisma.ClassAttendanceUncheckedCreateNestedManyWithoutMemberInput
 }
 
 export type MemberCreateOrConnectWithoutMemberSubscriptionsInput = {
@@ -649,6 +680,7 @@ export type MemberUpdateWithoutMemberSubscriptionsInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutMemberNestedInput
   gym?: Prisma.GymUpdateOneRequiredWithoutMembersNestedInput
   location?: Prisma.LocationUpdateOneRequiredWithoutMembersNestedInput
+  classAttendance?: Prisma.ClassAttendanceUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateWithoutMemberSubscriptionsInput = {
@@ -657,6 +689,59 @@ export type MemberUncheckedUpdateWithoutMemberSubscriptionsInput = {
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
   location_id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  classAttendance?: Prisma.ClassAttendanceUncheckedUpdateManyWithoutMemberNestedInput
+}
+
+export type MemberCreateWithoutClassAttendanceInput = {
+  id?: string
+  joinedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutMemberInput
+  gym: Prisma.GymCreateNestedOneWithoutMembersInput
+  location: Prisma.LocationCreateNestedOneWithoutMembersInput
+  memberSubscriptions?: Prisma.MemberSubscriptionCreateNestedManyWithoutMemberInput
+}
+
+export type MemberUncheckedCreateWithoutClassAttendanceInput = {
+  id?: string
+  user_id: string
+  gym_id: string
+  location_id: string
+  joinedAt?: Date | string
+  memberSubscriptions?: Prisma.MemberSubscriptionUncheckedCreateNestedManyWithoutMemberInput
+}
+
+export type MemberCreateOrConnectWithoutClassAttendanceInput = {
+  where: Prisma.MemberWhereUniqueInput
+  create: Prisma.XOR<Prisma.MemberCreateWithoutClassAttendanceInput, Prisma.MemberUncheckedCreateWithoutClassAttendanceInput>
+}
+
+export type MemberUpsertWithoutClassAttendanceInput = {
+  update: Prisma.XOR<Prisma.MemberUpdateWithoutClassAttendanceInput, Prisma.MemberUncheckedUpdateWithoutClassAttendanceInput>
+  create: Prisma.XOR<Prisma.MemberCreateWithoutClassAttendanceInput, Prisma.MemberUncheckedCreateWithoutClassAttendanceInput>
+  where?: Prisma.MemberWhereInput
+}
+
+export type MemberUpdateToOneWithWhereWithoutClassAttendanceInput = {
+  where?: Prisma.MemberWhereInput
+  data: Prisma.XOR<Prisma.MemberUpdateWithoutClassAttendanceInput, Prisma.MemberUncheckedUpdateWithoutClassAttendanceInput>
+}
+
+export type MemberUpdateWithoutClassAttendanceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutMemberNestedInput
+  gym?: Prisma.GymUpdateOneRequiredWithoutMembersNestedInput
+  location?: Prisma.LocationUpdateOneRequiredWithoutMembersNestedInput
+  memberSubscriptions?: Prisma.MemberSubscriptionUpdateManyWithoutMemberNestedInput
+}
+
+export type MemberUncheckedUpdateWithoutClassAttendanceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  user_id?: Prisma.StringFieldUpdateOperationsInput | string
+  gym_id?: Prisma.StringFieldUpdateOperationsInput | string
+  location_id?: Prisma.StringFieldUpdateOperationsInput | string
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberSubscriptions?: Prisma.MemberSubscriptionUncheckedUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberCreateManyGymInput = {
@@ -672,6 +757,7 @@ export type MemberUpdateWithoutGymInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutMemberNestedInput
   location?: Prisma.LocationUpdateOneRequiredWithoutMembersNestedInput
   memberSubscriptions?: Prisma.MemberSubscriptionUpdateManyWithoutMemberNestedInput
+  classAttendance?: Prisma.ClassAttendanceUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateWithoutGymInput = {
@@ -680,6 +766,7 @@ export type MemberUncheckedUpdateWithoutGymInput = {
   location_id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberSubscriptions?: Prisma.MemberSubscriptionUncheckedUpdateManyWithoutMemberNestedInput
+  classAttendance?: Prisma.ClassAttendanceUncheckedUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateManyWithoutGymInput = {
@@ -702,6 +789,7 @@ export type MemberUpdateWithoutLocationInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutMemberNestedInput
   gym?: Prisma.GymUpdateOneRequiredWithoutMembersNestedInput
   memberSubscriptions?: Prisma.MemberSubscriptionUpdateManyWithoutMemberNestedInput
+  classAttendance?: Prisma.ClassAttendanceUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateWithoutLocationInput = {
@@ -710,6 +798,7 @@ export type MemberUncheckedUpdateWithoutLocationInput = {
   gym_id?: Prisma.StringFieldUpdateOperationsInput | string
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberSubscriptions?: Prisma.MemberSubscriptionUncheckedUpdateManyWithoutMemberNestedInput
+  classAttendance?: Prisma.ClassAttendanceUncheckedUpdateManyWithoutMemberNestedInput
 }
 
 export type MemberUncheckedUpdateManyWithoutLocationInput = {
@@ -726,10 +815,12 @@ export type MemberUncheckedUpdateManyWithoutLocationInput = {
 
 export type MemberCountOutputType = {
   memberSubscriptions: number
+  classAttendance: number
 }
 
 export type MemberCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   memberSubscriptions?: boolean | MemberCountOutputTypeCountMemberSubscriptionsArgs
+  classAttendance?: boolean | MemberCountOutputTypeCountClassAttendanceArgs
 }
 
 /**
@@ -749,6 +840,13 @@ export type MemberCountOutputTypeCountMemberSubscriptionsArgs<ExtArgs extends ru
   where?: Prisma.MemberSubscriptionWhereInput
 }
 
+/**
+ * MemberCountOutputType without action
+ */
+export type MemberCountOutputTypeCountClassAttendanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ClassAttendanceWhereInput
+}
+
 
 export type MemberSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -760,6 +858,7 @@ export type MemberSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
   location?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   memberSubscriptions?: boolean | Prisma.Member$memberSubscriptionsArgs<ExtArgs>
+  classAttendance?: boolean | Prisma.Member$classAttendanceArgs<ExtArgs>
   _count?: boolean | Prisma.MemberCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["member"]>
 
@@ -799,6 +898,7 @@ export type MemberInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
   location?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   memberSubscriptions?: boolean | Prisma.Member$memberSubscriptionsArgs<ExtArgs>
+  classAttendance?: boolean | Prisma.Member$classAttendanceArgs<ExtArgs>
   _count?: boolean | Prisma.MemberCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MemberIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -819,6 +919,7 @@ export type $MemberPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     gym: Prisma.$GymPayload<ExtArgs>
     location: Prisma.$LocationPayload<ExtArgs>
     memberSubscriptions: Prisma.$MemberSubscriptionPayload<ExtArgs>[]
+    classAttendance: Prisma.$ClassAttendancePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1224,6 +1325,7 @@ export interface Prisma__MemberClient<T, Null = never, ExtArgs extends runtime.T
   gym<T extends Prisma.GymDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GymDefaultArgs<ExtArgs>>): Prisma.Prisma__GymClient<runtime.Types.Result.GetResult<Prisma.$GymPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   location<T extends Prisma.LocationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LocationDefaultArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   memberSubscriptions<T extends Prisma.Member$memberSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Member$memberSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MemberSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  classAttendance<T extends Prisma.Member$classAttendanceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Member$classAttendanceArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClassAttendancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1454,6 +1556,11 @@ export type MemberFindManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Skip the first `n` Members.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Members.
+   */
   distinct?: Prisma.MemberScalarFieldEnum | Prisma.MemberScalarFieldEnum[]
 }
 
@@ -1675,6 +1782,30 @@ export type Member$memberSubscriptionsArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.MemberSubscriptionScalarFieldEnum | Prisma.MemberSubscriptionScalarFieldEnum[]
+}
+
+/**
+ * Member.classAttendance
+ */
+export type Member$classAttendanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClassAttendance
+   */
+  select?: Prisma.ClassAttendanceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ClassAttendance
+   */
+  omit?: Prisma.ClassAttendanceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClassAttendanceInclude<ExtArgs> | null
+  where?: Prisma.ClassAttendanceWhereInput
+  orderBy?: Prisma.ClassAttendanceOrderByWithRelationInput | Prisma.ClassAttendanceOrderByWithRelationInput[]
+  cursor?: Prisma.ClassAttendanceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ClassAttendanceScalarFieldEnum | Prisma.ClassAttendanceScalarFieldEnum[]
 }
 
 /**
