@@ -6,6 +6,7 @@ import { requireSuperAdmin } from "@/lib/adminsessioncheck";
 import sendEmail from "@/lib/sendEmail";
 import { AnnouncementAudience, Role } from "@/prisma/generated/client";
 import { escapeHtml } from "@/lib/email/escape-html";
+import { createInAppNotification } from "@/lib/notifications/create-notification";
 
 async function sendAnnouncementEmails(input: {
   title: string;
@@ -56,6 +57,40 @@ async function sendAnnouncementEmails(input: {
   return { total: emails.length, sent, failed };
 }
 
+function audienceRoles(audience: AnnouncementAudience): Role[] {
+  if (audience === "ALL") return [Role.GYM_OWNER, Role.MEMBER];
+  return [audience === "GYM_OWNER" ? Role.GYM_OWNER : Role.MEMBER];
+}
+
+async function sendAnnouncementInAppNotifications(input: {
+  title: string;
+  message: string;
+  audience: AnnouncementAudience;
+}) {
+  const recipients = await prisma.user.findMany({
+    where: {
+      is_deleted: false,
+      is_active: true,
+      role: { in: audienceRoles(input.audience) },
+    },
+    select: { id: true },
+  });
+
+  const chunkSize = 10;
+  for (let i = 0; i < recipients.length; i += chunkSize) {
+    const chunk = recipients.slice(i, i + chunkSize);
+    await Promise.all(
+      chunk.map((user) =>
+        createInAppNotification(user.id, {
+          title: input.title,
+          body: input.message,
+          type: "announcement",
+        })
+      )
+    );
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
@@ -88,6 +123,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         message: existing.message,
         audience: existing.audience as AnnouncementAudience,
       });
+      try {
+        await sendAnnouncementInAppNotifications({
+          title: existing.title,
+          message: existing.message,
+          audience: existing.audience as AnnouncementAudience,
+        });
+      } catch (err: unknown) {
+        console.error("[in-app-notification] failed to fan out announcement notifications", {
+          message: err instanceof Error ? err.message : err,
+        });
+      }
     }
 
     return res.status(StatusCodes.OK).json({

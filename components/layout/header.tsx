@@ -4,6 +4,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import BreadCrumbs from "./breadcrumbs"
 import ProfileDropdown from "./profile"
 import { GymLocationSelector } from "./gym-location-selector"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 import { useSession } from "next-auth/react"
 import { useCallback } from "react"
 
@@ -73,7 +74,8 @@ export function SiteHeader() {
             />
           </>
         )}
-        <div className="ml-auto flex items-center">
+        <div className="ml-auto flex items-center gap-2">
+          <NotificationBell />
           <ProfileDropdown />
         </div>
       </div>

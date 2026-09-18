@@ -59,6 +59,7 @@ model User {
   recordedPayments   Payment[]             @relation("RecordedPayments")
   inviteTokens       InviteToken[]
   pushSubscriptions  PushSubscription[]
+  notifications      InAppNotification[]
 }
 
 model InviteToken {
@@ -83,6 +84,22 @@ model PushSubscription {
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
+}
+
+model InAppNotification {
+  id        String   @id @default(uuid())
+  user_id   String
+  title     String
+  body      String
+  url       String?
+  type      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, read])
+  @@index([user_id, createdAt])
 }
 
 model Todo {

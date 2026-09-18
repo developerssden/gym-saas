@@ -35,6 +35,10 @@ const ROUTE_GATES: RouteGate[] = [
     routes: ['/members', '/membersubscriptions', '/equipment', '/todos', '/profile'],
     roles: ['GYM_OWNER'],
   },
+  {
+    routes: ['/notifications'],
+    roles: ['SUPER_ADMIN', 'GYM_OWNER', 'MEMBER'],
+  },
 ];
 
 const matchesPath = (pathname: string, route: string) => {

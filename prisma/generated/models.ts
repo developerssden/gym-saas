@@ -11,6 +11,7 @@
 export type * from './models/User'
 export type * from './models/InviteToken'
 export type * from './models/PushSubscription'
+export type * from './models/InAppNotification'
 export type * from './models/Todo'
 export type * from './models/Gym'
 export type * from './models/Location'

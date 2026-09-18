@@ -54,6 +54,7 @@ export const ModelName = {
   User: 'User',
   InviteToken: 'InviteToken',
   PushSubscription: 'PushSubscription',
+  InAppNotification: 'InAppNotification',
   Todo: 'Todo',
   Gym: 'Gym',
   Location: 'Location',
@@ -131,6 +132,20 @@ export const PushSubscriptionScalarFieldEnum = {
 } as const
 
 export type PushSubscriptionScalarFieldEnum = (typeof PushSubscriptionScalarFieldEnum)[keyof typeof PushSubscriptionScalarFieldEnum]
+
+
+export const InAppNotificationScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  title: 'title',
+  body: 'body',
+  url: 'url',
+  type: 'type',
+  read: 'read',
+  createdAt: 'createdAt'
+} as const
+
+export type InAppNotificationScalarFieldEnum = (typeof InAppNotificationScalarFieldEnum)[keyof typeof InAppNotificationScalarFieldEnum]
 
 
 export const TodoScalarFieldEnum = {

@@ -55,6 +55,11 @@ export type InviteToken = Prisma.InviteTokenModel
  */
 export type PushSubscription = Prisma.PushSubscriptionModel
 /**
+ * Model InAppNotification
+ * 
+ */
+export type InAppNotification = Prisma.InAppNotificationModel
+/**
  * Model Todo
  * 
  */

@@ -18,6 +18,7 @@ import {
   getSuperAdminSummaryEmail,
 } from "@/lib/email/subscription-emails";
 import { sendPushToUser } from "@/lib/push/send-push";
+import { createInAppNotification } from "@/lib/notifications/create-notification";
 
 type DeliveryMetrics = {
   expiredMarked: number;
@@ -197,10 +198,15 @@ export default async function handler(
         }
 
         if (result.sent || result.stateChanged) {
-          await recordPushMetrics(ownerMetrics, subscription.owner.id, {
+          const payload = {
             title: "Gym subscription expired",
             body: `Your ${action.planName || "gym"} subscription has expired.`,
             url: "/dashboard",
+          };
+          await recordPushMetrics(ownerMetrics, subscription.owner.id, payload);
+          await createInAppNotification(subscription.owner.id, {
+            ...payload,
+            type: "owner_expired",
           });
         }
         continue;
@@ -232,10 +238,15 @@ export default async function handler(
       }
 
       if (result.sent) {
-        await recordPushMetrics(ownerMetrics, subscription.owner.id, {
+        const payload = {
           title: `Subscription expires in ${action.daysLeft} day${action.daysLeft === 1 ? "" : "s"}`,
           body: `Your ${action.planName || "gym"} subscription expires soon.`,
           url: "/dashboard",
+        };
+        await recordPushMetrics(ownerMetrics, subscription.owner.id, payload);
+        await createInAppNotification(subscription.owner.id, {
+          ...payload,
+          type: "owner_reminder",
         });
       }
     }
@@ -384,15 +395,20 @@ export default async function handler(
         }
 
         if (result.sent || result.stateChanged) {
+          const payload = {
+            title: "Gym membership expired",
+            body: "Your gym membership has expired. Please renew to continue access.",
+            url: "/membersubscriptions",
+          };
           await recordPushMetrics(
             memberMetrics,
             subscription.member.user.id,
-            {
-              title: "Gym membership expired",
-              body: "Your gym membership has expired. Please renew to continue access.",
-              url: "/dashboard",
-            }
+            payload
           );
+          await createInAppNotification(subscription.member.user.id, {
+            ...payload,
+            type: "member_expired",
+          });
         }
         continue;
       }
@@ -422,10 +438,15 @@ export default async function handler(
       }
 
       if (result.sent) {
-        await recordPushMetrics(memberMetrics, subscription.member.user.id, {
+        const payload = {
           title: `Membership expires in ${action.daysLeft} day${action.daysLeft === 1 ? "" : "s"}`,
           body: "Your gym membership expires soon. Please renew to avoid interruption.",
-          url: "/dashboard",
+          url: "/membersubscriptions",
+        };
+        await recordPushMetrics(memberMetrics, subscription.member.user.id, payload);
+        await createInAppNotification(subscription.member.user.id, {
+          ...payload,
+          type: "member_reminder",
         });
       }
     }

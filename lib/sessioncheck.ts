@@ -40,3 +40,31 @@ export async function requireAdminOrOwner(
   }
 }
 
+/**
+ * Require any authenticated user (any role)
+ * Returns session if valid, null otherwise
+ */
+export async function requireAuthenticatedUser(
+  req: NextApiRequest,
+  res: NextApiResponse
+): Promise<Session | null> {
+  try {
+    const session = await getServerSession(req, res, options);
+
+    if (!session) {
+      res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "Unauthorized – No session found" });
+      return null;
+    }
+
+    return session;
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Session validation failed",
+      error: (error as any).message,
+    });
+    return null;
+  }
+}
+
