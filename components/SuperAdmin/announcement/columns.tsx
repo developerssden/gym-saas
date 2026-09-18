@@ -35,6 +35,26 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+const audienceLabel = (announcement: Announcement) => {
+  const recipient = announcement.recipient;
+  const recipientName = recipient
+    ? [recipient.first_name, recipient.last_name].filter(Boolean).join(" ").trim() ||
+      recipient.email ||
+      "selected user"
+    : null;
+
+  if (announcement.recipient_user_id) {
+    if (announcement.audience === "MEMBER") {
+      return recipientName ? `Member: ${recipientName}` : "One member";
+    }
+    return recipientName ? `Gym owner: ${recipientName}` : "One gym owner";
+  }
+  if (announcement.audience === "GYM_OWNER") return "All gym owners";
+  if (announcement.audience === "MEMBER") return "All members";
+  if (announcement.audience === "ALL") return "All gym owners and members";
+  return announcement.audience;
+};
+
 const truncate = (value: unknown, max = 80) => {
   const s = String(value ?? "");
   if (s.length <= max) return s;
@@ -50,7 +70,7 @@ export const columns: ColumnDef<Announcement>[] = [
   {
     accessorKey: "audience",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Audience" />,
-    cell: ({ row }) => row.original.audience,
+    cell: ({ row }) => audienceLabel(row.original),
   },
   {
     accessorKey: "message",

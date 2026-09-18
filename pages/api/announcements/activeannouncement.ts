@@ -3,93 +3,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireSuperAdmin } from "@/lib/adminsessioncheck";
-import sendEmail from "@/lib/sendEmail";
-import { AnnouncementAudience, Role } from "@/prisma/generated/client";
-import { escapeHtml } from "@/lib/email/escape-html";
-import { createInAppNotification } from "@/lib/notifications/create-notification";
-
-async function sendAnnouncementEmails(input: {
-  title: string;
-  message: string;
-  audience: AnnouncementAudience;
-}) {
-  const roles: Role[] =
-    input.audience === "ALL"
-      ? [Role.GYM_OWNER, Role.MEMBER]
-      : [input.audience === "GYM_OWNER" ? Role.GYM_OWNER : Role.MEMBER];
-
-  const recipients = await prisma.user.findMany({
-    where: {
-      is_deleted: false,
-      is_active: true,
-      role: { in: roles },
-      email: { not: null },
-    },
-    select: { email: true },
-  });
-
-  const emails = recipients
-    .map((r) => (r.email ?? "").trim())
-    .filter((e) => e.length > 0);
-
-  const subject = `Announcement: ${input.title}`;
-  const text = `${input.title}\n\n${input.message}\n`;
-  const html = `
-    <div style="font-family: Arial, sans-serif; line-height:1.5;">
-      <h2 style="margin:0 0 12px 0;">${escapeHtml(input.title)}</h2>
-      <p style="margin:0; white-space:pre-line;">${escapeHtml(input.message)}</p>
-    </div>
-  `;
-
-  const chunkSize = 10;
-  let sent = 0;
-  let failed = 0;
-
-  for (let i = 0; i < emails.length; i += chunkSize) {
-    const chunk = emails.slice(i, i + chunkSize);
-    const results = await Promise.allSettled(chunk.map((to) => sendEmail(to, subject, text, html)));
-    for (const r of results) {
-      if (r.status === "fulfilled") sent += 1;
-      else failed += 1;
-    }
-  }
-
-  return { total: emails.length, sent, failed };
-}
-
-function audienceRoles(audience: AnnouncementAudience): Role[] {
-  if (audience === "ALL") return [Role.GYM_OWNER, Role.MEMBER];
-  return [audience === "GYM_OWNER" ? Role.GYM_OWNER : Role.MEMBER];
-}
-
-async function sendAnnouncementInAppNotifications(input: {
-  title: string;
-  message: string;
-  audience: AnnouncementAudience;
-}) {
-  const recipients = await prisma.user.findMany({
-    where: {
-      is_deleted: false,
-      is_active: true,
-      role: { in: audienceRoles(input.audience) },
-    },
-    select: { id: true },
-  });
-
-  const chunkSize = 10;
-  for (let i = 0; i < recipients.length; i += chunkSize) {
-    const chunk = recipients.slice(i, i + chunkSize);
-    await Promise.all(
-      chunk.map((user) =>
-        createInAppNotification(user.id, {
-          title: input.title,
-          body: input.message,
-          type: "announcement",
-        })
-      )
-    );
-  }
-}
+import { AnnouncementAudience } from "@/prisma/generated/client";
+import {
+  sendAnnouncementEmails,
+  sendAnnouncementInAppNotifications,
+} from "@/lib/notifications/announcement-fanout";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -104,7 +22,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const existing = await prisma.announcement.findUnique({
       where: { id },
-      select: { is_active: true, is_deleted: true, title: true, message: true, audience: true },
+      select: {
+        is_active: true,
+        is_deleted: true,
+        title: true,
+        message: true,
+        audience: true,
+        recipient_user_id: true,
+      },
     });
     if (!existing || existing.is_deleted) {
       return res.status(StatusCodes.NOT_FOUND).json({ error: "Announcement not found" });
@@ -116,19 +41,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     let emailReport: { total: number; sent: number; failed: number } | null = null;
-    // If we just activated it, email the audience
     if (!existing.is_active && updated.is_active) {
-      emailReport = await sendAnnouncementEmails({
+      const delivery = {
         title: existing.title,
         message: existing.message,
         audience: existing.audience as AnnouncementAudience,
-      });
+        recipientUserId: existing.recipient_user_id,
+      };
+      emailReport = await sendAnnouncementEmails(delivery);
       try {
-        await sendAnnouncementInAppNotifications({
-          title: existing.title,
-          message: existing.message,
-          audience: existing.audience as AnnouncementAudience,
-        });
+        await sendAnnouncementInAppNotifications(delivery);
       } catch (err: unknown) {
         console.error("[in-app-notification] failed to fan out announcement notifications", {
           message: err instanceof Error ? err.message : err,
@@ -146,5 +68,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: message });
   }
 }
-
-

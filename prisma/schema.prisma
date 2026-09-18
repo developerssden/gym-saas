@@ -60,6 +60,7 @@ model User {
   inviteTokens       InviteToken[]
   pushSubscriptions  PushSubscription[]
   notifications      InAppNotification[]
+  targetedAnnouncements Announcement[] @relation("AnnouncementRecipient")
 }
 
 model InviteToken {
@@ -260,14 +261,17 @@ model Plan {
 }
 
 model Announcement {
-  id         String               @id @default(uuid())
-  title      String
-  message    String
-  audience   AnnouncementAudience @default(ALL)
-  is_active  Boolean              @default(true)
-  is_deleted Boolean              @default(false)
-  createdAt  DateTime             @default(now())
-  updatedAt  DateTime             @updatedAt
+  id                String               @id @default(uuid())
+  title             String
+  message           String
+  audience          AnnouncementAudience @default(ALL)
+  recipient_user_id String?
+  is_active         Boolean              @default(true)
+  is_deleted        Boolean              @default(false)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  recipient User? @relation("AnnouncementRecipient", fields: [recipient_user_id], references: [id], onDelete: SetNull)
 }
 
 model OwnerSubscription {

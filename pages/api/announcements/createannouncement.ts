@@ -3,64 +3,14 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireSuperAdmin } from "@/lib/adminsessioncheck";
-import { AnnouncementAudience, Role } from "@/prisma/generated/client";
-import sendEmail from "@/lib/sendEmail";
-import { escapeHtml } from "@/lib/email/escape-html";
+import { AnnouncementAudience } from "@/prisma/generated/client";
+import {
+  resolveAnnouncementRecipient,
+  sendAnnouncementEmails,
+  sendAnnouncementInAppNotifications,
+} from "@/lib/notifications/announcement-fanout";
 
 const allowedAudiences: AnnouncementAudience[] = ["ALL", "GYM_OWNER", "MEMBER"];
-
-async function sendAnnouncementEmails(input: {
-  title: string;
-  message: string;
-  audience: AnnouncementAudience;
-}) {
-  const roles: Role[] =
-    input.audience === "ALL"
-      ? [Role.GYM_OWNER, Role.MEMBER]
-      : [input.audience === "GYM_OWNER" ? Role.GYM_OWNER : Role.MEMBER];
-
-  const recipients = await prisma.user.findMany({
-    where: {
-      is_deleted: false,
-      is_active: true,
-      role: { in: roles },
-      email: { not: null },
-    },
-    select: { email: true },
-  });
-
-  const emails = recipients
-    .map((r) => (r.email ?? "").trim())
-    .filter((e) => e.length > 0);
-
-  const subject = `Announcement: ${input.title}`;
-  const text = `${input.title}\n\n${input.message}\n`;
-  const html = `
-    <div style="font-family: Arial, sans-serif; line-height:1.5;">
-      <h2 style="margin:0 0 12px 0;">${escapeHtml(input.title)}</h2>
-      <p style="margin:0; white-space:pre-line;">${escapeHtml(
-        input.message
-      )}</p>
-    </div>
-  `;
-
-  const chunkSize = 10;
-  let sent = 0;
-  let failed = 0;
-
-  for (let i = 0; i < emails.length; i += chunkSize) {
-    const chunk = emails.slice(i, i + chunkSize);
-    const results = await Promise.allSettled(
-      chunk.map((to) => sendEmail(to, subject, text, html))
-    );
-    for (const r of results) {
-      if (r.status === "fulfilled") sent += 1;
-      else failed += 1;
-    }
-  }
-
-  return { total: emails.length, sent, failed };
-}
 
 export default async function handler(
   req: NextApiRequest,
@@ -75,12 +25,14 @@ export default async function handler(
   if (!session) return;
 
   try {
-    const { title, message, audience, is_active } = req.body as {
-      title?: string;
-      message?: string;
-      audience?: AnnouncementAudience | "ALL" | "GYM_OWNER" | "MEMBER";
-      is_active?: boolean;
-    };
+    const { title, message, audience, is_active, recipient_user_id } =
+      req.body as {
+        title?: string;
+        message?: string;
+        audience?: AnnouncementAudience | "ALL" | "GYM_OWNER" | "MEMBER";
+        is_active?: boolean;
+        recipient_user_id?: string | null;
+      };
 
     if (!title || !message) {
       return res
@@ -96,24 +48,55 @@ export default async function handler(
       });
     }
 
+    const recipientUserId =
+      typeof recipient_user_id === "string" && recipient_user_id.trim()
+        ? recipient_user_id.trim()
+        : null;
+
+    if (recipientUserId) {
+      if (nextAudience === "ALL") {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          error: "Pick Gym Owner or Member as the audience for an individual send.",
+        });
+      }
+      const recipient = await resolveAnnouncementRecipient(
+        nextAudience,
+        recipientUserId
+      );
+      if (!recipient) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          error: "Recipient must be an active gym owner or member matching the selected audience.",
+        });
+      }
+    }
+
     const created = await prisma.announcement.create({
       data: {
         title,
         message,
         audience: nextAudience,
         is_active: is_active ?? true,
+        recipient_user_id: recipientUserId,
       },
     });
 
     let emailReport: { total: number; sent: number; failed: number } | null =
       null;
     if (created.is_active) {
-      // Send immediately when created as active
-      emailReport = await sendAnnouncementEmails({
+      const delivery = {
         title: created.title,
         message: created.message,
         audience: created.audience,
-      });
+        recipientUserId: created.recipient_user_id,
+      };
+      emailReport = await sendAnnouncementEmails(delivery);
+      try {
+        await sendAnnouncementInAppNotifications(delivery);
+      } catch (err: unknown) {
+        console.error("[in-app-notification] failed to fan out announcement notifications", {
+          message: err instanceof Error ? err.message : err,
+        });
+      }
     }
 
     return res.status(StatusCodes.CREATED).json({

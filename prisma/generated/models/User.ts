@@ -310,6 +310,7 @@ export type UserWhereInput = {
   inviteTokens?: Prisma.InviteTokenListRelationFilter
   pushSubscriptions?: Prisma.PushSubscriptionListRelationFilter
   notifications?: Prisma.InAppNotificationListRelationFilter
+  targetedAnnouncements?: Prisma.AnnouncementListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -341,6 +342,7 @@ export type UserOrderByWithRelationInput = {
   inviteTokens?: Prisma.InviteTokenOrderByRelationAggregateInput
   pushSubscriptions?: Prisma.PushSubscriptionOrderByRelationAggregateInput
   notifications?: Prisma.InAppNotificationOrderByRelationAggregateInput
+  targetedAnnouncements?: Prisma.AnnouncementOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -375,6 +377,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   inviteTokens?: Prisma.InviteTokenListRelationFilter
   pushSubscriptions?: Prisma.PushSubscriptionListRelationFilter
   notifications?: Prisma.InAppNotificationListRelationFilter
+  targetedAnnouncements?: Prisma.AnnouncementListRelationFilter
 }, "id">
 
 export type UserOrderByWithAggregationInput = {
@@ -458,6 +461,7 @@ export type UserCreateInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -489,6 +493,7 @@ export type UserUncheckedCreateInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUpdateInput = {
@@ -520,6 +525,7 @@ export type UserUpdateInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -551,6 +557,7 @@ export type UserUncheckedUpdateInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -809,6 +816,22 @@ export type UserUpdateOneRequiredWithoutMemberNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMemberInput, Prisma.UserUpdateWithoutMemberInput>, Prisma.UserUncheckedUpdateWithoutMemberInput>
 }
 
+export type UserCreateNestedOneWithoutTargetedAnnouncementsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTargetedAnnouncementsInput, Prisma.UserUncheckedCreateWithoutTargetedAnnouncementsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTargetedAnnouncementsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutTargetedAnnouncementsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTargetedAnnouncementsInput, Prisma.UserUncheckedCreateWithoutTargetedAnnouncementsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTargetedAnnouncementsInput
+  upsert?: Prisma.UserUpsertWithoutTargetedAnnouncementsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTargetedAnnouncementsInput, Prisma.UserUpdateWithoutTargetedAnnouncementsInput>, Prisma.UserUncheckedUpdateWithoutTargetedAnnouncementsInput>
+}
+
 export type UserCreateNestedOneWithoutOwnerSubscriptionsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutOwnerSubscriptionsInput, Prisma.UserUncheckedCreateWithoutOwnerSubscriptionsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutOwnerSubscriptionsInput
@@ -867,6 +890,7 @@ export type UserCreateWithoutInviteTokensInput = {
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUncheckedCreateWithoutInviteTokensInput = {
@@ -897,6 +921,7 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UserCreateOrConnectWithoutInviteTokensInput = {
@@ -943,6 +968,7 @@ export type UserUpdateWithoutInviteTokensInput = {
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInviteTokensInput = {
@@ -973,6 +999,7 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserCreateWithoutPushSubscriptionsInput = {
@@ -1003,6 +1030,7 @@ export type UserCreateWithoutPushSubscriptionsInput = {
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUncheckedCreateWithoutPushSubscriptionsInput = {
@@ -1033,6 +1061,7 @@ export type UserUncheckedCreateWithoutPushSubscriptionsInput = {
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UserCreateOrConnectWithoutPushSubscriptionsInput = {
@@ -1079,6 +1108,7 @@ export type UserUpdateWithoutPushSubscriptionsInput = {
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPushSubscriptionsInput = {
@@ -1109,6 +1139,7 @@ export type UserUncheckedUpdateWithoutPushSubscriptionsInput = {
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -1139,6 +1170,7 @@ export type UserCreateWithoutNotificationsInput = {
   recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -1169,6 +1201,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -1215,6 +1248,7 @@ export type UserUpdateWithoutNotificationsInput = {
   recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -1245,6 +1279,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserCreateWithoutTodosInput = {
@@ -1275,6 +1310,7 @@ export type UserCreateWithoutTodosInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUncheckedCreateWithoutTodosInput = {
@@ -1305,6 +1341,7 @@ export type UserUncheckedCreateWithoutTodosInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UserCreateOrConnectWithoutTodosInput = {
@@ -1351,6 +1388,7 @@ export type UserUpdateWithoutTodosInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTodosInput = {
@@ -1381,6 +1419,7 @@ export type UserUncheckedUpdateWithoutTodosInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserCreateWithoutGyms_ownedInput = {
@@ -1411,6 +1450,7 @@ export type UserCreateWithoutGyms_ownedInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUncheckedCreateWithoutGyms_ownedInput = {
@@ -1441,6 +1481,7 @@ export type UserUncheckedCreateWithoutGyms_ownedInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UserCreateOrConnectWithoutGyms_ownedInput = {
@@ -1487,6 +1528,7 @@ export type UserUpdateWithoutGyms_ownedInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGyms_ownedInput = {
@@ -1517,6 +1559,7 @@ export type UserUncheckedUpdateWithoutGyms_ownedInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserCreateWithoutMemberInput = {
@@ -1547,6 +1590,7 @@ export type UserCreateWithoutMemberInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUncheckedCreateWithoutMemberInput = {
@@ -1577,6 +1621,7 @@ export type UserUncheckedCreateWithoutMemberInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UserCreateOrConnectWithoutMemberInput = {
@@ -1623,6 +1668,7 @@ export type UserUpdateWithoutMemberInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMemberInput = {
@@ -1648,6 +1694,147 @@ export type UserUncheckedUpdateWithoutMemberInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+}
+
+export type UserCreateWithoutTargetedAnnouncementsInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutTargetedAnnouncementsInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutTargetedAnnouncementsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTargetedAnnouncementsInput, Prisma.UserUncheckedCreateWithoutTargetedAnnouncementsInput>
+}
+
+export type UserUpsertWithoutTargetedAnnouncementsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTargetedAnnouncementsInput, Prisma.UserUncheckedUpdateWithoutTargetedAnnouncementsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTargetedAnnouncementsInput, Prisma.UserUncheckedCreateWithoutTargetedAnnouncementsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTargetedAnnouncementsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTargetedAnnouncementsInput, Prisma.UserUncheckedUpdateWithoutTargetedAnnouncementsInput>
+}
+
+export type UserUpdateWithoutTargetedAnnouncementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUpdateOneWithoutUserNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTargetedAnnouncementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
   recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -1683,6 +1870,7 @@ export type UserCreateWithoutOwnerSubscriptionsInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUncheckedCreateWithoutOwnerSubscriptionsInput = {
@@ -1713,6 +1901,7 @@ export type UserUncheckedCreateWithoutOwnerSubscriptionsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UserCreateOrConnectWithoutOwnerSubscriptionsInput = {
@@ -1759,6 +1948,7 @@ export type UserUpdateWithoutOwnerSubscriptionsInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnerSubscriptionsInput = {
@@ -1789,6 +1979,7 @@ export type UserUncheckedUpdateWithoutOwnerSubscriptionsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserCreateWithoutRecordedPaymentsInput = {
@@ -1819,6 +2010,7 @@ export type UserCreateWithoutRecordedPaymentsInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
 }
 
 export type UserUncheckedCreateWithoutRecordedPaymentsInput = {
@@ -1849,6 +2041,7 @@ export type UserUncheckedCreateWithoutRecordedPaymentsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UserCreateOrConnectWithoutRecordedPaymentsInput = {
@@ -1895,6 +2088,7 @@ export type UserUpdateWithoutRecordedPaymentsInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRecordedPaymentsInput = {
@@ -1925,6 +2119,7 @@ export type UserUncheckedUpdateWithoutRecordedPaymentsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 
@@ -1940,6 +2135,7 @@ export type UserCountOutputType = {
   inviteTokens: number
   pushSubscriptions: number
   notifications: number
+  targetedAnnouncements: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1950,6 +2146,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   inviteTokens?: boolean | UserCountOutputTypeCountInviteTokensArgs
   pushSubscriptions?: boolean | UserCountOutputTypeCountPushSubscriptionsArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+  targetedAnnouncements?: boolean | UserCountOutputTypeCountTargetedAnnouncementsArgs
 }
 
 /**
@@ -2011,6 +2208,13 @@ export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.InAppNotificationWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountTargetedAnnouncementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AnnouncementWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2041,6 +2245,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   inviteTokens?: boolean | Prisma.User$inviteTokensArgs<ExtArgs>
   pushSubscriptions?: boolean | Prisma.User$pushSubscriptionsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  targetedAnnouncements?: boolean | Prisma.User$targetedAnnouncementsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2123,6 +2328,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   inviteTokens?: boolean | Prisma.User$inviteTokensArgs<ExtArgs>
   pushSubscriptions?: boolean | Prisma.User$pushSubscriptionsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  targetedAnnouncements?: boolean | Prisma.User$targetedAnnouncementsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2139,6 +2345,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     inviteTokens: Prisma.$InviteTokenPayload<ExtArgs>[]
     pushSubscriptions: Prisma.$PushSubscriptionPayload<ExtArgs>[]
     notifications: Prisma.$InAppNotificationPayload<ExtArgs>[]
+    targetedAnnouncements: Prisma.$AnnouncementPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2563,6 +2770,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   inviteTokens<T extends Prisma.User$inviteTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$inviteTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pushSubscriptions<T extends Prisma.User$pushSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pushSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InAppNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  targetedAnnouncements<T extends Prisma.User$targetedAnnouncementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$targetedAnnouncementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AnnouncementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3184,6 +3392,30 @@ export type User$notificationsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.InAppNotificationScalarFieldEnum | Prisma.InAppNotificationScalarFieldEnum[]
+}
+
+/**
+ * User.targetedAnnouncements
+ */
+export type User$targetedAnnouncementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Announcement
+   */
+  select?: Prisma.AnnouncementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Announcement
+   */
+  omit?: Prisma.AnnouncementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AnnouncementInclude<ExtArgs> | null
+  where?: Prisma.AnnouncementWhereInput
+  orderBy?: Prisma.AnnouncementOrderByWithRelationInput | Prisma.AnnouncementOrderByWithRelationInput[]
+  cursor?: Prisma.AnnouncementWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AnnouncementScalarFieldEnum | Prisma.AnnouncementScalarFieldEnum[]
 }
 
 /**

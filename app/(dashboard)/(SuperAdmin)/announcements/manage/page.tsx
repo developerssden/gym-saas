@@ -24,12 +24,29 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
+import { AnnouncementRecipientPicker } from "@/components/SuperAdmin/announcement/recipient-picker";
 
 const AnnouncementSchema = Yup.object({
   title: Yup.string().required("Title is required"),
   message: Yup.string().required("Message is required"),
-  audience: Yup.string().oneOf(["ALL", "GYM_OWNER", "MEMBER"]).required("Audience is required"),
+  audienceMode: Yup.string()
+    .oneOf(["ALL", "GYM_OWNER", "MEMBER", "INDIVIDUAL_GYM_OWNER", "INDIVIDUAL_MEMBER"])
+    .required("Audience is required"),
+  recipient_user_id: Yup.string(),
   is_active: Yup.boolean(),
+}).test("recipient-required", "Select a recipient", function (values) {
+  if (
+    values?.audienceMode === "INDIVIDUAL_GYM_OWNER" ||
+    values?.audienceMode === "INDIVIDUAL_MEMBER"
+  ) {
+    if (!values.recipient_user_id) {
+      return this.createError({
+        path: "recipient_user_id",
+        message: "Select a gym owner or member to email",
+      });
+    }
+  }
+  return true;
 });
 
 const ManageAnnouncementContent = () => {
@@ -74,13 +91,23 @@ const ManageAnnouncementContent = () => {
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
-  const initialAudience = useMemo(() => (action === "create" ? "ALL" : announcementData?.audience || "ALL"), [action, announcementData]);
+  const initialAudienceMode = useMemo(() => {
+    if (action === "create") return "ALL";
+    if (announcementData?.recipient_user_id && announcementData?.audience === "MEMBER") {
+      return "INDIVIDUAL_MEMBER";
+    }
+    if (announcementData?.recipient_user_id && announcementData?.audience === "GYM_OWNER") {
+      return "INDIVIDUAL_GYM_OWNER";
+    }
+    return announcementData?.audience || "ALL";
+  }, [action, announcementData]);
 
   const formik = useFormik({
     initialValues: {
       title: announcementData?.title || "",
       message: announcementData?.message || "",
-      audience: initialAudience,
+      audienceMode: initialAudienceMode,
+      recipient_user_id: announcementData?.recipient_user_id || "",
       is_active: announcementData?.is_active ?? true,
     },
     validationSchema: AnnouncementSchema,
@@ -88,10 +115,25 @@ const ManageAnnouncementContent = () => {
     onSubmit: async (values) => {
       setSaving(true);
       try {
+        const isIndividual =
+          values.audienceMode === "INDIVIDUAL_GYM_OWNER" ||
+          values.audienceMode === "INDIVIDUAL_MEMBER";
+        const payload = {
+          title: values.title,
+          message: values.message,
+          is_active: values.is_active,
+          audience:
+            values.audienceMode === "INDIVIDUAL_MEMBER"
+              ? "MEMBER"
+              : values.audienceMode === "INDIVIDUAL_GYM_OWNER"
+                ? "GYM_OWNER"
+                : values.audienceMode,
+          recipient_user_id: isIndividual ? values.recipient_user_id : null,
+        };
         if (action === "create") {
-          await createMutation.mutateAsync(values);
+          await createMutation.mutateAsync(payload);
         } else if (action === "edit") {
-          await updateMutation.mutateAsync(values);
+          await updateMutation.mutateAsync(payload);
         }
       } finally {
         setSaving(false);
@@ -145,21 +187,33 @@ const ManageAnnouncementContent = () => {
             <div className="space-y-2">
               <Label>Audience *</Label>
               <Select
-                value={formik.values.audience || "ALL"}
-                onValueChange={(val) => formik.setFieldValue("audience", val)}
+                value={formik.values.audienceMode || "ALL"}
+                onValueChange={(val) => {
+                  formik.setFieldValue("audienceMode", val);
+                  if (val !== "INDIVIDUAL_GYM_OWNER" && val !== "INDIVIDUAL_MEMBER") {
+                    formik.setFieldValue("recipient_user_id", "");
+                  } else if (
+                    (val === "INDIVIDUAL_GYM_OWNER" && formik.values.audienceMode !== "INDIVIDUAL_GYM_OWNER") ||
+                    (val === "INDIVIDUAL_MEMBER" && formik.values.audienceMode !== "INDIVIDUAL_MEMBER")
+                  ) {
+                    formik.setFieldValue("recipient_user_id", "");
+                  }
+                }}
                 disabled={action === "view"}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select audience" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">All</SelectItem>
-                  <SelectItem value="GYM_OWNER">Gym Owners</SelectItem>
-                  <SelectItem value="MEMBER">Members</SelectItem>
+                  <SelectItem value="ALL">All gym owners and members</SelectItem>
+                  <SelectItem value="GYM_OWNER">All gym owners</SelectItem>
+                  <SelectItem value="MEMBER">All members</SelectItem>
+                  <SelectItem value="INDIVIDUAL_GYM_OWNER">One gym owner</SelectItem>
+                  <SelectItem value="INDIVIDUAL_MEMBER">One member</SelectItem>
                 </SelectContent>
               </Select>
-              {formik.touched.audience && formik.errors.audience && (
-                <p className="text-red-500 text-sm">{String(formik.errors.audience)}</p>
+              {formik.touched.audienceMode && formik.errors.audienceMode && (
+                <p className="text-red-500 text-sm">{String(formik.errors.audienceMode)}</p>
               )}
             </div>
 
@@ -171,6 +225,31 @@ const ManageAnnouncementContent = () => {
                 disabled={action === "view"}
               />
             </div>
+
+            {(formik.values.audienceMode === "INDIVIDUAL_GYM_OWNER" ||
+              formik.values.audienceMode === "INDIVIDUAL_MEMBER") && (
+              <div className="space-y-2 md:col-span-2">
+                <Label>
+                  {formik.values.audienceMode === "INDIVIDUAL_GYM_OWNER"
+                    ? "Gym owner *"
+                    : "Member *"}
+                </Label>
+                <AnnouncementRecipientPicker
+                  role={
+                    formik.values.audienceMode === "INDIVIDUAL_GYM_OWNER"
+                      ? "GYM_OWNER"
+                      : "MEMBER"
+                  }
+                  value={formik.values.recipient_user_id}
+                  onChange={(userId) => formik.setFieldValue("recipient_user_id", userId)}
+                  disabled={action === "view"}
+                  selectedRecipient={announcementData?.recipient ?? null}
+                />
+                {formik.touched.recipient_user_id && formik.errors.recipient_user_id && (
+                  <p className="text-red-500 text-sm">{String(formik.errors.recipient_user_id)}</p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-4 mt-6">

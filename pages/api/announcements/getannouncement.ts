@@ -15,7 +15,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { id } = req.body as { id?: string };
     if (!id) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Announcement ID is required" });
 
-    const announcement = await prisma.announcement.findUnique({ where: { id } });
+    const announcement = await prisma.announcement.findUnique({
+      where: { id },
+      include: {
+        recipient: {
+          select: {
+            id: true,
+            email: true,
+            first_name: true,
+            last_name: true,
+            role: true,
+          },
+        },
+      },
+    });
     if (!announcement || announcement.is_deleted) {
       return res.status(StatusCodes.NOT_FOUND).json({ error: "Announcement not found" });
     }

@@ -136,6 +136,14 @@ export type Announcement = {
     title: string;
     message: string;
     audience: string; // AnnouncementAudience enum
+    recipient_user_id?: string | null;
+    recipient?: {
+        id: string;
+        email: string | null;
+        first_name: string | null;
+        last_name: string | null;
+        role: string;
+    } | null;
     is_active: boolean;
     is_deleted: boolean;
     createdAt: Date;

@@ -272,6 +272,7 @@ export const AnnouncementScalarFieldEnum = {
   title: 'title',
   message: 'message',
   audience: 'audience',
+  recipient_user_id: 'recipient_user_id',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
   createdAt: 'createdAt',

@@ -42,9 +42,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       OR: or.length ? or : undefined,
     };
 
+    const recipientInclude = {
+      recipient: {
+        select: {
+          id: true,
+          email: true,
+          first_name: true,
+          last_name: true,
+          role: true,
+        },
+      },
+    } as const;
+
     if (!hasPagination && !hasSearch) {
       const announcements = await prisma.announcement.findMany({
         where: whereClause,
+        include: recipientInclude,
         orderBy: { createdAt: "desc" },
       });
 
@@ -62,6 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const [announcements, totalCount] = await Promise.all([
       prisma.announcement.findMany({
         where: whereClause,
+        include: recipientInclude,
         orderBy: { createdAt: "desc" },
         skip,
         take: pageLimit,
