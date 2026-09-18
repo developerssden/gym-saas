@@ -30,7 +30,7 @@ export function Hero() {
                 </FadeIn>
                 <FadeIn delay={0.3}>
                     <div className="space-x-4">
-                        <Link href="/signup">
+                        <Link href="/sign-in">
                             <Button size="lg" className="h-11 px-8">
                                 Get Started Free
                             </Button>

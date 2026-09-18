@@ -18,7 +18,7 @@ export function CTA() {
                     </p>
                 </FadeIn>
                 <FadeIn delay={0.2}>
-                    <Link href="/signup">
+                    <Link href="/sign-in">
                         <Button size="lg" className="h-11 px-8">
                             Start Free Trial
                         </Button>
