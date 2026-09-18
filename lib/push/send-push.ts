@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/prisma/generated/client";
 
 type PushPayload = {
   title: string;
@@ -20,6 +21,17 @@ function configureVapid() {
   return true;
 }
 
+function logPushPrismaError(context: string, err: unknown) {
+  const code =
+    err instanceof Prisma.PrismaClientKnownRequestError ? err.code : undefined;
+
+  console.error(`[push/send] ${context}`, {
+    code,
+    meta: err instanceof Prisma.PrismaClientKnownRequestError ? err.meta : undefined,
+    message: err instanceof Error ? err.message : err,
+  });
+}
+
 export async function sendPushToUser(
   userId: string,
   payload: PushPayload
@@ -28,9 +40,15 @@ export async function sendPushToUser(
     return { sent: 0, failed: 0, removed: 0 };
   }
 
-  const subscriptions = await prisma.pushSubscription.findMany({
-    where: { user_id: userId },
-  });
+  let subscriptions;
+  try {
+    subscriptions = await prisma.pushSubscription.findMany({
+      where: { user_id: userId },
+    });
+  } catch (err: unknown) {
+    logPushPrismaError("failed to load subscriptions", err);
+    return { sent: 0, failed: 1, removed: 0 };
+  }
 
   if (subscriptions.length === 0) {
     return { sent: 0, failed: 0, removed: 0 };
@@ -60,9 +78,14 @@ export async function sendPushToUser(
             : undefined;
 
         if (statusCode === 404 || statusCode === 410) {
-          await prisma.pushSubscription.delete({
-            where: { id: subscription.id },
-          });
+          try {
+            await prisma.pushSubscription.delete({
+              where: { id: subscription.id },
+            });
+          } catch (err: unknown) {
+            logPushPrismaError("failed to remove stale subscription", err);
+            throw err;
+          }
           return { status: "removed" as const };
         }
 
