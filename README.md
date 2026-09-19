@@ -1,35 +1,132 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GymSaaS – Gym Management Platform
 
-## Getting Started
+GymSaaS is a full-stack **Gym Management SaaS platform** built to help gym owners manage their daily operations from one place.
 
-First, run the development server:
+The platform provides tools for **member management, memberships, attendance, inventory, equipment, staff tasks, billing, payments, and business analytics**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Live Demo
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+https://gym-saas-gamma.vercel.app/
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ✨ Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 📊 Dashboard
+- Real-time gym overview
+- Active member statistics
+- Revenue tracking
+- Daily check-ins
+- Business performance metrics
 
-## Environment Variables
+### 👥 Member Management
+- Create and manage gym members
+- Member profiles
+- Membership management
+- Membership expiry tracking
+- Attendance tracking
+- Payment tracking
+- Membership renewals
 
-Create a `.env.local` file at the project root before running any commands. The application expects the following keys:
+### 🏋️ Inventory & Equipment
+- Manage gym equipment
+- Manage gym merchandise
+- Track inventory quantities
+- Monitor stock levels
+- Low-stock alerts
+- Equipment management
 
-| Variable | Description | Example |
-| --- | --- | --- |
-| `DATABASE_URL` | Connection string for your Postgres database used by Prisma. | `postgresql://USER:PASSWORD@localhost:5432/gym_saas` |
-| `NEXTAUTH_SECRET` | Random string used by NextAuth to sign/encrypt tokens. You can generate one with `openssl rand -base64 32`. | `your-long-random-secret` |
-| `ENV` | Simple environment flag consumed in NextAuth debug mode. Use `PROD` in production to silence debug logs. | `DEV` |
+### 📋 Task Management
+- Create staff tasks
+- Assign tasks to staff
+- Track task status
+- Manage gym cleaning and maintenance activities
 
-> Use `.env.local` (not committed to git) or your hosting provider’s secret manager when deploying.
+### 💳 Finance & Billing
+- Member payment tracking
+- Invoice generation
+- Revenue tracking
+- Expense management
+- Financial reports
 
-After updating environment variables, restart the dev server to ensure the new values are picked up.
+### 📈 Reports & Analytics
+- Member statistics
+- Attendance analytics
+- Revenue reports
+- Gym performance metrics
+- Business insights
+
+### 🔐 Authentication
+- User authentication
+- Protected routes
+- Session management
+- NextAuth integration
+
+### 💰 Subscription Plans
+
+The application supports different SaaS plans for gym businesses.
+
+#### Basic Plan
+- 1 gym
+- 1 location
+- Up to 200 members
+- Up to 200 equipment items
+- Automated expiry reminders
+- PDF invoices
+- Member payment tracking
+
+#### Pro Plan
+- Up to 2 gyms
+- Up to 5 locations
+- Up to 500 members per location
+- Up to 500 equipment items per location
+- Automated expiry reminders
+- PDF invoices
+- Member payment tracking
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Responsive UI
+
+### Backend
+
+- Next.js API Routes
+- TypeScript
+- Prisma ORM
+- PostgreSQL
+- NextAuth
+
+### Development
+
+- Git
+- ESLint
+- Automated Testing
+- Vercel
+- Environment Variables
+
+## 📁 Project Structure
+
+```text
+GymSaaS/
+│
+├── app/                 # Next.js application routes
+├── components/          # Reusable UI components
+├── constants/           # Application constants
+├── docs/                # Project documentation
+├── hooks/               # Custom React hooks
+├── lib/                 # Utility functions and libraries
+├── pages/               # Pages and API functionality
+├── prisma/              # Prisma schema and database configuration
+├── providers/           # Application providers
+├── public/              # Static assets
+├── scripts/             # Utility scripts
+├── tests/               # Automated tests
+│
+├── .vscode/             # VS Code configuration
+├── package.json
+├── tsconfig.json
+└── README.md
