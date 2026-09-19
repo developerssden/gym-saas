@@ -5,6 +5,16 @@ import { StatusCodes } from "http-status-codes";
 import { requireAdminOrOwner } from "@/lib/sessioncheck";
 import { Prisma } from "@/prisma/generated/client";
 
+const gymInclude = {
+  owner: true,
+  _count: {
+    select: {
+      locations: { where: { is_deleted: false } },
+      members: true,
+    },
+  },
+} satisfies Prisma.GymInclude;
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
@@ -58,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!hasPagination && !hasSearch) {
       const gyms = await prisma.gym.findMany({
         where: whereClause,
-        include: { owner: true },
+        include: gymInclude,
         orderBy: { createdAt: "desc" },
       });
 
@@ -76,7 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const [gyms, totalCount] = await Promise.all([
       prisma.gym.findMany({
         where: whereClause,
-        include: { owner: true },
+        include: gymInclude,
         orderBy: { createdAt: "desc" },
         skip,
         take: pageLimit,

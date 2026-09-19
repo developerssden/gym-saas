@@ -22,24 +22,28 @@ interface DataTablePaginationProps<TData> {
 export function DataTablePagination<TData>({
     table,
 }: DataTablePaginationProps<TData>) {
+    const pageCount = Math.max(1, table.getPageCount())
+
     return (
-        <div className="flex items-center justify-between p-2 overflow-x-auto w-full">
+        <div className="flex w-full items-center justify-between overflow-x-auto p-3">
             {table.getFilteredSelectedRowModel().rows.length > 0 && (
                 <div className="text-muted-foreground flex-1 text-sm">
                     {table.getFilteredSelectedRowModel().rows.length} of{" "}
                     {table.getFilteredRowModel().rows.length} row(s) selected.
                 </div>
             )}
-            <div className="flex items-center space-x-6 lg:space-x-8 w-full">
-                <div className="flex items-center space-x-2 w-full">
-                    <p className="text-sm font-medium">Rows per page</p>
+            <div className="flex w-full items-center gap-4 sm:gap-6 lg:gap-8">
+                <div className="flex w-full items-center space-x-2">
+                    <label htmlFor="rows-per-page" className="text-sm font-medium">
+                        Rows per page
+                    </label>
                     <Select
                         value={`${table.getState().pagination.pageSize}`}
                         onValueChange={(value) => {
                             table.setPageSize(Number(value))
                         }}
                     >
-                        <SelectTrigger className="h-8 w-[70px]">
+                        <SelectTrigger id="rows-per-page" aria-label="Rows per page" className="h-8 w-[70px]">
                             <SelectValue placeholder={table.getState().pagination.pageSize} />
                         </SelectTrigger>
                         <SelectContent side="top">
@@ -54,9 +58,9 @@ export function DataTablePagination<TData>({
                 <div className="flex w-[100px] items-center justify-center text-sm font-medium">
                     Page {table.getState().pagination.pageIndex + 1} of{" "}
                     {(() => {
-                        const pageCount = table.getPageCount()
+                        const tablePageCount = table.getPageCount()
                         // If pageCount is -1 (unknown), calculate from row count
-                        if (pageCount === -1) {
+                        if (tablePageCount === -1) {
                             const pageSize = table.getState().pagination.pageSize
                             const rowCount = table.getFilteredRowModel().rows.length
                             return Math.max(1, Math.ceil(rowCount / pageSize))
@@ -99,7 +103,7 @@ export function DataTablePagination<TData>({
                         variant="outline"
                         size="icon"
                         className="hidden size-8 lg:flex"
-                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                        onClick={() => table.setPageIndex(pageCount - 1)}
                         disabled={!table.getCanNextPage()}
                     >
                         <span className="sr-only">Go to last page</span>

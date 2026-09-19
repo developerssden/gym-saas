@@ -50,6 +50,7 @@ export type MemberSubscription = {
     churn_note: string | null
     createdAt: Date
     updatedAt: Date
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     member?: any
     payments?: Payment[]
 }
@@ -112,6 +113,10 @@ export type Gym = {
     updatedAt: Date;
     owner?: Client;
     locations?: Location[];
+    _count?: {
+        locations: number;
+        members: number;
+    };
 };
 
 export type Location = {

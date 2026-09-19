@@ -26,6 +26,14 @@ interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
     searchableColumns?: string[]
+    isSearching?: boolean
+    emptyAction?: React.ReactNode
+    searchLabel?: string
+    searchPlaceholder?: string
+    emptyMessage?: string
+    emptyDescription?: string
+    searchEmptyMessage?: string
+    searchEmptyDescription?: string
 }
 
 export function DataTable<TData, TValue>({
@@ -37,6 +45,14 @@ export function DataTable<TData, TValue>({
     onSearchChange,
     pagination,
     searchValue,
+    isSearching = false,
+    emptyAction,
+    searchLabel = "Search",
+    searchPlaceholder = "Search",
+    emptyMessage = "No results.",
+    emptyDescription,
+    searchEmptyMessage = "No results match your search.",
+    searchEmptyDescription,
 }: DataTableProps<TData, TValue> & {
     pageCount?: number
     rowCount?: number
@@ -106,16 +122,22 @@ export function DataTable<TData, TValue>({
             {searchableColumns.length > 0 && (
                 <div className="flex items-center justify-between">
                     <div className="flex flex-1 items-center gap-2">
+                        <label htmlFor="data-table-search" className="sr-only">
+                            {searchLabel}
+                        </label>
                         <Input
-                            placeholder="Search"
+                            id="data-table-search"
+                            type="search"
+                            aria-label={searchLabel}
+                            placeholder={searchPlaceholder}
                             value={globalFilter}
                             onChange={(event) => setGlobalFilter(event.target.value)}
-                            className="h-8 w-[150px] lg:w-[250px]"
+                            className="h-10 w-full max-w-sm border-border bg-background shadow-none"
                         />
                     </div>
                 </div>
             )}
-            <div className="rounded-md border overflow-hidden flex flex-col max-h-[calc(100svh-280px)] md:max-h-[calc(100vh-280px)]">
+            <div className="flex max-h-[calc(100svh-280px)] flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground md:max-h-[calc(100vh-280px)]">
                 <div className="overflow-y-auto overflow-x-auto flex-1 min-h-0">
                     <Table>
                         <TableHeader>
@@ -152,15 +174,33 @@ export function DataTable<TData, TValue>({
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                                        No results.
+                                    <TableCell colSpan={columns.length} className="h-48 text-center">
+                                        <div className="flex flex-col items-center justify-center gap-3 px-4">
+                                            <div>
+                                                <p className="font-medium text-foreground">
+                                                    {isSearching
+                                                        ? searchEmptyMessage
+                                                        : emptyMessage}
+                                                </p>
+                                                {(isSearching
+                                                    ? searchEmptyDescription
+                                                    : emptyDescription) && (
+                                                    <p className="mt-1 text-sm text-muted-foreground">
+                                                        {isSearching
+                                                            ? searchEmptyDescription
+                                                            : emptyDescription}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            {!isSearching && emptyAction}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
                     </Table>
                 </div>
-                <div className="border-t shrink-0">
+                <div className="shrink-0 border-t border-border">
                     <DataTablePagination table={table} />
                 </div>
             </div>

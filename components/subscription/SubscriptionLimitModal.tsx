@@ -43,19 +43,19 @@ export function SubscriptionLimitModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="border-border">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-destructive" />
-            <DialogTitle>Plan Limit Reached</DialogTitle>
+            <DialogTitle className="font-display">Plan limit reached</DialogTitle>
           </div>
           <DialogDescription>
             You have reached your plan limit for {resourceLabel.toLowerCase()}.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
-          <div className="space-y-2">
+        <div className="py-2">
+          <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-4">
             <p className="text-sm text-muted-foreground">
               Current usage: <span className="font-semibold">{current}</span> /{" "}
               <span className="font-semibold">{max}</span> {resourceLabel.toLowerCase()}

@@ -5,6 +5,17 @@ import { StatusCodes } from "http-status-codes";
 import { requireAdminOrOwner } from "@/lib/sessioncheck";
 import { checkLimitExceeded } from "@/lib/subscription-validation";
 
+type CreateGymRequest = {
+  name?: string;
+  owner_id?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  country?: string;
+  phone_number?: string;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
@@ -24,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       zip_code,
       country,
       phone_number,
-    } = req.body as Record<string, any>;
+    } = req.body as CreateGymRequest;
 
     if (!name) {
       return res.status(StatusCodes.BAD_REQUEST).json({

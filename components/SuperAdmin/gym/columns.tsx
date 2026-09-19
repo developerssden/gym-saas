@@ -35,48 +35,101 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export const columns: ColumnDef<Gym>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Gym" />,
+const gymColumn: ColumnDef<Gym> = {
+  accessorKey: "name",
+  header: ({ column }) => <DataTableColumnHeader column={column} title="Gym" />,
+  cell: ({ row }) => <span className="font-medium text-foreground">{row.original.name}</span>,
+};
+
+const cityColumn: ColumnDef<Gym> = {
+  accessorKey: "city",
+  header: ({ column }) => <DataTableColumnHeader column={column} title="City" />,
+  cell: ({ row }) => row.original.city ?? <span className="text-muted-foreground">—</span>,
+};
+
+const activeColumn: ColumnDef<Gym> = {
+  accessorKey: "is_active",
+  header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+  cell: ({ row }) => {
+    const isActive = row.original.is_active;
+    return (
+      <span
+        className={
+          isActive
+            ? "inline-flex items-center gap-1.5 rounded-full bg-status-active px-2.5 py-1 text-xs font-medium text-status-active-foreground"
+            : "inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+        }
+      >
+        <span
+          className={
+            isActive
+              ? "size-1.5 rounded-full bg-status-active-foreground"
+              : "size-1.5 rounded-full bg-muted-foreground"
+          }
+          aria-hidden="true"
+        />
+        {isActive ? "Active" : "Inactive"}
+      </span>
+    );
   },
+};
+
+const actionsColumn: ColumnDef<Gym> = {
+  id: "actions",
+  header: "Actions",
+  enableHiding: false,
+  enableSorting: false,
+  cell: ({ row }) => <ActionCell gym={row.original} />,
+};
+
+export const superAdminColumns: ColumnDef<Gym>[] = [
+  gymColumn,
   {
     id: "owner",
     accessorFn: (row) => `${row.owner?.first_name ?? ""} ${row.owner?.last_name ?? ""}`.trim(),
     header: ({ column }) => <DataTableColumnHeader column={column} title="Owner" />,
     cell: ({ row }) => {
-      const o = row.original.owner;
+      const owner = row.original.owner;
+      const ownerName =
+        owner?.first_name || owner?.last_name
+          ? `${owner?.first_name ?? ""} ${owner?.last_name ?? ""}`.trim()
+          : "—";
+
       return (
         <div className="flex flex-col">
-          <span className="font-medium">
-            {o?.first_name || o?.last_name ? `${o?.first_name ?? ""} ${o?.last_name ?? ""}`.trim() : "-"}
-          </span>
-          <span className="text-xs text-muted-foreground">{o?.email ?? ""}</span>
+          <span className="font-medium">{ownerName}</span>
+          <span className="text-xs text-muted-foreground">{owner?.email ?? ""}</span>
         </div>
       );
     },
   },
-  {
-    accessorKey: "city",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="City" />,
-    cell: ({ row }) => row.original.city ?? "-",
-  },
+  cityColumn,
   {
     accessorKey: "country",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Country" />,
-    cell: ({ row }) => row.original.country ?? "-",
+    cell: ({ row }) => row.original.country ?? <span className="text-muted-foreground">—</span>,
+  },
+  activeColumn,
+  actionsColumn,
+];
+
+export const gymOwnerColumns: ColumnDef<Gym>[] = [
+  gymColumn,
+  cityColumn,
+  {
+    id: "locations",
+    accessorFn: (row) => row._count?.locations ?? 0,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Locations" />,
+    cell: ({ row }) => row.original._count?.locations ?? 0,
   },
   {
-    accessorKey: "is_active",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Active" />,
-    cell: ({ row }) => (row.original.is_active ? "Yes" : "No"),
+    id: "members",
+    accessorFn: (row) => row._count?.members ?? 0,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Members" />,
+    cell: ({ row }) => row.original._count?.members ?? 0,
   },
-  {
-    id: "actions",
-    header: "Actions",
-    enableHiding: false,
-    cell: ({ row }) => <ActionCell gym={row.original} />,
-  },
+  activeColumn,
+  actionsColumn,
 ];
 
 const ActionCell = ({ gym }: { gym: Gym }) => {
@@ -148,7 +201,10 @@ const ActionCell = ({ gym }: { gym: Gym }) => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => deleteGym()} className="bg-red-600 hover:bg-red-700">
+              <AlertDialogAction
+                onClick={() => deleteGym()}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>

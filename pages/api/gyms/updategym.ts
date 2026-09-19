@@ -3,7 +3,19 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAdminOrOwner } from "@/lib/sessioncheck";
-import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
+import { validateOwnerSubscription } from "@/lib/subscription-validation";
+
+type UpdateGymRequest = {
+  id?: string;
+  owner_id?: string;
+  name?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  country?: string;
+  phone_number?: string;
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -15,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
-    const { id, ...data } = req.body as Record<string, any>;
+    const { id, ...data } = req.body as UpdateGymRequest;
     if (!id) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: "Gym ID is required" });
     }
