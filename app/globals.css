@@ -145,9 +145,16 @@
   --sidebar-accent-foreground: oklch(0.3818 0.0936 124.1518);
   --sidebar-border: oklch(0.8926 0.0105 118.0332);
   --sidebar-ring: oklch(0.8522 0.2163 125.7603);
-  --font-sans: Inter, sans-serif;
+  --font-sans: var(--font-inter), Inter, sans-serif;
+  --font-display: var(--font-archivo), Archivo, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: JetBrains Mono, monospace;
+  --panel: #111311;
+  --surface: #141414;
+  --border-soft: #1c1c1c;
+  --faint: #5c5c56;
+  --primary-hover: #cdec7c;
+  --primary-dim: #97b34c;
   --radius: 0.35rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -210,9 +217,16 @@
   --sidebar-accent-foreground: oklch(0.9439 0.182 121.8389);
   --sidebar-border: oklch(0.2807 0.0139 118.7063);
   --sidebar-ring: oklch(0.9226 0.2344 125.8358);
-  --font-sans: Inter, sans-serif;
+  --font-sans: var(--font-inter), Inter, sans-serif;
+  --font-display: var(--font-archivo), Archivo, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: JetBrains Mono, monospace;
+  --panel: #111311;
+  --surface: #141414;
+  --border-soft: #1c1c1c;
+  --faint: #5c5c56;
+  --primary-hover: #cdec7c;
+  --primary-dim: #97b34c;
   --radius: 0.35rem;
   --shadow-x: 0px;
   --shadow-y: 8px;
@@ -258,8 +272,14 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-panel: var(--panel);
+  --color-surface: var(--surface);
+  --color-faint: var(--faint);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-dim: var(--primary-dim);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -275,6 +295,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-heading: var(--font-display);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
@@ -305,8 +327,39 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
+}
+
+.login-theme {
+  --background: #0a0a0a;
+  --foreground: #f2f2ec;
+  --panel: #111311;
+  --surface: #141414;
+  --border: #242424;
+  --border-soft: #1c1c1c;
+  --muted-foreground: #8f8f87;
+  --faint: #5c5c56;
+  --primary: #bdde63;
+  --primary-foreground: #0a0a0a;
+  --primary-hover: #cdec7c;
+  --primary-dim: #97b34c;
+  --ring: rgb(189 222 99 / 0.12);
+  --input: #141414;
+  --card: #141414;
+  --card-foreground: #f2f2ec;
+  --destructive: #ef4444;
+  color-scheme: dark;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.login-theme *:focus {
+  outline: none;
+}
+
+.login-theme *:focus-visible {
+  outline: none;
 }
 
 ::view-transition-old(root),

@@ -67,6 +67,7 @@ declare module 'next-auth' {
     role: string;
     createdAt: Date;
     updatedAt: Date;
+    remember?: boolean;
   }
 }
 
@@ -89,5 +90,6 @@ declare module 'next-auth/jwt' {
     updatedAt: Date;
     selected_location_id?: string | null;
     selected_gym_id?: string | null;
+    remember?: boolean;
   }
 }
