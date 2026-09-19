@@ -149,12 +149,14 @@
   --font-display: var(--font-archivo), Archivo, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: JetBrains Mono, monospace;
-  --panel: #111311;
-  --surface: #141414;
-  --border-soft: #1c1c1c;
-  --faint: #5c5c56;
-  --primary-hover: #cdec7c;
-  --primary-dim: #97b34c;
+  --panel: oklch(0.9748 0.0069 117.9492);
+  --surface: oklch(0.9982 0.0034 117.8857);
+  --border-soft: oklch(0.9368 0.0173 118.1516);
+  --faint: oklch(0.641 0.0132 118.366);
+  --primary-hover: oklch(0.8918 0.1538 122.1795);
+  --primary-dim: oklch(0.55 0.145 132);
+  --status-active: oklch(0.9368 0.0773 122.1795);
+  --status-active-foreground: oklch(0.3818 0.0936 124.1518);
   --radius: 0.35rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -227,6 +229,8 @@
   --faint: #5c5c56;
   --primary-hover: #cdec7c;
   --primary-dim: #97b34c;
+  --status-active: oklch(0.2754 0.0419 120.7466);
+  --status-active-foreground: oklch(0.9226 0.2344 125.8358);
   --radius: 0.35rem;
   --shadow-x: 0px;
   --shadow-y: 8px;
@@ -280,6 +284,8 @@
   --color-faint: var(--faint);
   --color-primary-hover: var(--primary-hover);
   --color-primary-dim: var(--primary-dim);
+  --color-status-active: var(--status-active);
+  --color-status-active-foreground: var(--status-active-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);

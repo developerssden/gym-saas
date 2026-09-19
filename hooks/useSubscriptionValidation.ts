@@ -2,9 +2,39 @@
 
 import { useSession } from "next-auth/react"
 import { useMemo } from "react"
+import { useGyms } from "@/hooks/use-gyms"
 
-export function useSubscriptionValidation() {
+type SubscriptionValidationOptions = {
+  gymCount?: number
+}
+
+type LimitInfo = {
+  current: number
+  max: number
+  resourceType: "gym" | "location" | "member" | "equipment"
+  message: string
+}
+
+type LimitCheckResult = {
+  exceeded: boolean
+  limitInfo?: LimitInfo
+}
+
+export function useSubscriptionValidation({
+  gymCount,
+}: SubscriptionValidationOptions = {}) {
   const { data: session } = useSession()
+  const isGymOwner = session?.user?.role === "GYM_OWNER"
+
+  const {
+    data: gymUsageData,
+    isLoading: isGymUsageLoading,
+    refetch: refetchGymUsage,
+  } = useGyms({
+    page: 1,
+    limit: 1,
+    enabled: isGymOwner && gymCount === undefined,
+  })
 
   const isSubscriptionActive = useMemo(() => {
     return session?.user?.subscription_active ?? false
@@ -19,10 +49,19 @@ export function useSubscriptionValidation() {
     }
   }, [session])
 
+  const currentGyms = gymCount ?? gymUsageData?.totalCount ?? 0
+  const gymLimit = subscriptionLimits.max_gyms
+  const isAtGymLimit =
+    isSubscriptionActive && gymLimit >= 0 && currentGyms >= gymLimit
+  const isNearGymLimit =
+    gymLimit > 0 && !isAtGymLimit && currentGyms >= Math.max(1, gymLimit - 1)
+
   const checkLimitBeforeAction = async (
     resourceType: "gym" | "location" | "member" | "equipment",
     locationId?: string
-  ): Promise<{ exceeded: boolean; limitInfo?: any }> => {
+  ): Promise<LimitCheckResult> => {
+    void locationId
+
     if (!isSubscriptionActive) {
       return {
         exceeded: true,
@@ -35,8 +74,29 @@ export function useSubscriptionValidation() {
       }
     }
 
-    // Client-side check - actual validation happens on server
-    // This is just for UI feedback
+    if (resourceType === "gym") {
+      const latestUsage =
+        gymCount === undefined ? (await refetchGymUsage()).data?.totalCount : gymCount
+      const latestGymCount = latestUsage ?? currentGyms
+      const gymLimitExceeded =
+        isSubscriptionActive && gymLimit >= 0 && latestGymCount >= gymLimit
+
+      if (!gymLimitExceeded) {
+        return { exceeded: false }
+      }
+
+      return {
+        exceeded: true,
+        limitInfo: {
+          current: latestGymCount,
+          max: gymLimit,
+          resourceType,
+          message: `Gym limit reached (max ${gymLimit})`,
+        },
+      }
+    }
+
+    // Other resource limits require server-side context such as location ID.
     return {
       exceeded: false,
     }
@@ -47,6 +107,12 @@ export function useSubscriptionValidation() {
     subscriptionLimits,
     checkLimitBeforeAction,
     subscriptionExpired: session?.user?.subscription_expired ?? true,
+    currentGyms,
+    gymLimit,
+    isAtGymLimit,
+    isNearGymLimit,
+    isGymUsageLoading,
+    refetchGymUsage,
   }
 }
 
