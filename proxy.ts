@@ -1,7 +1,7 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboarding', '/checkout-success'];
+const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboarding', '/checkout-success', '/pricing', '/privacy', '/terms'];
 
 const PUBLIC_API_PATHS = ['/api/clients/complete-invite', '/api/webhooks/polar'];
 
@@ -9,6 +9,9 @@ const PWA_PUBLIC_PATHS = [
   '/manifest.webmanifest',
   '/sw.js',
   '/offline',
+  '/sitemap.xml',
+  '/robots.txt',
+  '/opengraph-image',
 ];
 
 type Role = 'SUPER_ADMIN' | 'GYM_OWNER' | 'MEMBER';

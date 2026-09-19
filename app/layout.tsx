@@ -17,15 +17,15 @@ const archivo = Archivo({
 
 export const metadata: Metadata = {
   title: {
-    default: "Gym SaaS",
-    template: "%s | Gym SaaS",
+    default: "GymSaaS",
+    template: "%s | GymSaaS",
   },
   description: "The all-in-one platform for modern gym management.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Gym SaaS",
+    title: "GymSaaS",
   },
   icons: {
     icon: [{ url: "/favicon.ico" }],

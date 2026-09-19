@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -203,12 +202,9 @@ export function LoginForm({
                 </FormItem>
               )}
             />
-            <Link
-              href="#"
-              className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:rounded-sm focus-visible:text-foreground focus-visible:shadow-[0_0_0_3px_var(--ring)]"
-            >
-              Forgot password?
-            </Link>
+            <span className="text-sm text-muted-foreground">
+              Password reset is unavailable
+            </span>
           </div>
 
           <Button

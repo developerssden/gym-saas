@@ -1,122 +1,40 @@
-"use client";
+"use client"
 
-import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { FadeIn } from "@/components/landing-page/fade-in";
-import {
-  BillingToggle,
-  getCheckoutUrl,
-  getPlanFeatures,
-  getPlanPrice,
-  usePublicPlans,
-} from "@/components/pricing/shared";
-import { useState } from "react";
+import { Check } from "lucide-react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { FadeIn } from "@/components/landing-page/fade-in"
+import { BillingToggle, getCheckoutUrl, getPlanFeatures, getPlanPrice, usePublicPlans } from "@/components/pricing/shared"
+import { contactHref } from "@/components/landing-page/contact"
 
-export function Pricing() {
-  const { plans, loading } = usePublicPlans();
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+export function Pricing({ standalone = false }: { standalone?: boolean }) {
+  const { plans, loading, error } = usePublicPlans()
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly")
+  const wrapper = standalone ? "landing-container py-20" : "landing-section landing-container"
 
-  const gridCols =
-    plans.length <= 1
-      ? "md:grid-cols-1 max-w-md mx-auto"
-      : plans.length === 2
-        ? "md:grid-cols-2"
-        : "md:grid-cols-2 lg:grid-cols-3";
-
-  return (
-    <section className="container space-y-6 bg-slate-50 py-8 dark:bg-transparent md:py-12 lg:py-24 mx-auto px-4">
-      <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
-        <FadeIn>
-          <h2 className="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl font-bold">
-            Simple, transparent pricing
-          </h2>
+  return <section className={wrapper}>
+    <div className="mx-auto max-w-2xl text-center">
+      <p className="landing-eyebrow">Plans that stay legible</p>
+      {standalone ? <h1 className="landing-heading mt-3">Choose the shape of your operation.</h1> : <h2 className="landing-heading mt-3">Choose the shape of your operation.</h2>}
+      <p className="mt-5 text-muted-foreground">Live plan data from GymSaaS. Limits are shown exactly as configured for each plan.</p>
+      <BillingToggle billing={billing} onChange={setBilling} className="mt-7" />
+    </div>
+    {loading && <p className="mt-12 text-center text-muted-foreground">Loading plans...</p>}
+    {error && <p className="mt-12 text-center text-destructive">Plans are temporarily unavailable. Please contact us.</p>}
+    {!loading && !error && plans.length === 0 && <p className="mt-12 text-center text-muted-foreground">No plans are available right now.</p>}
+    {!loading && !error && plans.length > 0 && <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {plans.map((plan, index) => {
+        const checkoutUrl = getCheckoutUrl(plan, billing)
+        return <FadeIn key={plan.id} delay={index * 0.08} className="h-full">
+          <article className={`flex h-full flex-col rounded-2xl border bg-card p-6 ${index === 1 ? "border-primary shadow-lg" : ""}`}>
+            <div className="flex items-start justify-between gap-4"><div><p className="text-sm text-muted-foreground">Plan</p><h3 className="mt-1 text-2xl font-bold">{plan.name}</h3></div>{index === 1 && <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">Popular</span>}</div>
+            <p className="mt-6 text-4xl font-bold">{getPlanPrice(plan, billing).toLocaleString()}<span className="ml-2 text-sm font-normal text-muted-foreground">per {billing === "monthly" ? "month" : "year"}</span></p>
+            <ul className="mt-6 flex-1 space-y-3 text-sm text-muted-foreground">{getPlanFeatures(plan).map((feature) => <li key={feature} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-primary" />{feature}</li>)}</ul>
+            {checkoutUrl ? <a href={checkoutUrl} className="mt-8"><Button className="w-full">Continue to checkout</Button></a> : <a href={contactHref} className="mt-8"><Button variant="outline" className="w-full">Contact us about this plan</Button></a>}
+          </article>
         </FadeIn>
-        <FadeIn delay={0.1}>
-          <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-            Choose the plan that&apos;s right for your gym. No hidden fees.
-          </p>
-        </FadeIn>
-        <FadeIn delay={0.15}>
-          <BillingToggle billing={billing} onChange={setBilling} />
-        </FadeIn>
-      </div>
-
-      {loading ? (
-        <p className="text-center text-muted-foreground">Loading plans…</p>
-      ) : plans.length === 0 ? (
-        <p className="text-center text-muted-foreground">
-          No plans available right now.
-        </p>
-      ) : (
-        <div
-          className={`grid w-full items-start gap-6 rounded-lg border p-6 md:p-10 ${gridCols}`}
-        >
-          {plans.map((plan, index) => {
-            const price = getPlanPrice(plan, billing);
-            const checkoutUrl = getCheckoutUrl(plan, billing);
-            const features = getPlanFeatures(plan);
-            const isPopular = index === 1 && plans.length >= 2;
-
-            return (
-              <FadeIn
-                key={plan.id}
-                delay={0.2 + index * 0.1}
-                className="grid gap-6"
-              >
-                <Card
-                  className={`transition-all hover:scale-105 hover:shadow-lg ${
-                    isPopular ? "border-primary shadow-md" : ""
-                  }`}
-                >
-                  <CardHeader>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <CardDescription>
-                      {isPopular
-                        ? "Most popular for growing gyms."
-                        : "Everything you need to manage your gym."}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-4">
-                    <div className="text-4xl font-bold">
-                      PKR {price.toLocaleString()}
-                      <span className="text-lg font-normal text-muted-foreground">
-                        /{billing === "monthly" ? "month" : "year"}
-                      </span>
-                    </div>
-                    <ul className="grid gap-2 text-sm text-muted-foreground">
-                      {features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-2">
-                          <Check className="h-4 w-4 text-primary shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    {checkoutUrl ? (
-                      <a href={checkoutUrl} className="w-full">
-                        <Button className="w-full">Get Started</Button>
-                      </a>
-                    ) : (
-                      <Button className="w-full" disabled>
-                        Coming soon
-                      </Button>
-                    )}
-                  </CardFooter>
-                </Card>
-              </FadeIn>
-            );
-          })}
-        </div>
-      )}
-    </section>
-  );
+      })}
+    </div>}
+    <p className="mt-10 text-center text-sm text-muted-foreground">Questions about a plan? <a className="underline underline-offset-4" href={contactHref}>Contact the team</a>.</p>
+  </section>
 }

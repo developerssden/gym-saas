@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Dumbbell } from "lucide-react"
+import { contactHref } from "./contact"
 
 export function Footer() {
     return (
@@ -24,30 +25,19 @@ export function Footer() {
                             <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
                                 Pricing
                             </Link>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                Integrations
-                            </Link>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <h3 className="text-sm font-medium">Company</h3>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                About
-                            </Link>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                Blog
-                            </Link>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                Careers
-                            </Link>
                         </div>
                         <div className="flex flex-col gap-2">
                             <h3 className="text-sm font-medium">Legal</h3>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
+                            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground">
                                 Privacy
                             </Link>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
+                            <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
                                 Terms
                             </Link>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <h3 className="text-sm font-medium">Contact</h3>
+                            <a href={contactHref} className="text-sm text-muted-foreground hover:text-foreground">Email the team</a>
                         </div>
                     </div>
                 </div>

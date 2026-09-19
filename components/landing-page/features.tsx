@@ -1,49 +1,49 @@
 import {
+    BellRing,
+    ClipboardCheck,
     LayoutDashboard,
     Users,
-    Package,
-    CheckSquare,
-    DollarSign,
-    BarChart3,
+    Megaphone,
+    Smartphone,
 } from "lucide-react"
 import { FadeIn } from "@/components/landing-page/fade-in"
 
 const features = [
     {
-        name: "Dashboard",
+        name: "Keep members moving",
         description:
-            "Get a real-time overview of your gym's performance. Track active members, revenue, and daily check-ins at a glance.",
+            "Manage member profiles, membership plans, subscriptions, payment records, and expiry dates from one place.",
         icon: LayoutDashboard,
     },
     {
-        name: "Member Management",
+        name: "Stay ahead of renewals",
         description:
-            "Easily manage member profiles, memberships, and attendance. Keep track of payments and renewals effortlessly.",
+            "Expiry reminders can be delivered by email and push so follow-up does not depend on a spreadsheet.",
+        icon: BellRing,
+    },
+    {
+        name: "See every location",
+        description:
+            "Organize gyms, locations, members, and equipment with role-based access for the people who run them.",
         icon: Users,
     },
     {
-        name: "Inventory Tracking",
+        name: "Keep the floor ready",
         description:
-            "Keep track of your gym equipment and merchandise. Get alerts when stock is low and manage orders.",
-        icon: Package,
+            "Track equipment and assign tasks so maintenance and daily operations have a clear home.",
+        icon: ClipboardCheck,
     },
     {
-        name: "Task Management",
+        name: "Communicate clearly",
         description:
-            "Assign tasks to your staff and track their progress. Ensure your gym is always clean and well-maintained.",
-        icon: CheckSquare,
+            "Send announcements and keep important updates visible to the right audience.",
+        icon: Megaphone,
     },
     {
-        name: "Finance & Billing",
+        name: "Work from anywhere",
         description:
-            "Automate billing and invoicing. Track expenses and revenue to understand your financial health.",
-        icon: DollarSign,
-    },
-    {
-        name: "Reporting & Analytics",
-        description:
-            "Deep dive into data with comprehensive reports. Make data-driven decisions to grow your business.",
-        icon: BarChart3,
+            "Use the installable PWA on supported devices, with offline fallback and push notification support.",
+        icon: Smartphone,
     },
 ]
 
@@ -51,29 +51,30 @@ export function Features() {
     return (
         <section
             id="features"
-            className="container space-y-6 bg-slate-50 py-8 dark:bg-transparent md:py-12 lg:py-24 mx-auto px-4"
+            className="landing-section landing-container space-y-10"
         >
             <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
                 <FadeIn>
-                    <h2 className="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl font-bold">
-                        Everything you need to run your gym
+                    <p className="landing-eyebrow">Built around outcomes</p>
+                    <h2 className="landing-heading">
+                        Less chasing. More running.
                     </h2>
                 </FadeIn>
                 <FadeIn delay={0.1}>
                     <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-                        Our platform provides all the tools you need to manage your gym efficiently, from member management to financial reporting.
+                        The useful parts of gym operations are connected, so owners can spend less time reconstructing what happened.
                     </p>
                 </FadeIn>
             </div>
-            <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
+            <div className="mx-auto grid w-full justify-center gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {features.map((feature, index) => (
                     <FadeIn
                         key={feature.name}
                         delay={0.1 + index * 0.1}
-                        className="relative overflow-hidden rounded-lg border bg-background p-2 transition-all hover:scale-105 hover:shadow-lg"
+                        className="relative overflow-hidden rounded-2xl border bg-card p-2 transition-shadow hover:shadow-lg"
                     >
-                        <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
-                            <feature.icon className="h-12 w-12 text-primary" />
+                        <div className="flex min-h-[210px] flex-col justify-between rounded-xl p-6">
+                            <feature.icon className="h-8 w-8 text-primary" />
                             <div className="space-y-2">
                                 <h3 className="font-bold">{feature.name}</h3>
                                 <p className="text-sm text-muted-foreground">

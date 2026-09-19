@@ -1,6 +1,6 @@
 "use client"
 
-import { motion, useInView } from "framer-motion"
+import { motion, useInView, useReducedMotion } from "framer-motion"
 import { useRef } from "react"
 
 interface FadeInProps {
@@ -18,6 +18,7 @@ export function FadeIn({
 }: FadeInProps) {
     const ref = useRef(null)
     const isInView = useInView(ref, { once: true, margin: "-50px" })
+    const prefersReducedMotion = useReducedMotion()
 
     const directionOffset = {
         up: { y: 40, x: 0 },
@@ -29,7 +30,7 @@ export function FadeIn({
     return (
         <motion.div
             ref={ref}
-            initial={{
+            initial={prefersReducedMotion ? false : {
                 opacity: 0,
                 ...directionOffset[direction],
             }}
@@ -45,7 +46,7 @@ export function FadeIn({
                         ...directionOffset[direction],
                     }
             }
-            transition={{
+            transition={prefersReducedMotion ? { duration: 0 } : {
                 duration: 0.7,
                 delay: delay,
                 ease: [0.21, 0.47, 0.32, 0.98],

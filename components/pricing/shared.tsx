@@ -21,15 +21,20 @@ export type BillingPeriod = "monthly" | "yearly";
 export function usePublicPlans() {
   const [plans, setPlans] = useState<PublicPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     fetch("/api/plans/getpublicplans")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Unable to load plans");
+        return r.json();
+      })
       .then((data) => setPlans(data.plans ?? []))
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
-  return { plans, loading };
+  return { plans, loading, error };
 }
 
 export function getPlanPrice(plan: PublicPlan, billing: BillingPeriod) {
