@@ -30,9 +30,10 @@ export const options: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         try {
-          const { email, password } = req.body as {
+          const { email, password, remember } = req.body as {
             email: string;
             password: string;
+            remember?: string | boolean;
           };
 
           const dbUser: any = await prisma.user.findFirst({
@@ -58,7 +59,8 @@ export const options: NextAuthOptions = {
             id: dbUser.id,
             role: dbUser.role,
             first_name: dbUser.first_name,
-            last_name: dbUser.last_name
+            last_name: dbUser.last_name,
+            remember: remember === true || remember === 'true'
           };
           return user;
         } catch (error) {
@@ -69,7 +71,7 @@ export const options: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 24 hours
+    maxAge: 30 * 24 * 60 * 60, // 30 days (capped to 24h in jwt when remember is false)
     updateAge: 30 * 60 // 30 minutes (you can keep or adjust this)
   },
   debug: process.env.ENV !== 'PROD',
@@ -82,6 +84,7 @@ export const options: NextAuthOptions = {
         token.role = user.role;
         token.first_name = user.first_name;
         token.last_name = user.last_name;
+        token.remember = user.remember === true;
         
         // For GYM_OWNER, set default gym and location on first login
         if (user.role === 'GYM_OWNER') {
@@ -166,6 +169,13 @@ export const options: NextAuthOptions = {
           token.selected_gym_id = session.user.selected_gym_id;
         }
       }
+
+      const issuedAt =
+        typeof token.iat === 'number'
+          ? token.iat
+          : Math.floor(Date.now() / 1000);
+      const maxAge = token.remember ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
+      token.exp = issuedAt + maxAge;
 
       return token;
     },

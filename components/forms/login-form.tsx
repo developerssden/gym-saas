@@ -1,129 +1,242 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { GalleryVerticalEnd, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/ui/password-input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+const loginSchema = z.object({
+  email: z.email("Enter a valid email"),
+  password: z.string().min(1, "Password is required"),
+  remember: z.boolean(),
+});
+
+type LoginValues = z.infer<typeof loginSchema>;
+
+const fieldFocus =
+  "focus-visible:border-primary-dim focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_var(--ring)]";
+
+const inputStyles = cn(
+  "h-11 rounded-md border-border bg-surface text-foreground shadow-none",
+  "placeholder:text-faint md:text-sm",
+  fieldFocus
+);
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<'div'>) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+}: React.ComponentProps<"div">) {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      remember: false,
+    },
+  });
+
+  const onSubmit = async (values: LoginValues) => {
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        remember: values.remember ? "true" : "false",
+        redirect: false,
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
-      } else {
-        const updatedSession = await getSession();
-        const userRole = updatedSession?.user?.role;
-
-        if (userRole === 'SUPER_ADMIN' || userRole === 'GYM_OWNER') {
-          router.push('/dashboard');
-          router.refresh();
-        } else {
-          router.push('/unauthorized');
-        }
+        setError("Invalid email or password");
+        return;
       }
-    } catch (error) {
-      setError('An unexpected error occurred. Please try again.');
+
+      const updatedSession = await getSession();
+      const userRole = updatedSession?.user?.role;
+
+      if (userRole === "SUPER_ADMIN" || userRole === "GYM_OWNER") {
+        router.push("/dashboard");
+        router.refresh();
+      } else {
+        router.push("/unauthorized");
+      }
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <form onSubmit={handleSubmit}>
-        <div className='flex flex-col gap-6'>
-          <div className='flex flex-col items-center gap-2'>
-            <a
-              href='#'
-              className='flex flex-col items-center gap-2 font-medium'
-            >
-              <div className='flex size-8 items-center justify-center rounded-md'>
-                <GalleryVerticalEnd className='size-6' />
-              </div>
-              <span className='sr-only'>Acme Inc.</span>
-            </a>
-            <h1 className='text-xl font-bold'>Welcome to Acme Inc.</h1>
-            <div className='text-center text-sm'>
-              Don&apos;t have an account?{' '}
-              <a href='#' className='underline underline-offset-4'>
-                Sign up
-              </a>
-            </div>
-          </div>
+    <div className={cn("w-full max-w-[380px]", className)} {...props}>
+      <div className="mb-8">
+        <h2 className="font-display text-[26px] leading-tight font-bold tracking-tight text-foreground">
+          Sign in
+        </h2>
+        <p className="mt-2 text-[14.5px] leading-relaxed text-muted-foreground">
+          Enter your email and password to continue.
+        </p>
+      </div>
 
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           {error && (
-            <Alert variant='destructive'>
+            <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          <div className='flex flex-col gap-6'>
-            <div className='grid gap-3'>
-              <Label htmlFor='email'>Email</Label>
-              <Input
-                id='email'
-                type='email'
-                placeholder='m@example.com'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <div className='grid gap-3'>
-              <Label htmlFor='password'>Password</Label>
-              <PasswordInput
-                id='password'
-                placeholder='Enter your password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <Button type='submit' className='w-full' disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="gap-2">
+                <FormLabel className="text-sm font-medium text-foreground">
+                  Email
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@yourgym.com"
+                    disabled={isLoading}
+                    className={inputStyles}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="gap-2">
+                <FormLabel className="text-sm font-medium text-foreground">
+                  Password
+                </FormLabel>
+                <div className="relative">
+                  <FormControl>
+                    <Input
+                      type={passwordVisible ? "text" : "password"}
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      disabled={isLoading}
+                      className={cn(inputStyles, "pr-16")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <button
+                    type="button"
+                    onClick={() => setPasswordVisible((prev) => !prev)}
+                    disabled={isLoading}
+                    aria-label={passwordVisible ? "Hide password" : "Show password"}
+                    className={cn(
+                      "absolute top-1/2 right-2.5 -translate-y-1/2 rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground",
+                      "hover:text-foreground",
+                      "focus-visible:shadow-[0_0_0_3px_var(--ring)] focus-visible:text-foreground",
+                      "disabled:pointer-events-none disabled:opacity-50"
+                    )}
+                  >
+                    {passwordVisible ? "Hide" : "Show"}
+                  </button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex items-center justify-between gap-3">
+            <FormField
+              control={form.control}
+              name="remember"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      id="remember"
+                      checked={field.value}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked === true)
+                      }
+                      disabled={isLoading}
+                      className={cn(
+                        "size-4 rounded border-border bg-surface shadow-none",
+                        "data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+                        "focus-visible:border-primary-dim focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_var(--ring)]"
+                      )}
+                    />
+                  </FormControl>
+                  <Label
+                    htmlFor="remember"
+                    className="text-sm font-normal text-foreground"
+                  >
+                    Keep me signed in
+                  </Label>
+                </FormItem>
               )}
-            </Button>
+            />
+            <Link
+              href="#"
+              className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:rounded-sm focus-visible:text-foreground focus-visible:shadow-[0_0_0_3px_var(--ring)]"
+            >
+              Forgot password?
+            </Link>
           </div>
-        </div>
-      </form>
-      <div className='text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4'>
-        By clicking continue, you agree to our <a href='#'>Terms of Service</a>{' '}
-        and <a href='#'>Privacy Policy</a>.
-      </div>
+
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className={cn(
+              "h-11 w-full rounded-[7px] bg-primary text-sm font-semibold text-primary-foreground",
+              "hover:bg-primary-hover",
+              "active:translate-y-px motion-reduce:active:translate-y-0",
+              "focus-visible:border-primary-dim focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_var(--ring)]"
+            )}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="size-4 motion-reduce:animate-none animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign in"
+            )}
+          </Button>
+        </form>
+      </Form>
+
+      <p className="mt-8 border-t border-border-soft pt-5 text-[13px] leading-relaxed text-faint">
+        <span className="font-semibold text-foreground">New gym owner?</span>{" "}
+        Accounts are set up by invite — ask your platform admin to send you one.
+      </p>
     </div>
   );
 }
