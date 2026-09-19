@@ -145,6 +145,9 @@
   --sidebar-accent-foreground: oklch(0.3818 0.0936 124.1518);
   --sidebar-border: oklch(0.8926 0.0105 118.0332);
   --sidebar-ring: oklch(0.8522 0.2163 125.7603);
+  --sidebar-primary-soft: oklch(0.9448 0.0724 122.1795);
+  --sidebar-primary-strong: oklch(0.5 0.138 132);
+  --header-height: 3.5rem;
   --font-sans: var(--font-inter), Inter, sans-serif;
   --font-display: var(--font-archivo), Archivo, sans-serif;
   --font-serif: Georgia, serif;
@@ -219,6 +222,8 @@
   --sidebar-accent-foreground: oklch(0.9439 0.182 121.8389);
   --sidebar-border: oklch(0.2807 0.0139 118.7063);
   --sidebar-ring: oklch(0.9226 0.2344 125.8358);
+  --sidebar-primary-soft: oklch(0.2254 0.0603 124.5);
+  --sidebar-primary-strong: oklch(0.9226 0.2344 125.8358);
   --font-sans: var(--font-inter), Inter, sans-serif;
   --font-display: var(--font-archivo), Archivo, sans-serif;
   --font-serif: Georgia, serif;
@@ -295,6 +300,8 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary-soft: var(--sidebar-primary-soft);
+  --color-sidebar-primary-strong: var(--sidebar-primary-strong);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);

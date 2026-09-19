@@ -8,11 +8,12 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
+  SidebarRail
 } from '@/components/ui/sidebar';
+import { GymLocationSwitcher } from '@/components/layout/gym-location-switcher';
 import { routeItems } from '@/constants/data';
 import Link from 'next/link';
 
@@ -31,9 +32,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
+      <GymLocationSwitcher />
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {filteredItems.map(item => {
@@ -42,7 +43,11 @@ export function AppSidebar() {
 
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={!!isActive}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={!!isActive}
+                      tooltip={item.title}
+                    >
                       <Link href={item.href}>
                         <item.icon />
                         <span>{item.title}</span>
@@ -55,6 +60,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 }
