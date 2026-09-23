@@ -35,64 +35,145 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export const columns: ColumnDef<Location>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Location" />,
+const locationColumn: ColumnDef<Location> = {
+  accessorKey: "name",
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Location" />
+  ),
+  cell: ({ row }) => (
+    <span className="font-medium text-foreground">{row.original.name}</span>
+  ),
+};
+
+const gymColumn: ColumnDef<Location> = {
+  id: "gym",
+  accessorFn: (row) => row.gym?.name ?? "",
+  header: ({ column }) => <DataTableColumnHeader column={column} title="Gym" />,
+  cell: ({ row }) =>
+    row.original.gym?.name ?? <span className="text-muted-foreground">—</span>,
+};
+
+const ownerColumn: ColumnDef<Location> = {
+  id: "owner",
+  accessorFn: (row) => {
+    const o = row.gym?.owner;
+    return `${o?.first_name ?? ""} ${o?.last_name ?? ""}`.trim();
   },
-  {
-    id: "gym",
-    accessorFn: (row) => row.gym?.name ?? "",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Gym" />,
-    cell: ({ row }) => row.original.gym?.name ?? "-",
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Owner" />
+  ),
+  cell: ({ row }) => {
+    const o = row.original.gym?.owner;
+    return (
+      <div className="flex flex-col">
+        <span className="font-medium">
+          {o?.first_name || o?.last_name
+            ? `${o?.first_name ?? ""} ${o?.last_name ?? ""}`.trim()
+            : "—"}
+        </span>
+        <span className="text-xs text-muted-foreground">{o?.email ?? ""}</span>
+      </div>
+    );
   },
-  {
-    id: "owner",
-    accessorFn: (row) => {
-      const o = row.gym?.owner;
-      return `${o?.first_name ?? ""} ${o?.last_name ?? ""}`.trim();
-    },
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Owner" />,
-    cell: ({ row }) => {
-      const o = row.original.gym?.owner;
-      return (
-        <div className="flex flex-col">
-          <span className="font-medium">
-            {o?.first_name || o?.last_name ? `${o?.first_name ?? ""} ${o?.last_name ?? ""}`.trim() : "-"}
-          </span>
-          <span className="text-xs text-muted-foreground">{o?.email ?? ""}</span>
-        </div>
-      );
-    },
+};
+
+const cityColumn: ColumnDef<Location> = {
+  accessorKey: "city",
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="City" />
+  ),
+  cell: ({ row }) =>
+    row.original.city ?? <span className="text-muted-foreground">—</span>,
+};
+
+const countryColumn: ColumnDef<Location> = {
+  accessorKey: "country",
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Country" />
+  ),
+  cell: ({ row }) =>
+    row.original.country ?? <span className="text-muted-foreground">—</span>,
+};
+
+const activeColumn: ColumnDef<Location> = {
+  accessorKey: "is_active",
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Status" />
+  ),
+  cell: ({ row }) => {
+    const isActive = row.original.is_active;
+
+    return (
+      <span
+        className={
+          isActive
+            ? "inline-flex items-center gap-1.5 rounded-full bg-status-active px-2.5 py-1 text-xs font-medium text-status-active-foreground"
+            : "inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+        }
+      >
+        <span
+          className={
+            isActive
+              ? "size-1.5 rounded-full bg-status-active-foreground"
+              : "size-1.5 rounded-full bg-muted-foreground"
+          }
+          aria-hidden="true"
+        />
+        {isActive ? "Active" : "Inactive"}
+      </span>
+    );
   },
-  {
-    accessorKey: "city",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="City" />,
-    cell: ({ row }) => row.original.city ?? "-",
-  },
-  {
-    accessorKey: "country",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Country" />,
-    cell: ({ row }) => row.original.country ?? "-",
-  },
-  {
-    accessorKey: "is_active",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Active" />,
-    cell: ({ row }) => (row.original.is_active ? "Yes" : "No"),
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    enableHiding: false,
-    cell: ({ row }) => <ActionCell location={row.original} />,
-  },
+};
+
+const superAdminActionsColumn: ColumnDef<Location> = {
+  id: "actions",
+  header: "Actions",
+  enableHiding: false,
+  enableSorting: false,
+  cell: ({ row }) => <ActionCell location={row.original} isSuperAdmin />,
+};
+
+const gymOwnerActionsColumn: ColumnDef<Location> = {
+  id: "actions",
+  header: "Actions",
+  enableHiding: false,
+  enableSorting: false,
+  cell: ({ row }) => (
+    <ActionCell location={row.original} isSuperAdmin={false} />
+  ),
+};
+
+export const superAdminColumns: ColumnDef<Location>[] = [
+  locationColumn,
+  gymColumn,
+  ownerColumn,
+  cityColumn,
+  countryColumn,
+  activeColumn,
+  superAdminActionsColumn,
 ];
 
-const ActionCell = ({ location }: { location: Location }) => {
+export const gymOwnerColumns: ColumnDef<Location>[] = [
+  locationColumn,
+  gymColumn,
+  cityColumn,
+  countryColumn,
+  activeColumn,
+  gymOwnerActionsColumn,
+];
+
+const ActionCell = ({
+  location,
+  isSuperAdmin,
+}: {
+  location: Location;
+  isSuperAdmin: boolean;
+}) => {
   const queryClient = useQueryClient();
 
   const { mutate: deleteLocation, isPending: isDeleting } = useMutation({
-    mutationFn: async () => axios.post("/api/locations/deletelocation", { id: location.id }),
+    mutationFn: async () =>
+      axios.post("/api/locations/deletelocation", { id: location.id }),
     onSuccess: () => {
       toast.success("Location deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["locations"] });
@@ -103,13 +184,16 @@ const ActionCell = ({ location }: { location: Location }) => {
   });
 
   const { mutate: toggleActive, isPending: isToggling } = useMutation({
-    mutationFn: async () => axios.post("/api/locations/activelocation", { id: location.id }),
+    mutationFn: async () =>
+      axios.post("/api/locations/activelocation", { id: location.id }),
     onSuccess: () => {
       toast.success("Location status updated");
       queryClient.invalidateQueries({ queryKey: ["locations"] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.error || "Failed to update location status");
+      toast.error(
+        error.response?.data?.error || "Failed to update location status",
+      );
     },
   });
 
@@ -128,44 +212,53 @@ const ActionCell = ({ location }: { location: Location }) => {
             Edit
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => toggleActive()} disabled={isToggling}>
-          {location.is_active ? (
-            <XCircle className="mr-2 h-4 w-4" />
-          ) : (
-            <CheckCircle2 className="mr-2 h-4 w-4" />
-          )}
-          {location.is_active ? "Deactivate" : "Activate"}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
+        {isSuperAdmin && (
+          <>
             <DropdownMenuItem
-              onSelect={(e) => e.preventDefault()}
-              className="text-destructive"
-              disabled={isDeleting}
+              onClick={() => toggleActive()}
+              disabled={isToggling}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+              {location.is_active ? (
+                <XCircle className="mr-2 h-4 w-4" />
+              ) : (
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+              )}
+              {location.is_active ? "Deactivate" : "Activate"}
             </DropdownMenuItem>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the location &quot;{location.name}&quot;.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => deleteLocation()} className="bg-red-600 hover:bg-red-700">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            <DropdownMenuSeparator />
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  className="text-destructive"
+                  disabled={isDeleting}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    the location &quot;{location.name}&quot;.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteLocation()}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
-
-

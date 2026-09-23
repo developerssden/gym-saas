@@ -1,13 +1,18 @@
-// pages/api/locations/getLocations.ts
+// pages/api/locations/getlocations.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAdminOrOwner } from "@/lib/sessioncheck";
 import { Prisma } from "@/prisma/generated/client";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   if (req.method !== "POST") {
-    return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
+    return res
+      .status(StatusCodes.METHOD_NOT_ALLOWED)
+      .json({ message: "Method not allowed" });
   }
 
   const session = await requireAdminOrOwner(req, res);
@@ -100,8 +105,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: message });
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: message });
   }
 }
-
-
