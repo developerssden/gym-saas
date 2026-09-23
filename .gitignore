@@ -48,4 +48,6 @@ next-env.d.ts
 
 docs/
 
-.cursor/
+.cursor/*
+!.cursor/skills/
+!.cursor/skills/**
