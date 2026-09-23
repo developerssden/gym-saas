@@ -1,13 +1,32 @@
-// pages/api/locations/createLocation.ts
+// pages/api/locations/createlocation.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAdminOrOwner } from "@/lib/sessioncheck";
-import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
+import {
+  checkLimitExceeded,
+  validateOwnerSubscription,
+} from "@/lib/subscription-validation";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+type CreateLocationRequest = {
+  gym_id?: string;
+  name?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  country?: string;
+  phone_number?: string;
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   if (req.method !== "POST")
-    return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
+    return res
+      .status(StatusCodes.METHOD_NOT_ALLOWED)
+      .json({ message: "Method not allowed" });
 
   const session = await requireAdminOrOwner(req, res);
   if (!session) return;
@@ -24,10 +43,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       zip_code,
       country,
       phone_number,
-    } = req.body as Record<string, any>;
+    } = req.body as CreateLocationRequest;
 
     if (!gym_id || !name) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: "Missing required fields: gym_id, name" });
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Missing required fields: gym_id, name" });
     }
 
     const gym = await prisma.gym.findUnique({
@@ -35,7 +56,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       select: { id: true, owner_id: true, is_deleted: true },
     });
     if (!gym || gym.is_deleted) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid gym_id" });
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Invalid gym_id" });
     }
 
     // For GYM_OWNER: verify they own this gym
@@ -94,5 +117,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(status).json({ error: message });
   }
 }
-
-

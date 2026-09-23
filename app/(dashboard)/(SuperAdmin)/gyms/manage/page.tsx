@@ -20,30 +20,24 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useMemo, useState, Suspense, type ReactNode } from "react";
+import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
+import {
+  FieldError,
+  RequiredLabel,
+} from "@/components/forms/form-field-feedback";
 
-type OwnerOption = { id: string; first_name: string; last_name: string; email?: string | null };
-
-const RequiredLabel = ({ htmlFor, children }: { htmlFor: string; children: ReactNode }) => (
-  <Label htmlFor={htmlFor}>
-    {children}
-    <span className="size-1.5 rounded-full bg-primary-dim" aria-hidden="true" />
-    <span className="sr-only"> (required)</span>
-  </Label>
-);
-
-const FieldError = ({ id, message }: { id: string; message?: string }) =>
-  message ? (
-    <p id={id} role="alert" className="text-sm text-destructive">
-      {message}
-    </p>
-  ) : null;
+type OwnerOption = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string | null;
+};
 
 const GymSchema = Yup.object({
   owner_id: Yup.string().required("Owner is required"),
@@ -62,15 +56,18 @@ const ManageGymContent = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 
-  const action = (searchParams?.get("action") as "create" | "edit" | "view") || "create";
+  const action =
+    (searchParams?.get("action") as "create" | "edit" | "view") || "create";
   const gymId = searchParams?.get("id") || null;
 
   const [limitModalOpen, setLimitModalOpen] = useState(false);
   const [limitInfo, setLimitInfo] = useState<any>(null);
   const [showExpiredModal, setShowExpiredModal] = useState(false);
 
-  const isSuperAdmin = status === "authenticated" && session?.user?.role === "SUPER_ADMIN";
-  const isGymOwner = status === "authenticated" && session?.user?.role === "GYM_OWNER";
+  const isSuperAdmin =
+    status === "authenticated" && session?.user?.role === "SUPER_ADMIN";
+  const isGymOwner =
+    status === "authenticated" && session?.user?.role === "GYM_OWNER";
   const isAuthorized = isSuperAdmin || isGymOwner;
 
   const {
@@ -98,7 +95,11 @@ const ManageGymContent = () => {
   const { data: ownersData, isLoading: ownersLoading } = useQuery({
     queryKey: ["ownersDropdown"],
     queryFn: async () => {
-      const res = await axios.post("/api/clients/getclients", { page: 1, limit: 500, search: "" });
+      const res = await axios.post("/api/clients/getclients", {
+        page: 1,
+        limit: 500,
+        search: "",
+      });
       return res.data as { data: OwnerOption[] };
     },
     enabled: isSuperAdmin,
@@ -109,7 +110,11 @@ const ManageGymContent = () => {
   const ownerLabelById = useMemo(() => {
     const map = new Map<string, string>();
     owners.forEach((o) => {
-      map.set(o.id, `${o.first_name} ${o.last_name}`.trim() + (o.email ? ` (${o.email})` : ""));
+      map.set(
+        o.id,
+        `${o.first_name} ${o.last_name}`.trim() +
+          (o.email ? ` (${o.email})` : ""),
+      );
     });
     return map;
   }, [owners]);
@@ -125,7 +130,8 @@ const ManageGymContent = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (values: any) => axios.post("/api/gyms/updategym", { id: gymId, ...values }),
+    mutationFn: (values: any) =>
+      axios.post("/api/gyms/updategym", { id: gymId, ...values }),
     onSuccess: () => {
       toast.success("Gym updated successfully");
       queryClient.invalidateQueries({ queryKey: ["gyms"] });
@@ -248,10 +254,13 @@ const ManageGymContent = () => {
             />
             <div>
               <p className="text-sm font-semibold text-foreground">
-                {isAtGymLimit ? "Plan limit reached" : "Approaching your plan limit"}
+                {isAtGymLimit
+                  ? "Plan limit reached"
+                  : "Approaching your plan limit"}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                You&apos;re using {currentGyms} of {gymLimit} gyms included on your current plan.
+                You&apos;re using {currentGyms} of {gymLimit} gyms included on
+                your current plan.
               </p>
             </div>
           </div>
@@ -278,10 +287,14 @@ const ManageGymContent = () => {
                   id="owner_id"
                   aria-required="true"
                   aria-invalid={Boolean(fieldError("owner_id"))}
-                  aria-describedby={fieldError("owner_id") ? "owner_id-error" : undefined}
+                  aria-describedby={
+                    fieldError("owner_id") ? "owner_id-error" : undefined
+                  }
                   className="h-10 w-full border-border bg-background shadow-none"
                 >
-                  <SelectValue placeholder={ownersLoading ? "Loading…" : "Select owner"} />
+                  <SelectValue
+                    placeholder={ownersLoading ? "Loading…" : "Select owner"}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {owners.map((owner) => (
@@ -291,7 +304,10 @@ const ManageGymContent = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <FieldError id="owner_id-error" message={fieldError("owner_id")} />
+              <FieldError
+                id="owner_id-error"
+                message={fieldError("owner_id")}
+              />
             </div>
           )}
 
@@ -315,7 +331,9 @@ const ManageGymContent = () => {
                   placeholder="Enter gym name"
                   aria-required="true"
                   aria-invalid={Boolean(fieldError("name"))}
-                  aria-describedby={fieldError("name") ? "name-error" : undefined}
+                  aria-describedby={
+                    fieldError("name") ? "name-error" : undefined
+                  }
                   className="h-10 border-border bg-background shadow-none"
                 />
                 <FieldError id="name-error" message={fieldError("name")} />
@@ -333,10 +351,17 @@ const ManageGymContent = () => {
                   disabled={action === "view"}
                   placeholder="Phone number (optional)"
                   aria-invalid={Boolean(fieldError("phone_number"))}
-                  aria-describedby={fieldError("phone_number") ? "phone_number-error" : undefined}
+                  aria-describedby={
+                    fieldError("phone_number")
+                      ? "phone_number-error"
+                      : undefined
+                  }
                   className="h-10 border-border bg-background shadow-none"
                 />
-                <FieldError id="phone_number-error" message={fieldError("phone_number")} />
+                <FieldError
+                  id="phone_number-error"
+                  message={fieldError("phone_number")}
+                />
               </div>
 
               <div className="space-y-2">
@@ -350,10 +375,15 @@ const ManageGymContent = () => {
                   disabled={action === "view"}
                   placeholder="Country (optional)"
                   aria-invalid={Boolean(fieldError("country"))}
-                  aria-describedby={fieldError("country") ? "country-error" : undefined}
+                  aria-describedby={
+                    fieldError("country") ? "country-error" : undefined
+                  }
                   className="h-10 border-border bg-background shadow-none"
                 />
-                <FieldError id="country-error" message={fieldError("country")} />
+                <FieldError
+                  id="country-error"
+                  message={fieldError("country")}
+                />
               </div>
             </div>
           </section>
@@ -380,10 +410,15 @@ const ManageGymContent = () => {
                   disabled={action === "view"}
                   placeholder="Address (optional)"
                   aria-invalid={Boolean(fieldError("address"))}
-                  aria-describedby={fieldError("address") ? "address-error" : undefined}
+                  aria-describedby={
+                    fieldError("address") ? "address-error" : undefined
+                  }
                   className="h-10 border-border bg-background shadow-none"
                 />
-                <FieldError id="address-error" message={fieldError("address")} />
+                <FieldError
+                  id="address-error"
+                  message={fieldError("address")}
+                />
               </div>
 
               <div className="space-y-2">
@@ -397,7 +432,9 @@ const ManageGymContent = () => {
                   disabled={action === "view"}
                   placeholder="City (optional)"
                   aria-invalid={Boolean(fieldError("city"))}
-                  aria-describedby={fieldError("city") ? "city-error" : undefined}
+                  aria-describedby={
+                    fieldError("city") ? "city-error" : undefined
+                  }
                   className="h-10 border-border bg-background shadow-none"
                 />
                 <FieldError id="city-error" message={fieldError("city")} />
@@ -414,7 +451,9 @@ const ManageGymContent = () => {
                   disabled={action === "view"}
                   placeholder="State (optional)"
                   aria-invalid={Boolean(fieldError("state"))}
-                  aria-describedby={fieldError("state") ? "state-error" : undefined}
+                  aria-describedby={
+                    fieldError("state") ? "state-error" : undefined
+                  }
                   className="h-10 border-border bg-background shadow-none"
                 />
                 <FieldError id="state-error" message={fieldError("state")} />
@@ -431,10 +470,15 @@ const ManageGymContent = () => {
                   disabled={action === "view"}
                   placeholder="Zip code (optional)"
                   aria-invalid={Boolean(fieldError("zip_code"))}
-                  aria-describedby={fieldError("zip_code") ? "zip_code-error" : undefined}
+                  aria-describedby={
+                    fieldError("zip_code") ? "zip_code-error" : undefined
+                  }
                   className="h-10 border-border bg-background shadow-none"
                 />
-                <FieldError id="zip_code-error" message={fieldError("zip_code")} />
+                <FieldError
+                  id="zip_code-error"
+                  message={fieldError("zip_code")}
+                />
               </div>
             </div>
           </section>
@@ -455,11 +499,14 @@ const ManageGymContent = () => {
                   disabled={
                     isSaving ||
                     (isGymOwner && action === "create" && isGymUsageLoading) ||
-                    (isGymOwner && (!isSubscriptionActive || subscriptionExpired)) ||
+                    (isGymOwner &&
+                      (!isSubscriptionActive || subscriptionExpired)) ||
                     isCreateAtCap
                   }
                 >
-                  {isSaving && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />}
+                  {isSaving && (
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                  )}
                   {isSaving
                     ? "Saving…"
                     : action === "create"
@@ -468,7 +515,11 @@ const ManageGymContent = () => {
                 </Button>
               </>
             ) : (
-              <Button type="button" variant="outline" onClick={() => router.push("/gyms")}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/gyms")}
+              >
                 Back to gyms
               </Button>
             )}
@@ -480,7 +531,9 @@ const ManageGymContent = () => {
           open={limitModalOpen}
           onClose={() => setLimitModalOpen(false)}
           limitInfo={limitInfo}
-          planName={session?.user?.subscription_limits ? "Current Plan" : undefined}
+          planName={
+            session?.user?.subscription_limits ? "Current Plan" : undefined
+          }
         />
       )}
       <SubscriptionExpiredModal
@@ -500,4 +553,3 @@ const ManageGymPage = () => {
 };
 
 export default ManageGymPage;
-

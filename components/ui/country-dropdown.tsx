@@ -40,7 +40,10 @@ export interface Country {
 }
 
 // Dropdown props
-interface CountryDropdownProps {
+interface CountryDropdownProps extends Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  "defaultValue" | "onChange"
+> {
   options?: Country[];
   onChange?: (country: Country) => void;
   defaultValue?: string;
@@ -53,26 +56,31 @@ const CountryDropdownComponent = (
   {
     options = countries.all.filter(
       (country: Country) =>
-        country.emoji && country.status !== "deleted" && country.ioc !== "PRK"
+        country.emoji && country.status !== "deleted" && country.ioc !== "PRK",
     ),
     onChange,
     defaultValue,
     disabled = false,
     placeholder = "Select a country",
     slim = false,
+    className,
     ...props
   }: CountryDropdownProps,
-  ref: React.ForwardedRef<HTMLButtonElement>
+  ref: React.ForwardedRef<HTMLButtonElement>,
 ) => {
   const [open, setOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<Country | undefined>(
-    undefined
+    undefined,
   );
 
   useEffect(() => {
     if (defaultValue) {
+      const normalizedDefault = defaultValue.toLowerCase();
       const initialCountry = options.find(
-        (country) => country.alpha3 === defaultValue
+        (country) =>
+          country.alpha3.toLowerCase() === normalizedDefault ||
+          country.alpha2.toLowerCase() === normalizedDefault ||
+          country.name.toLowerCase() === normalizedDefault,
       );
       if (initialCountry) {
         setSelectedCountry(initialCountry);
@@ -88,23 +96,24 @@ const CountryDropdownComponent = (
 
   const handleSelect = useCallback(
     (country: Country) => {
-      console.log("🌍 CountryDropdown value: ", country);
       setSelectedCountry(country);
       onChange?.(country);
       setOpen(false);
     },
-    [onChange]
+    [onChange],
   );
 
   const triggerClasses = cn(
     "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-    slim === true && "w-20"
+    slim === true && "w-20",
+    className,
   );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         ref={ref}
+        type="button"
         className={triggerClasses}
         disabled={disabled}
         {...props}
@@ -170,7 +179,7 @@ const CountryDropdownComponent = (
                         "ml-auto h-4 w-4 shrink-0",
                         option.name === selectedCountry?.name
                           ? "opacity-100"
-                          : "opacity-0"
+                          : "opacity-0",
                       )}
                     />
                   </CommandItem>

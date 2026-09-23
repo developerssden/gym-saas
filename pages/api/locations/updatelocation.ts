@@ -3,11 +3,28 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAdminOrOwner } from "@/lib/sessioncheck";
-import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
+import { validateOwnerSubscription } from "@/lib/subscription-validation";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+type UpdateLocationRequest = {
+  id?: string;
+  gym_id?: string;
+  name?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  country?: string;
+  phone_number?: string;
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   if (req.method !== "POST")
-    return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
+    return res
+      .status(StatusCodes.METHOD_NOT_ALLOWED)
+      .json({ message: "Method not allowed" });
 
   const session = await requireAdminOrOwner(req, res);
   if (!session) return;
@@ -15,15 +32,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
-    const { id, ...data } = req.body as Record<string, any>;
-    if (!id) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Location ID is required" });
+    const { id, ...data } = req.body as UpdateLocationRequest;
+    if (!id)
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Location ID is required" });
 
     const existing = await prisma.location.findUnique({
       where: { id },
       include: { gym: true },
     });
     if (!existing || existing.is_deleted) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: "Location not found" });
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ error: "Location not found" });
     }
 
     // For GYM_OWNER: verify they own the gym this location belongs to
@@ -44,13 +66,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // If gym_id is changing (only SUPER_ADMIN can do this), validate the new gym and plan limit for the new owner
-    if (!isGymOwner && data.gym_id !== undefined && data.gym_id !== existing.gym_id) {
+    if (
+      !isGymOwner &&
+      data.gym_id !== undefined &&
+      data.gym_id !== existing.gym_id
+    ) {
       const gym = await prisma.gym.findUnique({
         where: { id: data.gym_id },
         select: { id: true, owner_id: true, is_deleted: true },
       });
       if (!gym || gym.is_deleted) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid gym_id" });
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ error: "Invalid gym_id" });
       }
 
       // Check limit for new owner (excluding current location)
@@ -64,7 +92,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const newOwnerValidation = await validateOwnerSubscription(gym.owner_id);
       if (newOwnerValidation.isActive && newOwnerValidation.subscription) {
-        if (currentCount >= newOwnerValidation.subscription.plan.max_locations) {
+        if (
+          currentCount >= newOwnerValidation.subscription.plan.max_locations
+        ) {
           return res.status(StatusCodes.CONFLICT).json({
             error: "LIMIT_EXCEEDED",
             resourceType: "location",
@@ -77,7 +107,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // GYM_OWNER cannot change gym_id
-    if (isGymOwner && data.gym_id !== undefined && data.gym_id !== existing.gym_id) {
+    if (
+      isGymOwner &&
+      data.gym_id !== undefined &&
+      data.gym_id !== existing.gym_id
+    ) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "Forbidden – You cannot change the gym for a location",
       });
@@ -90,9 +124,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         address: data.address === undefined ? undefined : data.address || null,
         city: data.city === undefined ? undefined : data.city || null,
         state: data.state === undefined ? undefined : data.state || null,
-        zip_code: data.zip_code === undefined ? undefined : data.zip_code || null,
+        zip_code:
+          data.zip_code === undefined ? undefined : data.zip_code || null,
         country: data.country === undefined ? undefined : data.country || null,
-        phone_number: data.phone_number === undefined ? undefined : data.phone_number || null,
+        phone_number:
+          data.phone_number === undefined
+            ? undefined
+            : data.phone_number || null,
       },
       include: { gym: { include: { owner: true } } },
     });
@@ -110,5 +148,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(status).json({ error: message });
   }
 }
-
-
