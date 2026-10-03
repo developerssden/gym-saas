@@ -13,12 +13,16 @@ import {
 } from "@/lib/cron/delivery";
 import {
   getGymOwnerSummaryEmail,
-  getMemberReminderEmail,
   getOwnerReminderEmail,
   getSuperAdminSummaryEmail,
 } from "@/lib/email/subscription-emails";
 import { sendPushToUser } from "@/lib/push/send-push";
 import { createInAppNotification } from "@/lib/notifications/create-notification";
+import {
+  buildExpiredMembersPdfUrl,
+  EXPIRED_MEMBERS_NOTICE_TYPE,
+} from "@/lib/notifications/expired-members-notice";
+import { formatCalendarDate } from "@/lib/date-utils";
 
 type DeliveryMetrics = {
   expiredMarked: number;
@@ -318,6 +322,7 @@ export default async function handler(
     const newlyExpiredMembersByOwner = new Map<
       string,
       Array<{
+        subscriptionId: string;
         name: string;
         email: string;
         phone_number: string | null;
@@ -341,135 +346,95 @@ export default async function handler(
         continue;
       }
 
-      if (action.type === "NONE") continue;
+      // Members are not notified about their own Member Subscription; only
+      // expiry is recorded so the gym owner's daily list can be built.
+      if (action.type !== "EXPIRE") continue;
 
-      if (action.type === "EXPIRE") {
-        const result = await executeExpirationDelivery({
-          alreadyExpired: subscription.is_expired,
-          hasRecipient: Boolean(action.ownerEmail && action.ownerName),
-          markExpired: async () => {
-            await prisma.memberSubscription.update({
-              where: { id: action.id },
-              data: { is_expired: true },
-            });
-          },
-          send: async () => {
-            const { subject, text, html } = getMemberReminderEmail(
-              action.ownerName!,
-              0
-            );
-            await sendEmail(action.ownerEmail!, subject, text, html);
-          },
-          markDelivered: async () => {
-            await prisma.memberSubscription.update({
-              where: { id: action.id },
-              data: { notification_sent: true },
-            });
-          },
-        });
-
-        if (result.stateChanged) {
-          memberMetrics.expiredMarked++;
-          const ownerId = subscription.member.gym.owner.id;
-          const expiredMembers =
-            newlyExpiredMembersByOwner.get(ownerId) || [];
-          expiredMembers.push({
-            name: action.ownerName || "Member",
-            email: action.ownerEmail || "No email",
-            phone_number: subscription.member.user.phone_number,
-            address: subscription.member.user.address,
-            start_date: subscription.start_date,
-            end_date: subscription.end_date,
-            ownerEmail: subscription.member.gym.owner.email || "",
-          });
-          newlyExpiredMembersByOwner.set(ownerId, expiredMembers);
-        }
-        if (result.sent) memberMetrics.expirationNotificationsSent++;
-        if (result.skipped) memberMetrics.skippedNoRecipient++;
-        if (result.failed) {
-          memberMetrics.expirationNotificationsFailed++;
-          console.error(
-            `Failed member expiration notification for ${action.id}:`,
-            result.error
-          );
-        }
-
-        if (result.sent || result.stateChanged) {
-          const payload = {
-            title: "Gym membership expired",
-            body: "Your gym membership has expired. Please renew to continue access.",
-            url: "/membersubscriptions",
-          };
-          await recordPushMetrics(
-            memberMetrics,
-            subscription.member.user.id,
-            payload
-          );
-          await createInAppNotification(subscription.member.user.id, {
-            ...payload,
-            type: "member_expired",
-          });
-        }
-        continue;
-      }
-
-      const flag = reminderFlag(action);
-      const result = await executeReminderDelivery({
-        hasRecipient: Boolean(action.email),
-        send: async () => {
-          const { subject, text, html } = getMemberReminderEmail(
-            action.name,
-            action.daysLeft
-          );
-          await sendEmail(action.email, subject, text, html);
-        },
-        markDelivered: async () => {
+      if (!subscription.is_expired) {
+        try {
           await prisma.memberSubscription.update({
             where: { id: action.id },
-            data: flag!,
+            data: { is_expired: true, notification_sent: true },
           });
-        },
-      });
-      if (result.sent) memberMetrics.remindersSent++;
-      if (result.skipped) memberMetrics.skippedNoRecipient++;
-      if (result.failed) {
-        memberMetrics.remindersFailed++;
-        console.error(`Failed member reminder for ${action.id}:`, result.error);
-      }
+        } catch (error) {
+          memberMetrics.expirationNotificationsFailed++;
+          console.error(
+            `Failed to mark member subscription ${action.id} expired:`,
+            error
+          );
+          continue;
+        }
 
-      if (result.sent) {
-        const payload = {
-          title: `Membership expires in ${action.daysLeft} day${action.daysLeft === 1 ? "" : "s"}`,
-          body: "Your gym membership expires soon. Please renew to avoid interruption.",
-          url: "/membersubscriptions",
-        };
-        await recordPushMetrics(memberMetrics, subscription.member.user.id, payload);
-        await createInAppNotification(subscription.member.user.id, {
-          ...payload,
-          type: "member_reminder",
+        memberMetrics.expiredMarked++;
+        const ownerId = subscription.member.gym.owner.id;
+        const expiredMembers = newlyExpiredMembersByOwner.get(ownerId) || [];
+        expiredMembers.push({
+          subscriptionId: subscription.id,
+          name: action.ownerName || "Member",
+          email: action.ownerEmail || "No email",
+          phone_number: subscription.member.user.phone_number,
+          address: subscription.member.user.address,
+          start_date: subscription.start_date,
+          end_date: subscription.end_date,
+          ownerEmail: subscription.member.gym.owner.email || "",
         });
+        newlyExpiredMembersByOwner.set(ownerId, expiredMembers);
+      } else {
+        try {
+          await prisma.memberSubscription.update({
+            where: { id: action.id },
+            data: { notification_sent: true },
+          });
+        } catch (error) {
+          console.error(
+            `Failed to mark member subscription ${action.id} handled:`,
+            error
+          );
+        }
       }
     }
 
-    for (const expiredMembers of newlyExpiredMembersByOwner.values()) {
+    for (const [ownerId, expiredMembers] of newlyExpiredMembersByOwner) {
       const ownerEmail = expiredMembers[0]?.ownerEmail;
-      if (!ownerEmail) {
+      if (ownerEmail) {
+        const { subject, text, html } =
+          getGymOwnerSummaryEmail(expiredMembers);
+        try {
+          await sendEmail(ownerEmail, subject, text, html);
+          memberMetrics.summariesSent++;
+        } catch (error) {
+          memberMetrics.summariesFailed++;
+          console.error(
+            `Failed member expiration summary for owner ${ownerEmail}:`,
+            error
+          );
+        }
+      } else {
         memberMetrics.skippedNoRecipient++;
-        continue;
       }
 
-      const { subject, text, html } =
-        getGymOwnerSummaryEmail(expiredMembers);
-      try {
-        await sendEmail(ownerEmail, subject, text, html);
-        memberMetrics.summariesSent++;
-      } catch (error) {
-        memberMetrics.summariesFailed++;
-        console.error(
-          `Failed member expiration summary for owner ${ownerEmail}:`,
-          error
-        );
-      }
+      const count = expiredMembers.length;
+      const day = formatCalendarDate(referenceDate);
+      const title = `${count} member${count === 1 ? "" : "s"} expired`;
+      const body = `${count} membership${count === 1 ? "" : "s"} expired on ${day}. Download the list as a PDF.`;
+      await recordPushMetrics(memberMetrics, ownerId, {
+        title,
+        body,
+        url: "/notifications",
+      });
+      await createInAppNotification(ownerId, {
+        title,
+        body,
+        url: buildExpiredMembersPdfUrl(
+          referenceDate,
+          expiredMembers.map((member) => ({
+            id: member.subscriptionId,
+            start_date: member.start_date,
+            end_date: member.end_date,
+          }))
+        ),
+        type: EXPIRED_MEMBERS_NOTICE_TYPE,
+      });
     }
 
     return res.status(StatusCodes.OK).json({

@@ -17,6 +17,7 @@ import {
   NotificationItem,
   type InAppNotification,
 } from "@/components/notifications/notification-item";
+import { isExpiredMembersNotice } from "@/lib/notifications/expired-members-notice";
 
 type UnreadCountResponse = {
   unreadCount: number;
@@ -73,7 +74,7 @@ export function NotificationBell() {
     if (!notification.read) {
       await markReadMutation.mutateAsync(notification.id);
     }
-    if (notification.url) {
+    if (notification.url && !isExpiredMembersNotice(notification)) {
       router.push(notification.url);
     }
   };

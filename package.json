@@ -7,7 +7,7 @@
     "build": "node scripts/db-deploy.mjs && next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test tests/date-utils.test.ts tests/compute-actions.test.ts tests/email.test.ts tests/subscription-lifecycle.test.ts",
+    "test": "tsx --test tests/date-utils.test.ts tests/compute-actions.test.ts tests/email.test.ts tests/subscription-lifecycle.test.ts tests/expired-members-notice.test.ts",
     "postinstall": "prisma generate",
     "db:push:dev": "prisma db push",
     "db:deploy": "node scripts/db-deploy.mjs",

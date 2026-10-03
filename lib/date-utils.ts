@@ -33,6 +33,24 @@ export function getCalendarDayOrdinal(
 }
 
 /**
+ * `YYYY-MM-DD` for the calendar day represented by `date` in `timeZone`.
+ */
+export function formatCalendarDate(
+  date: Date,
+  timeZone = DEFAULT_BUSINESS_TIME_ZONE
+): string {
+  if (Number.isNaN(date.getTime())) {
+    throw new RangeError("Invalid date");
+  }
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+/**
  * Days until endDate from a reference date in the business timezone.
  * Negative = already expired.
  * Zero = expires today.

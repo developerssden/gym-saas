@@ -5,10 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { requireSuperAdmin } from "@/lib/adminsessioncheck";
 import { calculateEndDate } from "@/lib/subscription-helpers";
 import { BillingModel } from "@/prisma/generated/client";
-import sendEmail from "@/lib/sendEmail";
-import { getDaysUntilExpiration, isExpiredOrToday } from "@/lib/date-utils";
-import { REMINDER_DAYS } from "@/lib/constants";
-import { getMemberReminderEmail } from "@/lib/email/subscription-emails";
+import { isExpiredOrToday } from "@/lib/date-utils";
 import { notificationLifecycleReset } from "@/lib/subscription-lifecycle";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -152,48 +149,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       },
     });
-
-    // Send warning email if subscription is close to expiring (within 2 days)
-    // Only send if subscription is active and not expired
-    if (!updated.is_expired && updated.is_active && updated.member.user.email) {
-      const daysLeft = getDaysUntilExpiration(updated.end_date);
-      
-      // Send email if:
-      // - 2 days left and first reminder not sent
-      // - 1 day left and second reminder not sent
-      // - 0 days left (expired today)
-      if (daysLeft === REMINDER_DAYS.FIRST && !updated.first_reminder_sent) {
-        const memberName = `${updated.member.user.first_name} ${updated.member.user.last_name}`;
-        const { subject, text, html } = getMemberReminderEmail(memberName, REMINDER_DAYS.FIRST);
-        
-        try {
-          await sendEmail(updated.member.user.email, subject, text, html);
-          
-          // Update reminder flag
-          await prisma.memberSubscription.update({
-            where: { id },
-            data: { first_reminder_sent: true },
-          });
-        } catch (error) {
-          console.error(`Failed to send reminder email to ${updated.member.user.email}:`, error);
-        }
-      } else if (daysLeft === REMINDER_DAYS.SECOND && !updated.second_reminder_sent) {
-        const memberName = `${updated.member.user.first_name} ${updated.member.user.last_name}`;
-        const { subject, text, html } = getMemberReminderEmail(memberName, REMINDER_DAYS.SECOND);
-        
-        try {
-          await sendEmail(updated.member.user.email, subject, text, html);
-          
-          // Update reminder flag
-          await prisma.memberSubscription.update({
-            where: { id },
-            data: { second_reminder_sent: true },
-          });
-        } catch (error) {
-          console.error(`Failed to send reminder email to ${updated.member.user.email}:`, error);
-        }
-      }
-    }
 
     return res.status(StatusCodes.OK).json({
       message: "Member subscription updated successfully",

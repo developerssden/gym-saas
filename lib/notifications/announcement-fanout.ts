@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import sendEmail from "@/lib/sendEmail";
 import { escapeHtml } from "@/lib/email/escape-html";
 import { createInAppNotification } from "@/lib/notifications/create-notification";
+import { sendPushToUser } from "@/lib/push/send-push";
 import { AnnouncementAudience, Role } from "@/prisma/generated/client";
 
 export type AnnouncementDeliveryInput = {
@@ -14,6 +15,7 @@ export type AnnouncementDeliveryInput = {
 export type AnnouncementRecipient = {
   id: string;
   email: string | null;
+  role: Role;
 };
 
 export function audienceRoles(audience: AnnouncementAudience): Role[] {
@@ -33,7 +35,7 @@ export async function resolveAnnouncementRecipient(
       is_active: true,
       role: { in: allowedRoles },
     },
-    select: { id: true, email: true },
+    select: { id: true, email: true, role: true },
   });
   return user;
 }
@@ -55,7 +57,7 @@ export async function resolveAnnouncementRecipients(
       is_active: true,
       role: { in: audienceRoles(input.audience) },
     },
-    select: { id: true, email: true },
+    select: { id: true, email: true, role: true },
   });
 }
 
@@ -106,6 +108,20 @@ export async function sendAnnouncementInAppNotifications(
           title: input.title,
           body: input.message,
           type: "announcement",
+        })
+      )
+    );
+  }
+
+  const owners = recipients.filter((user) => user.role === Role.GYM_OWNER);
+  for (let i = 0; i < owners.length; i += chunkSize) {
+    const chunk = owners.slice(i, i + chunkSize);
+    await Promise.allSettled(
+      chunk.map((user) =>
+        sendPushToUser(user.id, {
+          title: input.title,
+          body: input.message,
+          url: "/notifications",
         })
       )
     );

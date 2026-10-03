@@ -15,6 +15,7 @@ import {
   NotificationItem,
   type InAppNotification,
 } from "@/components/notifications/notification-item";
+import { isExpiredMembersNotice } from "@/lib/notifications/expired-members-notice";
 
 type NotificationsListResponse = {
   data: InAppNotification[];
@@ -58,7 +59,7 @@ const NotificationsPage = () => {
     if (!notification.read) {
       await markReadMutation.mutateAsync({ ids: [notification.id] });
     }
-    if (notification.url) {
+    if (notification.url && !isExpiredMembersNotice(notification)) {
       router.push(notification.url);
     }
   };
