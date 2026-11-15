@@ -1,13 +1,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { FadeIn } from "@/components/landing-page/fade-in"
+import { APP_NAME } from "@/constants/brand"
 
 const testimonials = [
     {
         name: "Sarah Johnson",
         role: "Owner, FitLife Gym",
         content:
-            "GymSaaS has completely transformed how I run my business. I save hours every week on admin tasks and can focus more on my members.",
+            `${APP_NAME} has completely transformed how I run my business. I save hours every week on admin tasks and can focus more on my members.`,
         avatar: "/avatars/01.png",
         initials: "SJ",
     },
@@ -43,7 +44,7 @@ export function Testimonials() {
                 </FadeIn>
                 <FadeIn delay={0.1}>
                     <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-                        Don't just take our word for it. Here's what our customers have to say about GymSaaS.
+                        Don't just take our word for it. Here's what our customers have to say about {APP_NAME}.
                     </p>
                 </FadeIn>
             </div>

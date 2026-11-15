@@ -1,5 +1,6 @@
 import sendEmail from "@/lib/sendEmail";
 import { escapeHtml } from "@/lib/email/escape-html";
+import { APP_NAME } from "@/constants/brand";
 
 export function getInviteBaseUrl(): string {
   return (process.env.NEXTAUTH_URL ?? process.env.APP_URL ?? "").replace(
@@ -16,7 +17,7 @@ export function buildInviteUrl(email: string, rawToken: string): string {
 export function buildInviteEmailHtml(inviteUrl: string, isResend = false): string {
   const heading = isResend
     ? "Your invite link has been renewed"
-    : "You're invited to Gym SaaS";
+    : `You're invited to ${APP_NAME}`;
   const intro = isResend
     ? "Your previous invite link expired. Use the button below to complete your profile and set your password."
     : "You've been added as a gym owner. Click the button below to complete your profile and set your password.";
@@ -42,8 +43,8 @@ export async function sendInviteEmail(
   isResend = false
 ): Promise<void> {
   const subject = isResend
-    ? "Your Gym SaaS invite link has been renewed"
-    : "You've been invited to Gym SaaS";
+    ? `Your ${APP_NAME} invite link has been renewed`
+    : `You've been invited to ${APP_NAME}`;
   const text = isResend
     ? `Your invite link has been renewed. Complete your profile here: ${inviteUrl}`
     : `You've been invited to set up your gym management account. Complete your profile here: ${inviteUrl}`;

@@ -7,6 +7,7 @@ import { SubscriptionTypeEnum } from "@/prisma/generated/client";
 import PDFDocument from "pdfkit";
 import { Readable } from "stream";
 import { formatCurrency, resolveGymCountry } from "@/lib/currency";
+import { APP_NAME } from "@/constants/brand";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -204,7 +205,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       doc
         .fontSize(10)
         .font("Helvetica-Bold")
-        .text("Gym SaaS", rightColumnX, rightY, { align: "right", width: rightColumnWidth })
+        .text(APP_NAME, rightColumnX, rightY, { align: "right", width: rightColumnWidth })
         .font("Helvetica")
         .fontSize(9);
       rightY += 15;

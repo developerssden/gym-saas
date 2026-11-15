@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import PricingClient from "@/components/pricing-client";
 
 export const metadata = {
-  title: "Pricing | Gym SaaS",
+  title: "Pricing",
 };
 
 export default function PricingPage() {

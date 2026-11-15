@@ -2,6 +2,7 @@
 import { PAGES_CACHE_NAME, defaultCache } from "@serwist/next/worker";
 import type { HTTPMethod, PrecacheEntry, RuntimeCaching, SerwistGlobalConfig, SerwistPlugin } from "serwist";
 import { ExpirationPlugin, NetworkFirst, NetworkOnly, Serwist } from "serwist";
+import { APP_NAME } from "../constants/brand";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -17,7 +18,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#BDDE63" />
-    <title>You're offline | Gym SaaS</title>
+    <title>You're offline | ${APP_NAME}</title>
     <style>
       :root { color-scheme: light; }
       * { box-sizing: border-box; }
@@ -124,7 +125,7 @@ serwist.addEventListeners();
 self.addEventListener("push", (event) => {
   const data = event.data?.json() ?? {};
   event.waitUntil(
-    self.registration.showNotification(data.title ?? "Gym SaaS", {
+    self.registration.showNotification(data.title ?? APP_NAME, {
       body: data.body,
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",

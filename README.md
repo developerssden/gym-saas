@@ -1,12 +1,12 @@
-# GymSaaS – Gym Management Platform
+# Kettlio – Gym Management Platform
 
-GymSaaS is a full-stack **Gym Management SaaS platform** built to help gym owners manage their daily operations from one place.
+Kettlio is a full-stack **Gym Management SaaS platform** built to help gym owners manage their daily operations from one place.
 
 The platform provides tools for **member management, memberships, attendance, inventory, equipment, staff tasks, billing, payments, and business analytics**.
 
 ## 🚀 Live Demo
 
-https://gym-saas-gamma.vercel.app/
+https://www.kettlio.com/
 
 ## ✨ Features
 
@@ -111,7 +111,7 @@ The application supports different SaaS plans for gym businesses.
 ## 📁 Project Structure
 
 ```text
-GymSaaS/
+kettlio/
 │
 ├── app/                 # Next.js application routes
 ├── components/          # Reusable UI components

@@ -1,4 +1,4 @@
-# Gym SaaS
+# Kettlio (formerly Gym SaaS)
 
 A multi-tenant platform where a gym owner runs one or more gyms, and members hold access to a gym for a paid period.
 

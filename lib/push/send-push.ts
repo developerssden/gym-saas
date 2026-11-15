@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import prisma from "@/lib/prisma";
+import { SUPPORT_EMAIL } from "@/constants/brand";
 import { Prisma } from "@/prisma/generated/client";
 
 type PushPayload = {
@@ -11,7 +12,7 @@ type PushPayload = {
 function configureVapid() {
   const publicKey = process.env.VAPID_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
-  const subject = process.env.VAPID_SUBJECT || "mailto:admin@example.com";
+  const subject = process.env.VAPID_SUBJECT || `mailto:${SUPPORT_EMAIL}`;
 
   if (!publicKey || !privateKey) {
     return false;

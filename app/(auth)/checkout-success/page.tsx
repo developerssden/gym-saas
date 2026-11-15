@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import CheckoutSuccessClient from "@/components/checkout-success-client";
 
 export const metadata = {
-  title: "Payment Successful | Gym SaaS",
+  title: "Payment Successful",
 };
 
 export default function CheckoutSuccessPage() {

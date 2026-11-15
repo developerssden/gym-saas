@@ -6,6 +6,8 @@ import { animate } from "framer-motion"
 import { Menu } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { APP_NAME } from "@/constants/brand"
+import { BrandMark } from "@/components/common/brand-mark"
 import {
     Sheet,
     SheetContent,
@@ -42,8 +44,9 @@ export function LandingHeader() {
             <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-8">
                 <div className="mr-4 hidden md:flex">
                     <Link href="/" className="mr-6 flex items-center space-x-2">
+                        <BrandMark className="h-6" />
                         <span className="hidden font-bold sm:inline-block">
-                            GymSaaS
+                            {APP_NAME}
                         </span>
                     </Link>
                     <nav className="flex items-center gap-6 text-sm">
@@ -77,10 +80,11 @@ export function LandingHeader() {
                         <div className="px-7">
                             <Link
                                 href="/"
-                                className="flex items-center"
+                                className="flex items-center gap-2"
                                 onClick={() => setIsOpen(false)}
                             >
-                                <span className="font-bold">GymSaaS</span>
+                                <BrandMark className="h-6" />
+                                <span className="font-bold">{APP_NAME}</span>
                             </Link>
                         </div>
                         <div className="flex flex-col gap-4 mt-4 px-7">
