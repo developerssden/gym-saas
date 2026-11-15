@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Dumbbell } from "lucide-react"
+import { BrandMark } from "@/components/common/brand-mark"
+import { APP_DESCRIPTION, APP_NAME } from "@/constants/brand"
 
 export function Footer() {
     return (
@@ -8,11 +9,11 @@ export function Footer() {
                 <div className="flex flex-col gap-6 md:flex-row md:justify-between">
                     <div className="flex flex-col gap-2">
                         <Link href="/" className="flex items-center gap-2">
-                            <Dumbbell className="h-6 w-6" />
-                            <span className="text-lg font-bold">GymSaaS</span>
+                            <BrandMark className="h-6" />
+                            <span className="text-lg font-bold">{APP_NAME}</span>
                         </Link>
                         <p className="text-sm text-muted-foreground">
-                            The all-in-one platform for modern gym management.
+                            {APP_DESCRIPTION}
                         </p>
                     </div>
                     <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
@@ -53,7 +54,7 @@ export function Footer() {
                 </div>
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <p className="text-xs text-muted-foreground">
-                        &copy; {new Date().getFullYear()} GymSaaS Inc. All rights reserved.
+                        &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
                     </p>
                 </div>
             </div>

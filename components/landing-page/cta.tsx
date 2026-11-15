@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { FadeIn } from "@/components/landing-page/fade-in"
+import { APP_NAME } from "@/constants/brand"
 
 export function CTA() {
     return (
@@ -13,7 +14,7 @@ export function CTA() {
                 </FadeIn>
                 <FadeIn delay={0.1}>
                     <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-                        Join thousands of gym owners who trust GymSaaS to manage their business.
+                        Join thousands of gym owners who trust {APP_NAME} to manage their business.
                         Start your free 14-day trial today.
                     </p>
                 </FadeIn>

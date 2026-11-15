@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SUPPORT_EMAIL } from "@/constants/brand";
 import {
   BillingToggle,
   getCheckoutUrl,
@@ -143,10 +144,10 @@ export default function PricingClient() {
         <br />
         Questions? Contact us at{" "}
         <a
-          href="mailto:hello@yourdomain.com"
+          href={`mailto:${SUPPORT_EMAIL}`}
           className="underline underline-offset-4"
         >
-          hello@yourdomain.com
+          {SUPPORT_EMAIL}
         </a>
       </p>
     </div>

@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
+import { APP_DESCRIPTION, APP_NAME } from "@/constants/brand";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Gym SaaS",
-    short_name: "Gym SaaS",
-    description: "The all-in-one platform for modern gym management.",
+    name: APP_NAME,
+    short_name: APP_NAME,
+    description: APP_DESCRIPTION,
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#FBFBF9",
