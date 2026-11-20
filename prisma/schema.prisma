@@ -141,6 +141,7 @@ model Gym {
   members      Member[]
   equipment    Equipment[]
   locations    Location[]
+  expenses     Expense[]
 }
 
 model Location {
@@ -161,6 +162,35 @@ model Location {
   gym          Gym        @relation(fields: [gym_id], references: [id])
   members      Member[]
   equipment    Equipment[]
+  expenses     Expense[]
+}
+
+enum ExpenseCategory {
+  RENT
+  UTILITIES
+  SALARIES
+  EQUIPMENT_REPAIRS
+  OTHER
+}
+
+// Money a gym spends (rent, bills, salaries…). Profit = member payments - expenses.
+model Expense {
+  id             String          @id @default(uuid())
+  gym_id         String
+  location_id    String?
+  category       ExpenseCategory @default(OTHER)
+  amount         Int
+  expense_date   DateTime
+  note           String?
+  recorded_by_id String?
+  is_deleted     Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  gym      Gym       @relation(fields: [gym_id], references: [id])
+  location Location? @relation(fields: [location_id], references: [id])
+
+  @@index([gym_id, expense_date])
 }
 
 // Member model

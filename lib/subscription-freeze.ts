@@ -2,6 +2,7 @@ import {
   DEFAULT_BUSINESS_TIME_ZONE,
   MS_PER_DAY,
   getCalendarDayOrdinal,
+  parseCalendarDay,
 } from "@/lib/date-utils";
 
 /**
@@ -13,23 +14,7 @@ import {
  * time zone, like the rest of the subscription lifecycle.
  */
 
-const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
-
-/**
- * Parses a `YYYY-MM-DD` calendar day (from an <input type="date">) to a Date at
- * 12:00 UTC, which falls on that same calendar day in every time zone from
- * UTC-11 to UTC+11 (including Asia/Karachi). Returns null if invalid.
- */
-export function parseCalendarDay(value: unknown): Date | null {
-  if (typeof value !== "string") return null;
-  const match = DATE_ONLY.exec(value.trim());
-  if (!match) return null;
-  const [, y, m, d] = match.map(Number);
-  const date = new Date(Date.UTC(y, m - 1, d, 12));
-  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d
-    ? date
-    : null;
-}
+export { parseCalendarDay };
 
 type FreezeCandidate = {
   start_date: Date;

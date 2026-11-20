@@ -249,6 +249,7 @@ export type LocationWhereInput = {
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
   members?: Prisma.MemberListRelationFilter
   equipment?: Prisma.EquipmentListRelationFilter
+  expenses?: Prisma.ExpenseListRelationFilter
 }
 
 export type LocationOrderByWithRelationInput = {
@@ -268,6 +269,7 @@ export type LocationOrderByWithRelationInput = {
   gym?: Prisma.GymOrderByWithRelationInput
   members?: Prisma.MemberOrderByRelationAggregateInput
   equipment?: Prisma.EquipmentOrderByRelationAggregateInput
+  expenses?: Prisma.ExpenseOrderByRelationAggregateInput
 }
 
 export type LocationWhereUniqueInput = Prisma.AtLeast<{
@@ -290,6 +292,7 @@ export type LocationWhereUniqueInput = Prisma.AtLeast<{
   gym?: Prisma.XOR<Prisma.GymScalarRelationFilter, Prisma.GymWhereInput>
   members?: Prisma.MemberListRelationFilter
   equipment?: Prisma.EquipmentListRelationFilter
+  expenses?: Prisma.ExpenseListRelationFilter
 }, "id">
 
 export type LocationOrderByWithAggregationInput = {
@@ -346,6 +349,7 @@ export type LocationCreateInput = {
   gym: Prisma.GymCreateNestedOneWithoutLocationsInput
   members?: Prisma.MemberCreateNestedManyWithoutLocationInput
   equipment?: Prisma.EquipmentCreateNestedManyWithoutLocationInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutLocationInput
 }
 
 export type LocationUncheckedCreateInput = {
@@ -364,6 +368,7 @@ export type LocationUncheckedCreateInput = {
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutLocationInput
   equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutLocationInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutLocationInput
 }
 
 export type LocationUpdateInput = {
@@ -382,6 +387,7 @@ export type LocationUpdateInput = {
   gym?: Prisma.GymUpdateOneRequiredWithoutLocationsNestedInput
   members?: Prisma.MemberUpdateManyWithoutLocationNestedInput
   equipment?: Prisma.EquipmentUpdateManyWithoutLocationNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutLocationNestedInput
 }
 
 export type LocationUncheckedUpdateInput = {
@@ -400,6 +406,7 @@ export type LocationUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutLocationNestedInput
   equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutLocationNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutLocationNestedInput
 }
 
 export type LocationCreateManyInput = {
@@ -507,14 +514,14 @@ export type LocationMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type LocationScalarRelationFilter = {
-  is?: Prisma.LocationWhereInput
-  isNot?: Prisma.LocationWhereInput
-}
-
 export type LocationNullableScalarRelationFilter = {
   is?: Prisma.LocationWhereInput | null
   isNot?: Prisma.LocationWhereInput | null
+}
+
+export type LocationScalarRelationFilter = {
+  is?: Prisma.LocationWhereInput
+  isNot?: Prisma.LocationWhereInput
 }
 
 export type LocationCreateNestedManyWithoutGymInput = {
@@ -557,6 +564,22 @@ export type LocationUncheckedUpdateManyWithoutGymNestedInput = {
   update?: Prisma.LocationUpdateWithWhereUniqueWithoutGymInput | Prisma.LocationUpdateWithWhereUniqueWithoutGymInput[]
   updateMany?: Prisma.LocationUpdateManyWithWhereWithoutGymInput | Prisma.LocationUpdateManyWithWhereWithoutGymInput[]
   deleteMany?: Prisma.LocationScalarWhereInput | Prisma.LocationScalarWhereInput[]
+}
+
+export type LocationCreateNestedOneWithoutExpensesInput = {
+  create?: Prisma.XOR<Prisma.LocationCreateWithoutExpensesInput, Prisma.LocationUncheckedCreateWithoutExpensesInput>
+  connectOrCreate?: Prisma.LocationCreateOrConnectWithoutExpensesInput
+  connect?: Prisma.LocationWhereUniqueInput
+}
+
+export type LocationUpdateOneWithoutExpensesNestedInput = {
+  create?: Prisma.XOR<Prisma.LocationCreateWithoutExpensesInput, Prisma.LocationUncheckedCreateWithoutExpensesInput>
+  connectOrCreate?: Prisma.LocationCreateOrConnectWithoutExpensesInput
+  upsert?: Prisma.LocationUpsertWithoutExpensesInput
+  disconnect?: Prisma.LocationWhereInput | boolean
+  delete?: Prisma.LocationWhereInput | boolean
+  connect?: Prisma.LocationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LocationUpdateToOneWithWhereWithoutExpensesInput, Prisma.LocationUpdateWithoutExpensesInput>, Prisma.LocationUncheckedUpdateWithoutExpensesInput>
 }
 
 export type LocationCreateNestedOneWithoutMembersInput = {
@@ -604,6 +627,7 @@ export type LocationCreateWithoutGymInput = {
   updatedAt?: Date | string
   members?: Prisma.MemberCreateNestedManyWithoutLocationInput
   equipment?: Prisma.EquipmentCreateNestedManyWithoutLocationInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutLocationInput
 }
 
 export type LocationUncheckedCreateWithoutGymInput = {
@@ -621,6 +645,7 @@ export type LocationUncheckedCreateWithoutGymInput = {
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutLocationInput
   equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutLocationInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutLocationInput
 }
 
 export type LocationCreateOrConnectWithoutGymInput = {
@@ -668,6 +693,94 @@ export type LocationScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Location"> | Date | string
 }
 
+export type LocationCreateWithoutExpensesInput = {
+  id?: string
+  name: string
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  phone_number?: string | null
+  is_active?: boolean
+  is_deleted?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  gym: Prisma.GymCreateNestedOneWithoutLocationsInput
+  members?: Prisma.MemberCreateNestedManyWithoutLocationInput
+  equipment?: Prisma.EquipmentCreateNestedManyWithoutLocationInput
+}
+
+export type LocationUncheckedCreateWithoutExpensesInput = {
+  id?: string
+  gym_id: string
+  name: string
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  phone_number?: string | null
+  is_active?: boolean
+  is_deleted?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutLocationInput
+  equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutLocationInput
+}
+
+export type LocationCreateOrConnectWithoutExpensesInput = {
+  where: Prisma.LocationWhereUniqueInput
+  create: Prisma.XOR<Prisma.LocationCreateWithoutExpensesInput, Prisma.LocationUncheckedCreateWithoutExpensesInput>
+}
+
+export type LocationUpsertWithoutExpensesInput = {
+  update: Prisma.XOR<Prisma.LocationUpdateWithoutExpensesInput, Prisma.LocationUncheckedUpdateWithoutExpensesInput>
+  create: Prisma.XOR<Prisma.LocationCreateWithoutExpensesInput, Prisma.LocationUncheckedCreateWithoutExpensesInput>
+  where?: Prisma.LocationWhereInput
+}
+
+export type LocationUpdateToOneWithWhereWithoutExpensesInput = {
+  where?: Prisma.LocationWhereInput
+  data: Prisma.XOR<Prisma.LocationUpdateWithoutExpensesInput, Prisma.LocationUncheckedUpdateWithoutExpensesInput>
+}
+
+export type LocationUpdateWithoutExpensesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gym?: Prisma.GymUpdateOneRequiredWithoutLocationsNestedInput
+  members?: Prisma.MemberUpdateManyWithoutLocationNestedInput
+  equipment?: Prisma.EquipmentUpdateManyWithoutLocationNestedInput
+}
+
+export type LocationUncheckedUpdateWithoutExpensesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  gym_id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.MemberUncheckedUpdateManyWithoutLocationNestedInput
+  equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutLocationNestedInput
+}
+
 export type LocationCreateWithoutMembersInput = {
   id?: string
   name: string
@@ -683,6 +796,7 @@ export type LocationCreateWithoutMembersInput = {
   updatedAt?: Date | string
   gym: Prisma.GymCreateNestedOneWithoutLocationsInput
   equipment?: Prisma.EquipmentCreateNestedManyWithoutLocationInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutLocationInput
 }
 
 export type LocationUncheckedCreateWithoutMembersInput = {
@@ -700,6 +814,7 @@ export type LocationUncheckedCreateWithoutMembersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutLocationInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutLocationInput
 }
 
 export type LocationCreateOrConnectWithoutMembersInput = {
@@ -733,6 +848,7 @@ export type LocationUpdateWithoutMembersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gym?: Prisma.GymUpdateOneRequiredWithoutLocationsNestedInput
   equipment?: Prisma.EquipmentUpdateManyWithoutLocationNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutMembersInput = {
@@ -750,6 +866,7 @@ export type LocationUncheckedUpdateWithoutMembersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutLocationNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutLocationNestedInput
 }
 
 export type LocationCreateWithoutEquipmentInput = {
@@ -767,6 +884,7 @@ export type LocationCreateWithoutEquipmentInput = {
   updatedAt?: Date | string
   gym: Prisma.GymCreateNestedOneWithoutLocationsInput
   members?: Prisma.MemberCreateNestedManyWithoutLocationInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutLocationInput
 }
 
 export type LocationUncheckedCreateWithoutEquipmentInput = {
@@ -784,6 +902,7 @@ export type LocationUncheckedCreateWithoutEquipmentInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutLocationInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutLocationInput
 }
 
 export type LocationCreateOrConnectWithoutEquipmentInput = {
@@ -817,6 +936,7 @@ export type LocationUpdateWithoutEquipmentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gym?: Prisma.GymUpdateOneRequiredWithoutLocationsNestedInput
   members?: Prisma.MemberUpdateManyWithoutLocationNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutEquipmentInput = {
@@ -834,6 +954,7 @@ export type LocationUncheckedUpdateWithoutEquipmentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutLocationNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutLocationNestedInput
 }
 
 export type LocationCreateManyGymInput = {
@@ -866,6 +987,7 @@ export type LocationUpdateWithoutGymInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUpdateManyWithoutLocationNestedInput
   equipment?: Prisma.EquipmentUpdateManyWithoutLocationNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutGymInput = {
@@ -883,6 +1005,7 @@ export type LocationUncheckedUpdateWithoutGymInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutLocationNestedInput
   equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutLocationNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutLocationNestedInput
 }
 
 export type LocationUncheckedUpdateManyWithoutGymInput = {
@@ -908,11 +1031,13 @@ export type LocationUncheckedUpdateManyWithoutGymInput = {
 export type LocationCountOutputType = {
   members: number
   equipment: number
+  expenses: number
 }
 
 export type LocationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | LocationCountOutputTypeCountMembersArgs
   equipment?: boolean | LocationCountOutputTypeCountEquipmentArgs
+  expenses?: boolean | LocationCountOutputTypeCountExpensesArgs
 }
 
 /**
@@ -939,6 +1064,13 @@ export type LocationCountOutputTypeCountEquipmentArgs<ExtArgs extends runtime.Ty
   where?: Prisma.EquipmentWhereInput
 }
 
+/**
+ * LocationCountOutputType without action
+ */
+export type LocationCountOutputTypeCountExpensesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ExpenseWhereInput
+}
+
 
 export type LocationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -957,6 +1089,7 @@ export type LocationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
   members?: boolean | Prisma.Location$membersArgs<ExtArgs>
   equipment?: boolean | Prisma.Location$equipmentArgs<ExtArgs>
+  expenses?: boolean | Prisma.Location$expensesArgs<ExtArgs>
   _count?: boolean | Prisma.LocationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["location"]>
 
@@ -1015,6 +1148,7 @@ export type LocationInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   gym?: boolean | Prisma.GymDefaultArgs<ExtArgs>
   members?: boolean | Prisma.Location$membersArgs<ExtArgs>
   equipment?: boolean | Prisma.Location$equipmentArgs<ExtArgs>
+  expenses?: boolean | Prisma.Location$expensesArgs<ExtArgs>
   _count?: boolean | Prisma.LocationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type LocationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1030,6 +1164,7 @@ export type $LocationPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     gym: Prisma.$GymPayload<ExtArgs>
     members: Prisma.$MemberPayload<ExtArgs>[]
     equipment: Prisma.$EquipmentPayload<ExtArgs>[]
+    expenses: Prisma.$ExpensePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1442,6 +1577,7 @@ export interface Prisma__LocationClient<T, Null = never, ExtArgs extends runtime
   gym<T extends Prisma.GymDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GymDefaultArgs<ExtArgs>>): Prisma.Prisma__GymClient<runtime.Types.Result.GetResult<Prisma.$GymPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   members<T extends Prisma.Location$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   equipment<T extends Prisma.Location$equipmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$equipmentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EquipmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  expenses<T extends Prisma.Location$expensesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1925,6 +2061,30 @@ export type Location$equipmentArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.EquipmentScalarFieldEnum | Prisma.EquipmentScalarFieldEnum[]
+}
+
+/**
+ * Location.expenses
+ */
+export type Location$expensesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Expense
+   */
+  select?: Prisma.ExpenseSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Expense
+   */
+  omit?: Prisma.ExpenseOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExpenseInclude<ExtArgs> | null
+  where?: Prisma.ExpenseWhereInput
+  orderBy?: Prisma.ExpenseOrderByWithRelationInput | Prisma.ExpenseOrderByWithRelationInput[]
+  cursor?: Prisma.ExpenseWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ExpenseScalarFieldEnum | Prisma.ExpenseScalarFieldEnum[]
 }
 
 /**
