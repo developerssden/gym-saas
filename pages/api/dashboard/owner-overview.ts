@@ -29,6 +29,7 @@ type OwnerOverviewResponse = {
       memberId: string
       memberName: string
       memberEmail: string
+      memberPhone: string | null
       price: number
       billingModel: string
       startDate: string
@@ -43,6 +44,7 @@ type OwnerOverviewResponse = {
       memberId: string
       memberName: string
       memberEmail: string
+      memberPhone: string | null
       price: number
       billingModel: string
       startDate: string
@@ -386,6 +388,7 @@ export default async function handler(
     const mapSubRow = (s: any) => {
       const memberName = `${s.member?.user?.first_name ?? ""} ${s.member?.user?.last_name ?? ""}`.trim() || "-"
       const memberEmail = s.member?.user?.email ?? "-"
+      const memberPhone: string | null = s.member?.user?.phone_number ?? null
       const lastPayment = Array.isArray(s.payments) && s.payments.length ? s.payments[0] : null
 
       return {
@@ -393,6 +396,7 @@ export default async function handler(
         memberId: s.member_id,
         memberName,
         memberEmail,
+        memberPhone,
         price: s.price ?? 0,
         billingModel: String(s.billing_model ?? "-"),
         startDate: safeIso(s.start_date),

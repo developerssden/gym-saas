@@ -31,6 +31,7 @@ import RenewMemberModal from "@/components/dashboard/RenewMemberModal";
 import { CurrencyAmount } from "@/components/common/CurrencyAmount";
 import ChurnReasonModal from "@/components/membersubscriptions/ChurnReasonModal";
 import { MemberSubscriptionHistoryDrawer } from "@/components/membersubscriptions/MemberSubscriptionHistoryDrawer";
+import { WhatsAppReminderMenuItem } from "@/components/common/whatsapp-actions";
 
 export type MemberSubscription = {
   id: string;
@@ -40,7 +41,12 @@ export type MemberSubscription = {
       first_name: string;
       last_name: string;
       email: string | null;
+      phone_number?: string | null;
     };
+    gym?: {
+      name: string;
+      country?: string | null;
+    } | null;
   };
   price: number;
   billing_model: string;
@@ -90,6 +96,15 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
               Edit
             </Link>
           </DropdownMenuItem>
+          <WhatsAppReminderMenuItem
+            memberName={memberName}
+            phone={subscription.member.user.phone_number}
+            gymName={subscription.member.gym?.name}
+            gymCountry={subscription.member.gym?.country}
+            price={subscription.price}
+            endDate={subscription.end_date}
+            isExpired={subscription.is_expired}
+          />
           <DropdownMenuItem onClick={() => setShowHistoryDrawer(true)}>
             <History className="mr-2 h-4 w-4" />
             View History

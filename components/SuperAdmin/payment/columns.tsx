@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CurrencyAmount } from "@/components/common/CurrencyAmount";
 import { resolveGymCountry } from "@/lib/currency";
+import { ShareReceiptMenuItem } from "@/components/common/whatsapp-actions";
 
 const formatDate = (value: unknown) => {
   const d = value instanceof Date ? value : new Date(value as any);
@@ -157,6 +158,20 @@ const ActionCell = ({ payment }: { payment: Payment }) => {
           <FileText className="mr-2 h-4 w-4" />
           Generate Invoice
         </DropdownMenuItem>
+        {payment.subscription_type === "MEMBER" && payment.memberSubscription?.member && (
+          <ShareReceiptMenuItem
+            paymentId={payment.id}
+            memberName={
+              `${payment.memberSubscription.member.user?.first_name ?? ""} ${payment.memberSubscription.member.user?.last_name ?? ""}`.trim() ||
+              "Member"
+            }
+            phone={payment.memberSubscription.member.user?.phone_number}
+            gymName={payment.memberSubscription.member.gym?.name}
+            gymCountry={paymentCountryCode(payment)}
+            amount={payment.amount}
+            paymentDate={payment.payment_date}
+          />
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

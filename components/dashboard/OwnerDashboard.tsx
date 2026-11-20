@@ -40,6 +40,7 @@ import {
 import DataFetchError from "@/components/common/DataFetchError"
 import DateRangePicker from "@/components/date-range-picker"
 import RenewMemberModal from "@/components/dashboard/RenewMemberModal"
+import { WhatsAppReminderButton } from "@/components/common/whatsapp-actions"
 import OwnerSubscriptionBanner from "@/components/dashboard/OwnerSubscriptionBanner"
 import { addDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
@@ -72,6 +73,7 @@ type SubscriptionRow = {
   memberId: string
   memberName: string
   memberEmail: string
+  memberPhone?: string | null
   price: number
   billingModel: string
   startDate: string
@@ -281,6 +283,7 @@ const OwnerDashboard = () => {
   const { format: formatMoney } = useGymCurrency()
   const selectedGymId = session?.user?.selected_gym_id
   const selectedLocationId = session?.user?.selected_location_id
+  const selectedGymName = session?.user?.gyms?.find((g) => g.id === selectedGymId)?.name ?? null
 
   const [chartRange, setChartRange] = React.useState<DateRange | undefined>({
     from: addDays(new Date(), -30),
@@ -357,6 +360,32 @@ const OwnerDashboard = () => {
     billingModel: string
   } | null>(null)
 
+  const reminderButton = React.useCallback(
+    (row: SubscriptionRow) => (
+      <WhatsAppReminderButton
+        memberName={row.memberName}
+        phone={row.memberPhone}
+        gymName={selectedGymName}
+        price={row.price}
+        endDate={row.endDate}
+        isExpired={row.isExpired}
+      />
+    ),
+    [selectedGymName]
+  )
+
+  const activeSubscriptionColumns = React.useMemo<ColumnDef<SubscriptionRow>[]>(
+    () => [
+      ...subscriptionColumns,
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => reminderButton(row.original),
+      },
+    ],
+    [reminderButton]
+  )
+
   const expiredSubscriptionColumns = React.useMemo<ColumnDef<SubscriptionRow>[]>(
     () => [
       ...subscriptionColumns,
@@ -364,24 +393,27 @@ const OwnerDashboard = () => {
         id: "actions",
         header: "",
         cell: ({ row }) => (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() =>
-              setRenewTarget({
-                memberId: row.original.memberId,
-                memberName: row.original.memberName,
-                price: row.original.price,
-                billingModel: row.original.billingModel,
-              })
-            }
-          >
-            Renew
-          </Button>
+          <div className="flex items-center justify-end gap-2">
+            {reminderButton(row.original)}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                setRenewTarget({
+                  memberId: row.original.memberId,
+                  memberName: row.original.memberName,
+                  price: row.original.price,
+                  billingModel: row.original.billingModel,
+                })
+              }
+            >
+              Renew
+            </Button>
+          </div>
         ),
       },
     ],
-    []
+    [reminderButton]
   )
 
   if (isLoading && !data) return <OwnerDashboardSkeleton />
@@ -658,7 +690,7 @@ const OwnerDashboard = () => {
             </CardHeader>
             <CardContent>
               <DataTable
-                columns={subscriptionColumns}
+                columns={activeSubscriptionColumns}
                 data={data.tables.activeSubscriptions}
                 searchableColumns={["member", "billingModel"]}
                 pagination={activePagination}
