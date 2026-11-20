@@ -58,6 +58,7 @@ export const ModelName = {
   Todo: 'Todo',
   Gym: 'Gym',
   Location: 'Location',
+  Expense: 'Expense',
   Member: 'Member',
   Equipment: 'Equipment',
   Plan: 'Plan',
@@ -201,6 +202,23 @@ export const LocationScalarFieldEnum = {
 } as const
 
 export type LocationScalarFieldEnum = (typeof LocationScalarFieldEnum)[keyof typeof LocationScalarFieldEnum]
+
+
+export const ExpenseScalarFieldEnum = {
+  id: 'id',
+  gym_id: 'gym_id',
+  location_id: 'location_id',
+  category: 'category',
+  amount: 'amount',
+  expense_date: 'expense_date',
+  note: 'note',
+  recorded_by_id: 'recorded_by_id',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExpenseScalarFieldEnum = (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum]
 
 
 export const MemberScalarFieldEnum = {

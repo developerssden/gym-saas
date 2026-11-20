@@ -21,6 +21,8 @@ import {
   Users,
   Dumbbell,
   Wallet,
+  Receipt,
+  PiggyBank,
 } from "lucide-react"
 
 import { PageContainer } from "@/components/layout/page-container"
@@ -59,6 +61,8 @@ type OwnerDashboardOverview = {
     revenueGrowthPct: number | null
     outstandingAmount?: number
     outstandingMembers?: number
+    expensesThisMonth?: number
+    profitThisMonth?: number
   }
   charts: {
     revenueByMonth: Array<{ month: string; revenue: number }>
@@ -545,6 +549,34 @@ const OwnerDashboard = () => {
               className={`text-2xl font-semibold ${(data.totals.outstandingAmount ?? 0) > 0 ? "text-destructive" : ""}`}
             >
               {formatMoney(data.totals.outstandingAmount ?? 0)}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Receipt className="size-4 text-muted-foreground" />
+                Expenses (MTD)
+              </CardTitle>
+              <CardDescription>Rent, bills, salaries this month</CardDescription>
+            </CardHeader>
+            <CardContent className="text-2xl font-semibold">
+              {formatMoney(data.totals.expensesThisMonth ?? 0)}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <PiggyBank className="size-4 text-muted-foreground" />
+                Profit (MTD)
+              </CardTitle>
+              <CardDescription>Collected minus expenses</CardDescription>
+            </CardHeader>
+            <CardContent
+              className={`text-2xl font-semibold ${(data.totals.profitThisMonth ?? 0) < 0 ? "text-destructive" : ""}`}
+            >
+              {formatMoney(data.totals.profitThisMonth ?? data.totals.revenueThisMonth)}
             </CardContent>
           </Card>
 
