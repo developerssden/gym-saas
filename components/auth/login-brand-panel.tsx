@@ -1,3 +1,6 @@
+import { APP_NAME } from "@/constants/brand";
+import { BrandMark } from "@/components/common/brand-mark";
+
 function WeightPlateGraphic() {
   return (
     <svg
@@ -69,9 +72,9 @@ export function LoginBrandPanel() {
       </div>
 
       <div className="relative z-10 flex items-center gap-2 px-6 pt-5 lg:px-10 lg:pt-8">
-        <span className="size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+        <BrandMark className="h-5" />
         <span className="font-display text-[15px] font-bold tracking-tight text-foreground">
-          Gym SaaS
+          {APP_NAME}
         </span>
       </div>
 

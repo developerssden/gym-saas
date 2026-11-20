@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers/providers";
+import { APP_DESCRIPTION, APP_NAME } from "@/constants/brand";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,15 +18,15 @@ const archivo = Archivo({
 
 export const metadata: Metadata = {
   title: {
-    default: "Gym SaaS",
-    template: "%s | Gym SaaS",
+    default: APP_NAME,
+    template: `%s | ${APP_NAME}`,
   },
-  description: "The all-in-one platform for modern gym management.",
+  description: APP_DESCRIPTION,
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Gym SaaS",
+    title: APP_NAME,
   },
   icons: {
     icon: [{ url: "/favicon.ico" }],

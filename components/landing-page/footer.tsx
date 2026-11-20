@@ -10,7 +10,7 @@ export function Footer() {
                 <div className="flex flex-wrap justify-between gap-10">
                     <div className="flex min-w-0 flex-[1_1_280px] flex-col gap-3">
                         <Link href="/" aria-label="Kettlio home" className="text-foreground">
-                            <KettlioLogo size={28} />
+                            <KettlioLogo markClassName="h-7" />
                         </Link>
                         <p className="max-w-[300px] text-[15px]">
                             Gym management made easy — members, fees and reminders in one place.

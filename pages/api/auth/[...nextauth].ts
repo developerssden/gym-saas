@@ -74,7 +74,7 @@ export const options: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days (capped to 24h in jwt when remember is false)
     updateAge: 30 * 60 // 30 minutes (you can keep or adjust this)
   },
-  debug: process.env.ENV !== 'PROD',
+  debug: process.env.NODE_ENV !== 'production',
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {

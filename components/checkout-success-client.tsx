@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { APP_NAME } from "@/constants/brand";
 
 export default function CheckoutSuccessClient() {
   const searchParams = useSearchParams();
@@ -52,7 +53,7 @@ export default function CheckoutSuccessClient() {
           Payment successful
         </h1>
         <p className="text-muted-foreground max-w-sm">
-          Your Gym SaaS subscription is now active. You can start setting up
+          Your {APP_NAME} subscription is now active. You can start setting up
           your gym right away.
         </p>
         {checkoutId && (
