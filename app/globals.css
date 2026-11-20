@@ -1,7 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* `.theme-light` forces the light theme on a subtree (used by the landing page)
+   even when the visitor's system theme puts `.dark` on <html>. */
+@custom-variant dark (&:is(.dark *):not(:where(.theme-light *)));
 
 /* @theme inline {
   --color-background: var(--background);
@@ -112,7 +114,8 @@
   --sidebar-ring: oklch(0.556 0 0);
 } */
 
-:root {
+:root,
+.theme-light {
   --background: oklch(0.9874 0.0034 117.8857);
   --foreground: oklch(0.1995 0.0464 121.229);
   --card: oklch(0.9748 0.0069 117.9492);

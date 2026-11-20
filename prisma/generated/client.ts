@@ -109,3 +109,8 @@ export type MemberSubscription = Prisma.MemberSubscriptionModel
  * 
  */
 export type Payment = Prisma.PaymentModel
+/**
+ * Model GymRegistration
+ * 
+ */
+export type GymRegistration = Prisma.GymRegistrationModel

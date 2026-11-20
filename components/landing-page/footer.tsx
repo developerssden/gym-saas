@@ -1,61 +1,51 @@
 import Link from "next/link"
-import { Dumbbell } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
+import { KettlioLogo } from "@/components/landing-page/logo"
+import { CONTACT, LANDING_NAV, WHATSAPP_URL } from "@/constants/landing"
 
 export function Footer() {
     return (
-        <footer className="border-t bg-background">
-            <div className="container flex flex-col gap-8 py-8 md:py-12 mx-auto px-4">
-                <div className="flex flex-col gap-6 md:flex-row md:justify-between">
-                    <div className="flex flex-col gap-2">
-                        <Link href="/" className="flex items-center gap-2">
-                            <Dumbbell className="h-6 w-6" />
-                            <span className="text-lg font-bold">GymSaaS</span>
+        <footer className="dark bg-background text-muted-foreground">
+            <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-6 pb-8 pt-14">
+                <div className="flex flex-wrap justify-between gap-10">
+                    <div className="flex min-w-0 flex-[1_1_280px] flex-col gap-3">
+                        <Link href="/" aria-label="Kettlio home" className="text-foreground">
+                            <KettlioLogo size={28} />
                         </Link>
-                        <p className="text-sm text-muted-foreground">
-                            The all-in-one platform for modern gym management.
+                        <p className="max-w-[300px] text-[15px]">
+                            Gym management made easy — members, fees and reminders in one place.
                         </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
-                        <div className="flex flex-col gap-2">
-                            <h3 className="text-sm font-medium">Product</h3>
-                            <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground">
-                                Features
+                    <nav aria-label="Footer" className="flex flex-col gap-2.5 text-[15px]">
+                        <div className="text-sm font-bold text-foreground">Product</div>
+                        {LANDING_NAV.map((item) => (
+                            <Link key={item.href} href={item.href} className="hover:text-foreground">
+                                {item.name}
                             </Link>
-                            <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
-                                Pricing
-                            </Link>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                Integrations
-                            </Link>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <h3 className="text-sm font-medium">Company</h3>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                About
-                            </Link>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                Blog
-                            </Link>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                Careers
-                            </Link>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <h3 className="text-sm font-medium">Legal</h3>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                Privacy
-                            </Link>
-                            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
-                                Terms
-                            </Link>
-                        </div>
+                        ))}
+                        <Link href="/sign-in" className="hover:text-foreground">
+                            Sign in
+                        </Link>
+                    </nav>
+                    <div className="flex flex-col gap-2.5 text-[15px]">
+                        <div className="text-sm font-bold text-foreground">Contact</div>
+                        <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
+                            WhatsApp: {CONTACT.whatsappDisplay}
+                        </a>
+                        <a href={`mailto:${CONTACT.email}`} className="hover:text-foreground">
+                            {CONTACT.email}
+                        </a>
+                        <a
+                            href={CONTACT.founderLinkedIn}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-primary hover:underline"
+                        >
+                            {CONTACT.founderName} on LinkedIn <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                        </a>
                     </div>
                 </div>
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <p className="text-xs text-muted-foreground">
-                        &copy; {new Date().getFullYear()} GymSaaS Inc. All rights reserved.
-                    </p>
-                </div>
+                <div className="border-t border-border pt-6 text-sm">© {new Date().getFullYear()} Kettlio · Gujrat, Pakistan</div>
             </div>
         </footer>
     )

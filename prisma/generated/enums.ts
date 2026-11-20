@@ -88,3 +88,13 @@ export const EquipmentStatus = {
 } as const
 
 export type EquipmentStatus = (typeof EquipmentStatus)[keyof typeof EquipmentStatus]
+
+
+export const RegistrationStatus = {
+  NEW: 'NEW',
+  CONTACTED: 'CONTACTED',
+  ONBOARDED: 'ONBOARDED',
+  CLOSED: 'CLOSED'
+} as const
+
+export type RegistrationStatus = (typeof RegistrationStatus)[keyof typeof RegistrationStatus]

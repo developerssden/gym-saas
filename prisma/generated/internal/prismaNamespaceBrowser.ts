@@ -64,7 +64,8 @@ export const ModelName = {
   Announcement: 'Announcement',
   OwnerSubscription: 'OwnerSubscription',
   MemberSubscription: 'MemberSubscription',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  GymRegistration: 'GymRegistration'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -341,6 +342,24 @@ export const PaymentScalarFieldEnum = {
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const GymRegistrationScalarFieldEnum = {
+  id: 'id',
+  owner_name: 'owner_name',
+  gym_name: 'gym_name',
+  phone: 'phone',
+  city: 'city',
+  member_count: 'member_count',
+  message: 'message',
+  status: 'status',
+  admin_note: 'admin_note',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GymRegistrationScalarFieldEnum = (typeof GymRegistrationScalarFieldEnum)[keyof typeof GymRegistrationScalarFieldEnum]
 
 
 export const SortOrder = {

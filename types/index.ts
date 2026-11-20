@@ -154,3 +154,18 @@ export type Announcement = {
     createdAt: Date;
     updatedAt: Date;
 };
+
+export type GymRegistration = {
+    id: string;
+    owner_name: string;
+    gym_name: string;
+    phone: string;
+    city: string;
+    member_count: string | null;
+    message: string | null;
+    status: "NEW" | "CONTACTED" | "ONBOARDED" | "CLOSED"; // RegistrationStatus enum
+    admin_note: string | null;
+    is_deleted: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+};

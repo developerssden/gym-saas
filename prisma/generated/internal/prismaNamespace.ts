@@ -397,7 +397,8 @@ export const ModelName = {
   Announcement: 'Announcement',
   OwnerSubscription: 'OwnerSubscription',
   MemberSubscription: 'MemberSubscription',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  GymRegistration: 'GymRegistration'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -413,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "inviteToken" | "pushSubscription" | "inAppNotification" | "todo" | "gym" | "location" | "member" | "equipment" | "plan" | "announcement" | "ownerSubscription" | "memberSubscription" | "payment"
+    modelProps: "user" | "inviteToken" | "pushSubscription" | "inAppNotification" | "todo" | "gym" | "location" | "member" | "equipment" | "plan" | "announcement" | "ownerSubscription" | "memberSubscription" | "payment" | "gymRegistration"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1453,6 +1454,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GymRegistration: {
+      payload: Prisma.$GymRegistrationPayload<ExtArgs>
+      fields: Prisma.GymRegistrationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GymRegistrationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GymRegistrationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload>
+        }
+        findFirst: {
+          args: Prisma.GymRegistrationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GymRegistrationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload>
+        }
+        findMany: {
+          args: Prisma.GymRegistrationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload>[]
+        }
+        create: {
+          args: Prisma.GymRegistrationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload>
+        }
+        createMany: {
+          args: Prisma.GymRegistrationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GymRegistrationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload>[]
+        }
+        delete: {
+          args: Prisma.GymRegistrationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload>
+        }
+        update: {
+          args: Prisma.GymRegistrationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload>
+        }
+        deleteMany: {
+          args: Prisma.GymRegistrationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GymRegistrationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GymRegistrationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload>[]
+        }
+        upsert: {
+          args: Prisma.GymRegistrationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GymRegistrationPayload>
+        }
+        aggregate: {
+          args: Prisma.GymRegistrationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGymRegistration>
+        }
+        groupBy: {
+          args: Prisma.GymRegistrationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GymRegistrationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GymRegistrationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GymRegistrationCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1752,6 +1827,24 @@ export const PaymentScalarFieldEnum = {
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
+export const GymRegistrationScalarFieldEnum = {
+  id: 'id',
+  owner_name: 'owner_name',
+  gym_name: 'gym_name',
+  phone: 'phone',
+  city: 'city',
+  member_count: 'member_count',
+  message: 'message',
+  status: 'status',
+  admin_note: 'admin_note',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GymRegistrationScalarFieldEnum = (typeof GymRegistrationScalarFieldEnum)[keyof typeof GymRegistrationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1970,6 +2063,20 @@ export type EnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
 export type ListEnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod[]'>
     
 
+
+/**
+ * Reference to a field of type 'RegistrationStatus'
+ */
+export type EnumRegistrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RegistrationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RegistrationStatus[]'
+ */
+export type ListEnumRegistrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RegistrationStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -2079,6 +2186,7 @@ export type GlobalOmitConfig = {
   ownerSubscription?: Prisma.OwnerSubscriptionOmit
   memberSubscription?: Prisma.MemberSubscriptionOmit
   payment?: Prisma.PaymentOmit
+  gymRegistration?: Prisma.GymRegistrationOmit
 }
 
 /* Types for Logging */

@@ -339,3 +339,29 @@ model Payment {
   memberSubscription     MemberSubscription? @relation(fields: [member_subscription_id], references: [id])
   recordedBy              User?               @relation("RecordedPayments", fields: [recorded_by_id], references: [id])
 }
+
+enum RegistrationStatus {
+  NEW
+  CONTACTED
+  ONBOARDED
+  CLOSED
+}
+
+// A gym owner's request from the landing-page "Register your gym" form.
+model GymRegistration {
+  id           String             @id @default(uuid())
+  owner_name   String
+  gym_name     String
+  phone        String
+  city         String
+  member_count String?
+  message      String?
+  status       RegistrationStatus @default(NEW)
+  admin_note   String?
+  is_deleted   Boolean            @default(false)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([status, createdAt])
+  @@index([phone])
+}

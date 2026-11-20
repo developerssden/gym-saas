@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboarding', '/checkout-success'];
 
-const PUBLIC_API_PATHS = ['/api/clients/complete-invite', '/api/webhooks/polar'];
+const PUBLIC_API_PATHS = ['/api/clients/complete-invite', '/api/webhooks/polar', '/api/registrations/create'];
 
 const PWA_PUBLIC_PATHS = [
   '/manifest.webmanifest',
@@ -24,7 +24,7 @@ const ROUTE_GATES: RouteGate[] = [
     roles: ['SUPER_ADMIN', 'GYM_OWNER'],
   },
   {
-    routes: ['/clients', '/subscriptions', '/plans'],
+    routes: ['/clients', '/subscriptions', '/plans', '/registrations'],
     roles: ['SUPER_ADMIN'],
   },
   {
