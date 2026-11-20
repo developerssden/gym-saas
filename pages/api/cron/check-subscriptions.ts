@@ -12,10 +12,18 @@ import {
   executeReminderDelivery,
 } from "@/lib/cron/delivery";
 import {
+  getGymOwnerDueSoonEmail,
   getGymOwnerSummaryEmail,
   getOwnerReminderEmail,
   getSuperAdminSummaryEmail,
 } from "@/lib/email/subscription-emails";
+import {
+  addDueSoonReminder,
+  reminderFlagIds,
+  sortDueSoonMembers,
+  type OwnerDueSoonDigest,
+} from "@/lib/cron/member-due-reminders";
+import { getInviteBaseUrl } from "@/lib/invite-email";
 import { sendPushToUser } from "@/lib/push/send-push";
 import { createInAppNotification } from "@/lib/notifications/create-notification";
 import {
@@ -332,6 +340,7 @@ export default async function handler(
         ownerEmail: string;
       }>
     >();
+    const dueSoonByOwner = new Map<string, OwnerDueSoonDigest>();
 
     for (const subscription of memberSubscriptions) {
       let action: CronAction;
@@ -346,8 +355,10 @@ export default async function handler(
         continue;
       }
 
-      // Members are not notified about their own Member Subscription; only
-      // expiry is recorded so the gym owner's daily list can be built.
+      // Members are not notified about their own Member Subscription. Instead
+      // the gym owner gets one daily email listing fees due soon (below), and
+      // expiry is recorded so the owner's expired-members list can be built.
+      if (addDueSoonReminder(dueSoonByOwner, subscription, action)) continue;
       if (action.type !== "EXPIRE") continue;
 
       if (!subscription.is_expired) {
@@ -391,6 +402,52 @@ export default async function handler(
             error
           );
         }
+      }
+    }
+
+    // One "fees due soon" email per owner. Reminder flags are only set after the
+    // email is sent, so a failed send is retried on the next run.
+    for (const digest of dueSoonByOwner.values()) {
+      const members = sortDueSoonMembers(digest.members);
+      const result = await executeReminderDelivery({
+        hasRecipient: Boolean(digest.ownerEmail),
+        send: async () => {
+          const { subject, text, html } = getGymOwnerDueSoonEmail(
+            digest.ownerName,
+            members,
+            getInviteBaseUrl()
+          );
+          await sendEmail(digest.ownerEmail!, subject, text, html);
+        },
+        markDelivered: async () => {
+          const ids = reminderFlagIds(members);
+          if (ids.first.length > 0) {
+            await prisma.memberSubscription.updateMany({
+              where: { id: { in: ids.first } },
+              data: { first_reminder_sent: true },
+            });
+          }
+          if (ids.second.length > 0) {
+            await prisma.memberSubscription.updateMany({
+              where: { id: { in: ids.second } },
+              data: { second_reminder_sent: true },
+            });
+          }
+        },
+      });
+
+      if (result.sent) {
+        memberMetrics.remindersSent += members.length;
+        memberMetrics.summariesSent++;
+      }
+      if (result.skipped) memberMetrics.skippedNoRecipient += members.length;
+      if (result.failed) {
+        memberMetrics.remindersFailed += members.length;
+        memberMetrics.summariesFailed++;
+        console.error(
+          `Failed due-soon member reminder email for owner ${digest.ownerId}:`,
+          result.error
+        );
       }
     }
 
