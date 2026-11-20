@@ -1,3 +1,5 @@
+import { APP_NAME } from "@/constants/brand";
+import { formatCurrency } from "@/lib/currency";
 import { escapeHtml } from "@/lib/email/escape-html";
 
 type EmailContent = {
@@ -156,6 +158,110 @@ export function getGymOwnerSummaryEmail(
           .join("")}
       </ul>
       <p>Please follow up with these members to renew their memberships.</p>
+    </div>
+  `;
+
+  return { subject, text, html };
+}
+
+export type DueSoonEmailMember = {
+  name: string;
+  phone_number?: string | null;
+  gymName: string;
+  gymCountry?: string | null;
+  price: number;
+  billingModel: string;
+  endDate: Date | string;
+  daysLeft: number;
+};
+
+function formatDaysLeft(daysLeft: number): string {
+  if (daysLeft <= 1) return "Tomorrow";
+  return `In ${daysLeft} days`;
+}
+
+function formatBillingModel(billingModel: string): string {
+  if (billingModel === "MONTHLY") return "Monthly";
+  if (billingModel === "YEARLY") return "Yearly";
+  return billingModel;
+}
+
+/**
+ * Daily digest to a gym owner listing members whose fee runs out soon, so they
+ * can collect before it expires. `members` should already be sorted.
+ */
+export function getGymOwnerDueSoonEmail(
+  ownerName: string,
+  members: DueSoonEmailMember[],
+  appUrl?: string
+): EmailContent {
+  const count = members.length;
+  const subject =
+    count === 1
+      ? `${members[0].name}'s gym fee is due ${members[0].daysLeft <= 1 ? "tomorrow" : `in ${members[0].daysLeft} days`}`
+      : `${count} members' gym fees are due soon`;
+  const showGym = new Set(members.map((m) => m.gymName)).size > 1;
+  const linkUrl = appUrl ? `${appUrl.replace(/\/$/, "")}/membersubscriptions` : "";
+
+  const rows = members.map((member) => ({
+    name: member.name,
+    phone: member.phone_number?.trim() || "No phone",
+    gym: member.gymName,
+    plan: formatBillingModel(member.billingModel),
+    amount: formatCurrency(member.price, { countryCode: member.gymCountry }),
+    due: `${formatDaysLeft(member.daysLeft)} (${formatDigestDate(member.endDate)})`,
+  }));
+
+  const intro =
+    count === 1
+      ? "This member's fee runs out soon. Collect it now so their membership doesn't lapse:"
+      : `These ${count} members' fees run out soon. Collect them now so their memberships don't lapse:`;
+
+  const text = `Hi ${ownerName},\n\n${intro}\n\n${rows
+    .map(
+      (row) =>
+        `- ${row.name}${showGym ? ` (${row.gym})` : ""} | ${row.plan} ${row.amount} | Due: ${row.due} | Phone: ${row.phone}`
+    )
+    .join("\n")}\n\n${linkUrl ? `Renew or record a payment in ${APP_NAME}: ${linkUrl}\n\n` : ""}— ${APP_NAME}`;
+
+  const cell = "padding:8px 10px;border-bottom:1px solid #e5e5e5;text-align:left;vertical-align:top;";
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 640px; margin: 0 auto; color: #222;">
+      <h2 style="color: #333;">${escapeHtml(subject)}</h2>
+      <p>Hi ${escapeHtml(ownerName)},</p>
+      <p>${escapeHtml(intro)}</p>
+      <table style="border-collapse: collapse; width: 100%; font-size: 14px;">
+        <thead>
+          <tr style="background:#f4f6ee;">
+            <th style="${cell}">Member</th>
+            ${showGym ? `<th style="${cell}">Gym</th>` : ""}
+            <th style="${cell}">Plan</th>
+            <th style="${cell}">Fee</th>
+            <th style="${cell}">Due</th>
+            <th style="${cell}">Phone</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows
+            .map(
+              (row) => `<tr>
+                <td style="${cell}"><strong>${escapeHtml(row.name)}</strong></td>
+                ${showGym ? `<td style="${cell}">${escapeHtml(row.gym)}</td>` : ""}
+                <td style="${cell}">${escapeHtml(row.plan)}</td>
+                <td style="${cell}">${escapeHtml(row.amount)}</td>
+                <td style="${cell}">${escapeHtml(row.due)}</td>
+                <td style="${cell}">${escapeHtml(row.phone)}</td>
+              </tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+      ${
+        linkUrl
+          ? `<p style="margin-top:20px;"><a href="${escapeHtml(linkUrl)}" style="display:inline-block;background:#BDDE63;color:#1a2405;font-weight:bold;text-decoration:none;padding:10px 18px;border-radius:6px;">Renew or record a payment</a></p>`
+          : ""
+      }
+      <p style="color:#666;font-size:13px;">— ${escapeHtml(APP_NAME)}</p>
     </div>
   `;
 
