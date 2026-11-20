@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireGymOwner } from "@/lib/ownersessioncheck";
 import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
+import { amountDue, parseMoney, validateFeeInput } from "@/lib/member-balance";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -25,6 +26,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       transaction_id,
       payment_date,
       notes,
+      discount,
+      discount_note,
+      admission_fee,
+      amount_paid,
     } = req.body as {
       member_id: string;
       price: number;
@@ -36,6 +41,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       transaction_id?: string;
       payment_date?: string;
       notes?: string;
+      discount?: number;
+      discount_note?: string;
+      admission_fee?: number;
+      /** Paid now; defaults to the full amount due. 0 = pay later. */
+      amount_paid?: number;
     };
 
     // Validate required fields
@@ -43,6 +53,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(StatusCodes.BAD_REQUEST).json({
         error: "Missing required fields: member_id, price",
       });
+    }
+
+    const fee = {
+      price: parseMoney(price, Number.NaN),
+      discount: parseMoney(discount, 0),
+      admission_fee: parseMoney(admission_fee, 0),
+    };
+    const paidNow = parseMoney(amount_paid, amountDue(fee));
+    const feeError = validateFeeInput({ ...fee, amount_paid: paidNow });
+    if (feeError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: feeError });
     }
 
     // Verify member exists and belongs to owner
@@ -129,7 +150,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const memberSubscription = await tx.memberSubscription.create({
         data: {
           member_id,
-          price: parseInt(String(price)),
+          price: fee.price,
+          discount: fee.discount,
+          discount_note: fee.discount > 0 ? discount_note?.trim() || null : null,
+          admission_fee: fee.admission_fee,
           billing_model: "MONTHLY", // Default, can be adjusted if needed
           start_date: finalStartDate,
           end_date: finalEndDate,
@@ -138,12 +162,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      // Automatically create payment record
-      await tx.payment.create({
+      // Record what was paid now (nothing when the member pays later)
+      if (paidNow > 0) await tx.payment.create({
         data: {
           member_subscription_id: memberSubscription.id,
           subscription_type: SubscriptionTypeEnum.MEMBER,
-          amount: parseInt(String(price)),
+          amount: paidNow,
           payment_method: finalPaymentMethod,
           transaction_id: finalTransactionId,
           payment_date: payment_date ? new Date(payment_date) : new Date(),

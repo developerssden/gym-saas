@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { MoreHorizontal, Pencil, RotateCw, Trash2, History } from "lucide-react";
+import { MoreHorizontal, Pencil, RotateCw, Trash2, History, Banknote } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +32,7 @@ import { CurrencyAmount } from "@/components/common/CurrencyAmount";
 import ChurnReasonModal from "@/components/membersubscriptions/ChurnReasonModal";
 import { MemberSubscriptionHistoryDrawer } from "@/components/membersubscriptions/MemberSubscriptionHistoryDrawer";
 import { WhatsAppReminderMenuItem } from "@/components/common/whatsapp-actions";
+import RecordPaymentModal from "@/components/membersubscriptions/RecordPaymentModal";
 
 export type MemberSubscription = {
   id: string;
@@ -49,6 +50,12 @@ export type MemberSubscription = {
     } | null;
   };
   price: number;
+  discount?: number;
+  admission_fee?: number;
+  /** Added by the API: price - discount + admission fee. */
+  amount_due?: number;
+  amount_paid?: number;
+  balance?: number;
   billing_model: string;
   start_date: string;
   end_date: string;
@@ -62,6 +69,8 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [showChurnModal, setShowChurnModal] = useState(false);
   const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
+  const [showRecordPayment, setShowRecordPayment] = useState(false);
+  const balance = subscription.balance ?? 0;
 
   const memberName =
     `${subscription.member?.user?.first_name ?? ""} ${subscription.member?.user?.last_name ?? ""}`.trim() ||
@@ -96,6 +105,12 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
               Edit
             </Link>
           </DropdownMenuItem>
+          {balance > 0 && (
+            <DropdownMenuItem onClick={() => setShowRecordPayment(true)}>
+              <Banknote className="mr-2 h-4 w-4" />
+              Record payment
+            </DropdownMenuItem>
+          )}
           <WhatsAppReminderMenuItem
             memberName={memberName}
             phone={subscription.member.user.phone_number}
@@ -177,6 +192,14 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
         memberName={memberName}
       />
 
+      <RecordPaymentModal
+        open={showRecordPayment}
+        onClose={() => setShowRecordPayment(false)}
+        subscriptionId={subscription.id}
+        memberName={memberName}
+        balance={balance}
+      />
+
       <ChurnReasonModal
         open={showChurnModal}
         onClose={() => setShowChurnModal(false)}
@@ -200,6 +223,25 @@ export const columns: ColumnDef<MemberSubscription>[] = [
     accessorKey: "price",
     header: "Price",
     cell: ({ row }) => <CurrencyAmount amount={row.original.price} />,
+  },
+  {
+    id: "balance",
+    header: "Balance",
+    cell: ({ row }) => {
+      const { balance, amount_paid, amount_due } = row.original;
+      if (balance === undefined) return "-";
+      if (balance <= 0) {
+        return <span className="text-sm font-medium text-primary-dim">Paid</span>;
+      }
+      return (
+        <div className="flex flex-col">
+          <CurrencyAmount amount={balance} className="font-semibold text-destructive" />
+          <span className="text-xs text-muted-foreground">
+            paid <CurrencyAmount amount={amount_paid ?? 0} /> of <CurrencyAmount amount={amount_due ?? 0} />
+          </span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "start_date",

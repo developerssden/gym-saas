@@ -7,6 +7,7 @@ import {
   calculateRemainingDaysFromEndDate,
 } from "@/lib/subscription-helpers";
 import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
+import { amountDue, parseMoney, validateFeeInput } from "@/lib/member-balance";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -38,6 +39,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         error: "Missing required fields: member_id, price",
       });
     }
+
+    const fee = {
+      price: parseMoney(price, Number.NaN),
+      discount: parseMoney(req.body.discount, 0),
+      admission_fee: parseMoney(req.body.admission_fee, 0),
+    };
+    // Paid now; defaults to the full amount due. 0 = pay later.
+    const paidNow = parseMoney(req.body.amount_paid, amountDue(fee));
+    const feeError = validateFeeInput({ ...fee, amount_paid: paidNow });
+    if (feeError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: feeError });
+    }
+    const discountNote =
+      fee.discount > 0 && typeof req.body.discount_note === "string"
+        ? req.body.discount_note.trim() || null
+        : null;
 
     // Verify member exists and belongs to owner
     const member = await prisma.member.findUnique({
@@ -163,7 +180,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const memberSubscription = await tx.memberSubscription.create({
         data: {
           member_id,
-          price: parseInt(String(price)),
+          price: fee.price,
+          discount: fee.discount,
+          discount_note: discountNote,
+          admission_fee: fee.admission_fee,
           billing_model: "MONTHLY", // Default
           start_date: finalStartDate,
           end_date: finalEndDate,
@@ -172,12 +192,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      // Automatically create payment record
-      await tx.payment.create({
+      // Record what was paid now (nothing when the member pays later)
+      if (paidNow > 0) await tx.payment.create({
         data: {
           member_subscription_id: memberSubscription.id,
           subscription_type: SubscriptionTypeEnum.MEMBER,
-          amount: parseInt(String(price)),
+          amount: paidNow,
           payment_method: paymentMethod,
           transaction_id: transactionId,
           payment_date: req.body.payment_date ? new Date(req.body.payment_date) : new Date(),

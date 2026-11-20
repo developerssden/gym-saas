@@ -28,16 +28,23 @@ export type AggregateMemberSubscription = {
 
 export type MemberSubscriptionAvgAggregateOutputType = {
   price: number | null
+  discount: number | null
+  admission_fee: number | null
 }
 
 export type MemberSubscriptionSumAggregateOutputType = {
   price: number | null
+  discount: number | null
+  admission_fee: number | null
 }
 
 export type MemberSubscriptionMinAggregateOutputType = {
   id: string | null
   member_id: string | null
   price: number | null
+  discount: number | null
+  discount_note: string | null
+  admission_fee: number | null
   billing_model: $Enums.BillingModel | null
   start_date: Date | null
   end_date: Date | null
@@ -57,6 +64,9 @@ export type MemberSubscriptionMaxAggregateOutputType = {
   id: string | null
   member_id: string | null
   price: number | null
+  discount: number | null
+  discount_note: string | null
+  admission_fee: number | null
   billing_model: $Enums.BillingModel | null
   start_date: Date | null
   end_date: Date | null
@@ -76,6 +86,9 @@ export type MemberSubscriptionCountAggregateOutputType = {
   id: number
   member_id: number
   price: number
+  discount: number
+  discount_note: number
+  admission_fee: number
   billing_model: number
   start_date: number
   end_date: number
@@ -95,16 +108,23 @@ export type MemberSubscriptionCountAggregateOutputType = {
 
 export type MemberSubscriptionAvgAggregateInputType = {
   price?: true
+  discount?: true
+  admission_fee?: true
 }
 
 export type MemberSubscriptionSumAggregateInputType = {
   price?: true
+  discount?: true
+  admission_fee?: true
 }
 
 export type MemberSubscriptionMinAggregateInputType = {
   id?: true
   member_id?: true
   price?: true
+  discount?: true
+  discount_note?: true
+  admission_fee?: true
   billing_model?: true
   start_date?: true
   end_date?: true
@@ -124,6 +144,9 @@ export type MemberSubscriptionMaxAggregateInputType = {
   id?: true
   member_id?: true
   price?: true
+  discount?: true
+  discount_note?: true
+  admission_fee?: true
   billing_model?: true
   start_date?: true
   end_date?: true
@@ -143,6 +166,9 @@ export type MemberSubscriptionCountAggregateInputType = {
   id?: true
   member_id?: true
   price?: true
+  discount?: true
+  discount_note?: true
+  admission_fee?: true
   billing_model?: true
   start_date?: true
   end_date?: true
@@ -249,6 +275,9 @@ export type MemberSubscriptionGroupByOutputType = {
   id: string
   member_id: string
   price: number
+  discount: number
+  discount_note: string | null
+  admission_fee: number
   billing_model: $Enums.BillingModel
   start_date: Date
   end_date: Date
@@ -291,6 +320,9 @@ export type MemberSubscriptionWhereInput = {
   id?: Prisma.StringFilter<"MemberSubscription"> | string
   member_id?: Prisma.StringFilter<"MemberSubscription"> | string
   price?: Prisma.IntFilter<"MemberSubscription"> | number
+  discount?: Prisma.IntFilter<"MemberSubscription"> | number
+  discount_note?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
+  admission_fee?: Prisma.IntFilter<"MemberSubscription"> | number
   billing_model?: Prisma.EnumBillingModelFilter<"MemberSubscription"> | $Enums.BillingModel
   start_date?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   end_date?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
@@ -312,6 +344,9 @@ export type MemberSubscriptionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   member_id?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  discount?: Prisma.SortOrder
+  discount_note?: Prisma.SortOrderInput | Prisma.SortOrder
+  admission_fee?: Prisma.SortOrder
   billing_model?: Prisma.SortOrder
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
@@ -336,6 +371,9 @@ export type MemberSubscriptionWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.MemberSubscriptionWhereInput | Prisma.MemberSubscriptionWhereInput[]
   member_id?: Prisma.StringFilter<"MemberSubscription"> | string
   price?: Prisma.IntFilter<"MemberSubscription"> | number
+  discount?: Prisma.IntFilter<"MemberSubscription"> | number
+  discount_note?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
+  admission_fee?: Prisma.IntFilter<"MemberSubscription"> | number
   billing_model?: Prisma.EnumBillingModelFilter<"MemberSubscription"> | $Enums.BillingModel
   start_date?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   end_date?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
@@ -357,6 +395,9 @@ export type MemberSubscriptionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   member_id?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  discount?: Prisma.SortOrder
+  discount_note?: Prisma.SortOrderInput | Prisma.SortOrder
+  admission_fee?: Prisma.SortOrder
   billing_model?: Prisma.SortOrder
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
@@ -384,6 +425,9 @@ export type MemberSubscriptionScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"MemberSubscription"> | string
   member_id?: Prisma.StringWithAggregatesFilter<"MemberSubscription"> | string
   price?: Prisma.IntWithAggregatesFilter<"MemberSubscription"> | number
+  discount?: Prisma.IntWithAggregatesFilter<"MemberSubscription"> | number
+  discount_note?: Prisma.StringNullableWithAggregatesFilter<"MemberSubscription"> | string | null
+  admission_fee?: Prisma.IntWithAggregatesFilter<"MemberSubscription"> | number
   billing_model?: Prisma.EnumBillingModelWithAggregatesFilter<"MemberSubscription"> | $Enums.BillingModel
   start_date?: Prisma.DateTimeWithAggregatesFilter<"MemberSubscription"> | Date | string
   end_date?: Prisma.DateTimeWithAggregatesFilter<"MemberSubscription"> | Date | string
@@ -402,6 +446,9 @@ export type MemberSubscriptionScalarWhereWithAggregatesInput = {
 export type MemberSubscriptionCreateInput = {
   id?: string
   price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
   billing_model: $Enums.BillingModel
   start_date: Date | string
   end_date: Date | string
@@ -423,6 +470,9 @@ export type MemberSubscriptionUncheckedCreateInput = {
   id?: string
   member_id: string
   price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
   billing_model: $Enums.BillingModel
   start_date: Date | string
   end_date: Date | string
@@ -442,6 +492,9 @@ export type MemberSubscriptionUncheckedCreateInput = {
 export type MemberSubscriptionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
   billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -463,6 +516,9 @@ export type MemberSubscriptionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   member_id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
   billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -483,6 +539,9 @@ export type MemberSubscriptionCreateManyInput = {
   id?: string
   member_id: string
   price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
   billing_model: $Enums.BillingModel
   start_date: Date | string
   end_date: Date | string
@@ -501,6 +560,9 @@ export type MemberSubscriptionCreateManyInput = {
 export type MemberSubscriptionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
   billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -520,6 +582,9 @@ export type MemberSubscriptionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   member_id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
   billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -549,6 +614,9 @@ export type MemberSubscriptionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   member_id?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  discount?: Prisma.SortOrder
+  discount_note?: Prisma.SortOrder
+  admission_fee?: Prisma.SortOrder
   billing_model?: Prisma.SortOrder
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
@@ -566,12 +634,17 @@ export type MemberSubscriptionCountOrderByAggregateInput = {
 
 export type MemberSubscriptionAvgOrderByAggregateInput = {
   price?: Prisma.SortOrder
+  discount?: Prisma.SortOrder
+  admission_fee?: Prisma.SortOrder
 }
 
 export type MemberSubscriptionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   member_id?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  discount?: Prisma.SortOrder
+  discount_note?: Prisma.SortOrder
+  admission_fee?: Prisma.SortOrder
   billing_model?: Prisma.SortOrder
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
@@ -591,6 +664,9 @@ export type MemberSubscriptionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   member_id?: Prisma.SortOrder
   price?: Prisma.SortOrder
+  discount?: Prisma.SortOrder
+  discount_note?: Prisma.SortOrder
+  admission_fee?: Prisma.SortOrder
   billing_model?: Prisma.SortOrder
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
@@ -608,6 +684,8 @@ export type MemberSubscriptionMinOrderByAggregateInput = {
 
 export type MemberSubscriptionSumOrderByAggregateInput = {
   price?: Prisma.SortOrder
+  discount?: Prisma.SortOrder
+  admission_fee?: Prisma.SortOrder
 }
 
 export type MemberSubscriptionNullableScalarRelationFilter = {
@@ -676,6 +754,9 @@ export type MemberSubscriptionUpdateOneWithoutPaymentsNestedInput = {
 export type MemberSubscriptionCreateWithoutMemberInput = {
   id?: string
   price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
   billing_model: $Enums.BillingModel
   start_date: Date | string
   end_date: Date | string
@@ -695,6 +776,9 @@ export type MemberSubscriptionCreateWithoutMemberInput = {
 export type MemberSubscriptionUncheckedCreateWithoutMemberInput = {
   id?: string
   price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
   billing_model: $Enums.BillingModel
   start_date: Date | string
   end_date: Date | string
@@ -744,6 +828,9 @@ export type MemberSubscriptionScalarWhereInput = {
   id?: Prisma.StringFilter<"MemberSubscription"> | string
   member_id?: Prisma.StringFilter<"MemberSubscription"> | string
   price?: Prisma.IntFilter<"MemberSubscription"> | number
+  discount?: Prisma.IntFilter<"MemberSubscription"> | number
+  discount_note?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
+  admission_fee?: Prisma.IntFilter<"MemberSubscription"> | number
   billing_model?: Prisma.EnumBillingModelFilter<"MemberSubscription"> | $Enums.BillingModel
   start_date?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   end_date?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
@@ -762,6 +849,9 @@ export type MemberSubscriptionScalarWhereInput = {
 export type MemberSubscriptionCreateWithoutPaymentsInput = {
   id?: string
   price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
   billing_model: $Enums.BillingModel
   start_date: Date | string
   end_date: Date | string
@@ -782,6 +872,9 @@ export type MemberSubscriptionUncheckedCreateWithoutPaymentsInput = {
   id?: string
   member_id: string
   price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
   billing_model: $Enums.BillingModel
   start_date: Date | string
   end_date: Date | string
@@ -816,6 +909,9 @@ export type MemberSubscriptionUpdateToOneWithWhereWithoutPaymentsInput = {
 export type MemberSubscriptionUpdateWithoutPaymentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
   billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -836,6 +932,9 @@ export type MemberSubscriptionUncheckedUpdateWithoutPaymentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   member_id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
   billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -854,6 +953,9 @@ export type MemberSubscriptionUncheckedUpdateWithoutPaymentsInput = {
 export type MemberSubscriptionCreateManyMemberInput = {
   id?: string
   price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
   billing_model: $Enums.BillingModel
   start_date: Date | string
   end_date: Date | string
@@ -872,6 +974,9 @@ export type MemberSubscriptionCreateManyMemberInput = {
 export type MemberSubscriptionUpdateWithoutMemberInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
   billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -891,6 +996,9 @@ export type MemberSubscriptionUpdateWithoutMemberInput = {
 export type MemberSubscriptionUncheckedUpdateWithoutMemberInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
   billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -910,6 +1018,9 @@ export type MemberSubscriptionUncheckedUpdateWithoutMemberInput = {
 export type MemberSubscriptionUncheckedUpdateManyWithoutMemberInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
   billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -960,6 +1071,9 @@ export type MemberSubscriptionSelect<ExtArgs extends runtime.Types.Extensions.In
   id?: boolean
   member_id?: boolean
   price?: boolean
+  discount?: boolean
+  discount_note?: boolean
+  admission_fee?: boolean
   billing_model?: boolean
   start_date?: boolean
   end_date?: boolean
@@ -982,6 +1096,9 @@ export type MemberSubscriptionSelectCreateManyAndReturn<ExtArgs extends runtime.
   id?: boolean
   member_id?: boolean
   price?: boolean
+  discount?: boolean
+  discount_note?: boolean
+  admission_fee?: boolean
   billing_model?: boolean
   start_date?: boolean
   end_date?: boolean
@@ -1002,6 +1119,9 @@ export type MemberSubscriptionSelectUpdateManyAndReturn<ExtArgs extends runtime.
   id?: boolean
   member_id?: boolean
   price?: boolean
+  discount?: boolean
+  discount_note?: boolean
+  admission_fee?: boolean
   billing_model?: boolean
   start_date?: boolean
   end_date?: boolean
@@ -1022,6 +1142,9 @@ export type MemberSubscriptionSelectScalar = {
   id?: boolean
   member_id?: boolean
   price?: boolean
+  discount?: boolean
+  discount_note?: boolean
+  admission_fee?: boolean
   billing_model?: boolean
   start_date?: boolean
   end_date?: boolean
@@ -1037,7 +1160,7 @@ export type MemberSubscriptionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type MemberSubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "member_id" | "price" | "billing_model" | "start_date" | "end_date" | "is_expired" | "notification_sent" | "first_reminder_sent" | "second_reminder_sent" | "is_active" | "is_deleted" | "churn_reason" | "churn_note" | "createdAt" | "updatedAt", ExtArgs["result"]["memberSubscription"]>
+export type MemberSubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "member_id" | "price" | "discount" | "discount_note" | "admission_fee" | "billing_model" | "start_date" | "end_date" | "is_expired" | "notification_sent" | "first_reminder_sent" | "second_reminder_sent" | "is_active" | "is_deleted" | "churn_reason" | "churn_note" | "createdAt" | "updatedAt", ExtArgs["result"]["memberSubscription"]>
 export type MemberSubscriptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   member?: boolean | Prisma.MemberDefaultArgs<ExtArgs>
   payments?: boolean | Prisma.MemberSubscription$paymentsArgs<ExtArgs>
@@ -1060,6 +1183,9 @@ export type $MemberSubscriptionPayload<ExtArgs extends runtime.Types.Extensions.
     id: string
     member_id: string
     price: number
+    discount: number
+    discount_note: string | null
+    admission_fee: number
     billing_model: $Enums.BillingModel
     start_date: Date
     end_date: Date
@@ -1501,6 +1627,9 @@ export interface MemberSubscriptionFieldRefs {
   readonly id: Prisma.FieldRef<"MemberSubscription", 'String'>
   readonly member_id: Prisma.FieldRef<"MemberSubscription", 'String'>
   readonly price: Prisma.FieldRef<"MemberSubscription", 'Int'>
+  readonly discount: Prisma.FieldRef<"MemberSubscription", 'Int'>
+  readonly discount_note: Prisma.FieldRef<"MemberSubscription", 'String'>
+  readonly admission_fee: Prisma.FieldRef<"MemberSubscription", 'Int'>
   readonly billing_model: Prisma.FieldRef<"MemberSubscription", 'BillingModel'>
   readonly start_date: Prisma.FieldRef<"MemberSubscription", 'DateTime'>
   readonly end_date: Prisma.FieldRef<"MemberSubscription", 'DateTime'>

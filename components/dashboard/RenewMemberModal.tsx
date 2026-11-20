@@ -14,6 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
+import { Switch } from "@/components/ui/switch";
+import { FeeSummary } from "@/components/membersubscriptions/FeeSummary";
+import { amountDue, validateFeeInput } from "@/lib/member-balance";
 import {
   Select,
   SelectContent,
@@ -40,9 +43,14 @@ export default function RenewMemberModal({
   defaultBillingModel,
 }: RenewMemberModalProps) {
   const queryClient = useQueryClient();
-  const { currencyCode } = useGymCurrency();
+  const { currencyCode, format } = useGymCurrency();
 
   const [price, setPrice] = useState(defaultPrice);
+  const [discount, setDiscount] = useState(0);
+  const [admissionFee, setAdmissionFee] = useState(0);
+  const [paidInFull, setPaidInFull] = useState(true);
+  const [amountPaid, setAmountPaid] = useState(0);
+  const due = amountDue({ price, discount, admission_fee: admissionFee });
   const [months, setMonths] = useState(
     defaultBillingModel === "YEARLY" ? 12 : 1
   );
@@ -54,7 +62,18 @@ export default function RenewMemberModal({
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
-    if (paymentMethod === "BANK_TRANSFER" && !transactionId.trim()) {
+    const paidNow = paidInFull ? due : amountPaid;
+    const feeError = validateFeeInput({
+      price,
+      discount,
+      admission_fee: admissionFee,
+      amount_paid: paidNow,
+    });
+    if (feeError) {
+      toast.error(feeError);
+      return;
+    }
+    if (paidNow > 0 && paymentMethod === "BANK_TRANSFER" && !transactionId.trim()) {
       toast.error("Transaction ID is required for bank transfer");
       return;
     }
@@ -69,6 +88,9 @@ export default function RenewMemberModal({
           body: JSON.stringify({
             member_id: memberId,
             price,
+            discount,
+            admission_fee: admissionFee,
+            amount_paid: paidNow,
             months,
             use_custom_dates: false,
             payment_method: paymentMethod,
@@ -80,10 +102,14 @@ export default function RenewMemberModal({
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Failed to renew");
+        throw new Error(err.error || err.message || "Failed to renew");
       }
 
-      toast.success(`${memberName}'s membership renewed successfully`);
+      toast.success(
+        paidNow < due
+          ? `${memberName}'s membership renewed. Balance due: ${format(due - paidNow)}`
+          : `${memberName}'s membership renewed successfully`
+      );
 
       queryClient.invalidateQueries({ queryKey: ["ownerDashboardOverview"] });
       queryClient.invalidateQueries({ queryKey: ["membersubscriptions"] });
@@ -99,6 +125,10 @@ export default function RenewMemberModal({
 
   function handleClose() {
     setPrice(defaultPrice);
+    setDiscount(0);
+    setAdmissionFee(0);
+    setPaidInFull(true);
+    setAmountPaid(0);
     setMonths(defaultBillingModel === "YEARLY" ? 12 : 1);
     setPaymentMethod("CASH");
     setTransactionId("");
@@ -115,15 +145,64 @@ export default function RenewMemberModal({
 
         <div className="grid gap-4 py-2">
           <div className="grid gap-1.5">
-            <Label htmlFor="price">Amount ({currencyCode})</Label>
+            <Label htmlFor="price">Price ({currencyCode})</Label>
             <Input
               id="price"
               type="number"
-              min={0}
+              min={1}
+              step={1}
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
             />
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="renew-discount">Discount</Label>
+              <Input
+                id="renew-discount"
+                type="number"
+                min={0}
+                step={1}
+                value={discount}
+                onChange={(e) => setDiscount(Number(e.target.value))}
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="renew-admission">Admission fee</Label>
+              <Input
+                id="renew-admission"
+                type="number"
+                min={0}
+                step={1}
+                value={admissionFee}
+                onChange={(e) => setAdmissionFee(Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch id="renew-paid-in-full" checked={paidInFull} onCheckedChange={setPaidInFull} />
+            <Label htmlFor="renew-paid-in-full">Paid in full now</Label>
+          </div>
+
+          {!paidInFull && (
+            <div className="grid gap-1.5">
+              <Label htmlFor="renew-amount-paid">Amount paid now ({currencyCode})</Label>
+              <Input
+                id="renew-amount-paid"
+                type="number"
+                min={0}
+                max={due}
+                step={1}
+                value={amountPaid}
+                onChange={(e) => setAmountPaid(Number(e.target.value))}
+              />
+              <p className="text-xs text-muted-foreground">Enter 0 if they&apos;ll pay later.</p>
+            </div>
+          )}
+
+          <FeeSummary amountDue={due} amountPaid={paidInFull ? due : amountPaid} />
 
           <div className="grid gap-1.5">
             <Label htmlFor="months">Duration (months)</Label>
