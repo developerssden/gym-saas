@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { MoreHorizontal, Pencil, RotateCw, Trash2, History, Banknote } from "lucide-react";
+import { MoreHorizontal, Pencil, RotateCw, Trash2, History, Banknote, Snowflake, Sun } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +33,7 @@ import ChurnReasonModal from "@/components/membersubscriptions/ChurnReasonModal"
 import { MemberSubscriptionHistoryDrawer } from "@/components/membersubscriptions/MemberSubscriptionHistoryDrawer";
 import { WhatsAppReminderMenuItem } from "@/components/common/whatsapp-actions";
 import RecordPaymentModal from "@/components/membersubscriptions/RecordPaymentModal";
+import FreezeDialog from "@/components/membersubscriptions/FreezeDialog";
 
 export type MemberSubscription = {
   id: string;
@@ -61,6 +62,8 @@ export type MemberSubscription = {
   end_date: string;
   is_active: boolean;
   is_expired: boolean;
+  /** Set while the membership is paused. */
+  frozen_since?: string | null;
 };
 
 // Separate component for actions cell to use hooks
@@ -70,6 +73,9 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
   const [showChurnModal, setShowChurnModal] = useState(false);
   const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
   const [showRecordPayment, setShowRecordPayment] = useState(false);
+  const [freezeMode, setFreezeMode] = useState<"freeze" | "unfreeze" | null>(null);
+  const isFrozen = !!subscription.frozen_since;
+  const canFreeze = subscription.is_active && !subscription.is_expired && !isFrozen;
   const balance = subscription.balance ?? 0;
 
   const memberName =
@@ -111,7 +117,20 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
               Record payment
             </DropdownMenuItem>
           )}
-          <WhatsAppReminderMenuItem
+          {isFrozen ? (
+            <DropdownMenuItem onClick={() => setFreezeMode("unfreeze")}>
+              <Sun className="mr-2 h-4 w-4" />
+              Unfreeze (member is back)
+            </DropdownMenuItem>
+          ) : (
+            canFreeze && (
+              <DropdownMenuItem onClick={() => setFreezeMode("freeze")}>
+                <Snowflake className="mr-2 h-4 w-4" />
+                Freeze membership
+              </DropdownMenuItem>
+            )
+          )}
+          {!isFrozen && <WhatsAppReminderMenuItem
             memberName={memberName}
             phone={subscription.member.user.phone_number}
             gymName={subscription.member.gym?.name}
@@ -119,7 +138,7 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
             price={subscription.price}
             endDate={subscription.end_date}
             isExpired={subscription.is_expired}
-          />
+          />}
           <DropdownMenuItem onClick={() => setShowHistoryDrawer(true)}>
             <History className="mr-2 h-4 w-4" />
             View History
@@ -190,6 +209,17 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
         onClose={() => setShowHistoryDrawer(false)}
         memberId={subscription.member_id}
         memberName={memberName}
+      />
+
+      <FreezeDialog
+        open={freezeMode !== null}
+        onClose={() => setFreezeMode(null)}
+        mode={freezeMode ?? "freeze"}
+        subscriptionId={subscription.id}
+        memberName={memberName}
+        startDate={subscription.start_date}
+        endDate={subscription.end_date}
+        frozenSince={subscription.frozen_since}
       />
 
       <RecordPaymentModal
@@ -264,6 +294,16 @@ export const columns: ColumnDef<MemberSubscription>[] = [
     header: "Status",
     cell: ({ row }) => {
       const sub = row.original;
+      if (sub.frozen_since) {
+        return (
+          <span className="flex flex-col">
+            <span className="text-sky-600 dark:text-sky-400">Frozen</span>
+            <span className="text-xs text-muted-foreground">
+              since {new Date(sub.frozen_since).toLocaleDateString()}
+            </span>
+          </span>
+        );
+      }
       if (sub.is_expired) {
         return <span className="text-red-500">Expired</span>;
       }

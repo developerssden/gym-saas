@@ -105,6 +105,11 @@ export type OwnerSubscription = Prisma.OwnerSubscriptionModel
  */
 export type MemberSubscription = Prisma.MemberSubscriptionModel
 /**
+ * Model SubscriptionFreeze
+ * 
+ */
+export type SubscriptionFreeze = Prisma.SubscriptionFreezeModel
+/**
  * Model Payment
  * 
  */

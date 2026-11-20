@@ -41,6 +41,7 @@ type OwnerOverviewResponse = {
       endDate: string
       isActive: boolean
       isExpired: boolean
+      frozenSince: string | null
       lastPaymentAmount: number | null
       lastPaymentDate: string | null
     }>
@@ -56,6 +57,7 @@ type OwnerOverviewResponse = {
       endDate: string
       isActive: boolean
       isExpired: boolean
+      frozenSince: string | null
       lastPaymentAmount: number | null
       lastPaymentDate: string | null
     }>
@@ -430,6 +432,7 @@ export default async function handler(
         endDate: safeIso(s.end_date),
         isActive: Boolean(s.is_active),
         isExpired: Boolean(s.is_expired),
+        frozenSince: s.frozen_since ? safeIso(s.frozen_since) : null,
         lastPaymentAmount: lastPayment?.amount ?? null,
         lastPaymentDate: lastPayment?.payment_date ? safeIso(lastPayment.payment_date) : null,
       }

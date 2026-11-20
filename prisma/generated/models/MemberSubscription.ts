@@ -56,6 +56,7 @@ export type MemberSubscriptionMinAggregateOutputType = {
   is_deleted: boolean | null
   churn_reason: string | null
   churn_note: string | null
+  frozen_since: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -78,6 +79,7 @@ export type MemberSubscriptionMaxAggregateOutputType = {
   is_deleted: boolean | null
   churn_reason: string | null
   churn_note: string | null
+  frozen_since: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -100,6 +102,7 @@ export type MemberSubscriptionCountAggregateOutputType = {
   is_deleted: number
   churn_reason: number
   churn_note: number
+  frozen_since: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -136,6 +139,7 @@ export type MemberSubscriptionMinAggregateInputType = {
   is_deleted?: true
   churn_reason?: true
   churn_note?: true
+  frozen_since?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -158,6 +162,7 @@ export type MemberSubscriptionMaxAggregateInputType = {
   is_deleted?: true
   churn_reason?: true
   churn_note?: true
+  frozen_since?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -180,6 +185,7 @@ export type MemberSubscriptionCountAggregateInputType = {
   is_deleted?: true
   churn_reason?: true
   churn_note?: true
+  frozen_since?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -289,6 +295,7 @@ export type MemberSubscriptionGroupByOutputType = {
   is_deleted: boolean
   churn_reason: string | null
   churn_note: string | null
+  frozen_since: Date | null
   createdAt: Date
   updatedAt: Date
   _count: MemberSubscriptionCountAggregateOutputType | null
@@ -334,10 +341,12 @@ export type MemberSubscriptionWhereInput = {
   is_deleted?: Prisma.BoolFilter<"MemberSubscription"> | boolean
   churn_reason?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
   churn_note?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
+  frozen_since?: Prisma.DateTimeNullableFilter<"MemberSubscription"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   member?: Prisma.XOR<Prisma.MemberScalarRelationFilter, Prisma.MemberWhereInput>
   payments?: Prisma.PaymentListRelationFilter
+  freezes?: Prisma.SubscriptionFreezeListRelationFilter
 }
 
 export type MemberSubscriptionOrderByWithRelationInput = {
@@ -358,10 +367,12 @@ export type MemberSubscriptionOrderByWithRelationInput = {
   is_deleted?: Prisma.SortOrder
   churn_reason?: Prisma.SortOrderInput | Prisma.SortOrder
   churn_note?: Prisma.SortOrderInput | Prisma.SortOrder
+  frozen_since?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   member?: Prisma.MemberOrderByWithRelationInput
   payments?: Prisma.PaymentOrderByRelationAggregateInput
+  freezes?: Prisma.SubscriptionFreezeOrderByRelationAggregateInput
 }
 
 export type MemberSubscriptionWhereUniqueInput = Prisma.AtLeast<{
@@ -385,10 +396,12 @@ export type MemberSubscriptionWhereUniqueInput = Prisma.AtLeast<{
   is_deleted?: Prisma.BoolFilter<"MemberSubscription"> | boolean
   churn_reason?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
   churn_note?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
+  frozen_since?: Prisma.DateTimeNullableFilter<"MemberSubscription"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   member?: Prisma.XOR<Prisma.MemberScalarRelationFilter, Prisma.MemberWhereInput>
   payments?: Prisma.PaymentListRelationFilter
+  freezes?: Prisma.SubscriptionFreezeListRelationFilter
 }, "id">
 
 export type MemberSubscriptionOrderByWithAggregationInput = {
@@ -409,6 +422,7 @@ export type MemberSubscriptionOrderByWithAggregationInput = {
   is_deleted?: Prisma.SortOrder
   churn_reason?: Prisma.SortOrderInput | Prisma.SortOrder
   churn_note?: Prisma.SortOrderInput | Prisma.SortOrder
+  frozen_since?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MemberSubscriptionCountOrderByAggregateInput
@@ -439,6 +453,7 @@ export type MemberSubscriptionScalarWhereWithAggregatesInput = {
   is_deleted?: Prisma.BoolWithAggregatesFilter<"MemberSubscription"> | boolean
   churn_reason?: Prisma.StringNullableWithAggregatesFilter<"MemberSubscription"> | string | null
   churn_note?: Prisma.StringNullableWithAggregatesFilter<"MemberSubscription"> | string | null
+  frozen_since?: Prisma.DateTimeNullableWithAggregatesFilter<"MemberSubscription"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MemberSubscription"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MemberSubscription"> | Date | string
 }
@@ -460,10 +475,12 @@ export type MemberSubscriptionCreateInput = {
   is_deleted?: boolean
   churn_reason?: string | null
   churn_note?: string | null
+  frozen_since?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   member: Prisma.MemberCreateNestedOneWithoutMemberSubscriptionsInput
   payments?: Prisma.PaymentCreateNestedManyWithoutMemberSubscriptionInput
+  freezes?: Prisma.SubscriptionFreezeCreateNestedManyWithoutMemberSubscriptionInput
 }
 
 export type MemberSubscriptionUncheckedCreateInput = {
@@ -484,9 +501,11 @@ export type MemberSubscriptionUncheckedCreateInput = {
   is_deleted?: boolean
   churn_reason?: string | null
   churn_note?: string | null
+  frozen_since?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutMemberSubscriptionInput
+  freezes?: Prisma.SubscriptionFreezeUncheckedCreateNestedManyWithoutMemberSubscriptionInput
 }
 
 export type MemberSubscriptionUpdateInput = {
@@ -506,10 +525,12 @@ export type MemberSubscriptionUpdateInput = {
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   member?: Prisma.MemberUpdateOneRequiredWithoutMemberSubscriptionsNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutMemberSubscriptionNestedInput
+  freezes?: Prisma.SubscriptionFreezeUpdateManyWithoutMemberSubscriptionNestedInput
 }
 
 export type MemberSubscriptionUncheckedUpdateInput = {
@@ -530,9 +551,11 @@ export type MemberSubscriptionUncheckedUpdateInput = {
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutMemberSubscriptionNestedInput
+  freezes?: Prisma.SubscriptionFreezeUncheckedUpdateManyWithoutMemberSubscriptionNestedInput
 }
 
 export type MemberSubscriptionCreateManyInput = {
@@ -553,6 +576,7 @@ export type MemberSubscriptionCreateManyInput = {
   is_deleted?: boolean
   churn_reason?: string | null
   churn_note?: string | null
+  frozen_since?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -574,6 +598,7 @@ export type MemberSubscriptionUpdateManyMutationInput = {
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -596,6 +621,7 @@ export type MemberSubscriptionUncheckedUpdateManyInput = {
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -628,6 +654,7 @@ export type MemberSubscriptionCountOrderByAggregateInput = {
   is_deleted?: Prisma.SortOrder
   churn_reason?: Prisma.SortOrder
   churn_note?: Prisma.SortOrder
+  frozen_since?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -656,6 +683,7 @@ export type MemberSubscriptionMaxOrderByAggregateInput = {
   is_deleted?: Prisma.SortOrder
   churn_reason?: Prisma.SortOrder
   churn_note?: Prisma.SortOrder
+  frozen_since?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -678,6 +706,7 @@ export type MemberSubscriptionMinOrderByAggregateInput = {
   is_deleted?: Prisma.SortOrder
   churn_reason?: Prisma.SortOrder
   churn_note?: Prisma.SortOrder
+  frozen_since?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -686,6 +715,11 @@ export type MemberSubscriptionSumOrderByAggregateInput = {
   price?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   admission_fee?: Prisma.SortOrder
+}
+
+export type MemberSubscriptionScalarRelationFilter = {
+  is?: Prisma.MemberSubscriptionWhereInput
+  isNot?: Prisma.MemberSubscriptionWhereInput
 }
 
 export type MemberSubscriptionNullableScalarRelationFilter = {
@@ -735,6 +769,20 @@ export type MemberSubscriptionUncheckedUpdateManyWithoutMemberNestedInput = {
   deleteMany?: Prisma.MemberSubscriptionScalarWhereInput | Prisma.MemberSubscriptionScalarWhereInput[]
 }
 
+export type MemberSubscriptionCreateNestedOneWithoutFreezesInput = {
+  create?: Prisma.XOR<Prisma.MemberSubscriptionCreateWithoutFreezesInput, Prisma.MemberSubscriptionUncheckedCreateWithoutFreezesInput>
+  connectOrCreate?: Prisma.MemberSubscriptionCreateOrConnectWithoutFreezesInput
+  connect?: Prisma.MemberSubscriptionWhereUniqueInput
+}
+
+export type MemberSubscriptionUpdateOneRequiredWithoutFreezesNestedInput = {
+  create?: Prisma.XOR<Prisma.MemberSubscriptionCreateWithoutFreezesInput, Prisma.MemberSubscriptionUncheckedCreateWithoutFreezesInput>
+  connectOrCreate?: Prisma.MemberSubscriptionCreateOrConnectWithoutFreezesInput
+  upsert?: Prisma.MemberSubscriptionUpsertWithoutFreezesInput
+  connect?: Prisma.MemberSubscriptionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MemberSubscriptionUpdateToOneWithWhereWithoutFreezesInput, Prisma.MemberSubscriptionUpdateWithoutFreezesInput>, Prisma.MemberSubscriptionUncheckedUpdateWithoutFreezesInput>
+}
+
 export type MemberSubscriptionCreateNestedOneWithoutPaymentsInput = {
   create?: Prisma.XOR<Prisma.MemberSubscriptionCreateWithoutPaymentsInput, Prisma.MemberSubscriptionUncheckedCreateWithoutPaymentsInput>
   connectOrCreate?: Prisma.MemberSubscriptionCreateOrConnectWithoutPaymentsInput
@@ -768,9 +816,11 @@ export type MemberSubscriptionCreateWithoutMemberInput = {
   is_deleted?: boolean
   churn_reason?: string | null
   churn_note?: string | null
+  frozen_since?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   payments?: Prisma.PaymentCreateNestedManyWithoutMemberSubscriptionInput
+  freezes?: Prisma.SubscriptionFreezeCreateNestedManyWithoutMemberSubscriptionInput
 }
 
 export type MemberSubscriptionUncheckedCreateWithoutMemberInput = {
@@ -790,9 +840,11 @@ export type MemberSubscriptionUncheckedCreateWithoutMemberInput = {
   is_deleted?: boolean
   churn_reason?: string | null
   churn_note?: string | null
+  frozen_since?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutMemberSubscriptionInput
+  freezes?: Prisma.SubscriptionFreezeUncheckedCreateNestedManyWithoutMemberSubscriptionInput
 }
 
 export type MemberSubscriptionCreateOrConnectWithoutMemberInput = {
@@ -842,8 +894,121 @@ export type MemberSubscriptionScalarWhereInput = {
   is_deleted?: Prisma.BoolFilter<"MemberSubscription"> | boolean
   churn_reason?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
   churn_note?: Prisma.StringNullableFilter<"MemberSubscription"> | string | null
+  frozen_since?: Prisma.DateTimeNullableFilter<"MemberSubscription"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MemberSubscription"> | Date | string
+}
+
+export type MemberSubscriptionCreateWithoutFreezesInput = {
+  id?: string
+  price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
+  billing_model: $Enums.BillingModel
+  start_date: Date | string
+  end_date: Date | string
+  is_expired?: boolean
+  notification_sent?: boolean
+  first_reminder_sent?: boolean
+  second_reminder_sent?: boolean
+  is_active?: boolean
+  is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
+  frozen_since?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  member: Prisma.MemberCreateNestedOneWithoutMemberSubscriptionsInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutMemberSubscriptionInput
+}
+
+export type MemberSubscriptionUncheckedCreateWithoutFreezesInput = {
+  id?: string
+  member_id: string
+  price: number
+  discount?: number
+  discount_note?: string | null
+  admission_fee?: number
+  billing_model: $Enums.BillingModel
+  start_date: Date | string
+  end_date: Date | string
+  is_expired?: boolean
+  notification_sent?: boolean
+  first_reminder_sent?: boolean
+  second_reminder_sent?: boolean
+  is_active?: boolean
+  is_deleted?: boolean
+  churn_reason?: string | null
+  churn_note?: string | null
+  frozen_since?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutMemberSubscriptionInput
+}
+
+export type MemberSubscriptionCreateOrConnectWithoutFreezesInput = {
+  where: Prisma.MemberSubscriptionWhereUniqueInput
+  create: Prisma.XOR<Prisma.MemberSubscriptionCreateWithoutFreezesInput, Prisma.MemberSubscriptionUncheckedCreateWithoutFreezesInput>
+}
+
+export type MemberSubscriptionUpsertWithoutFreezesInput = {
+  update: Prisma.XOR<Prisma.MemberSubscriptionUpdateWithoutFreezesInput, Prisma.MemberSubscriptionUncheckedUpdateWithoutFreezesInput>
+  create: Prisma.XOR<Prisma.MemberSubscriptionCreateWithoutFreezesInput, Prisma.MemberSubscriptionUncheckedCreateWithoutFreezesInput>
+  where?: Prisma.MemberSubscriptionWhereInput
+}
+
+export type MemberSubscriptionUpdateToOneWithWhereWithoutFreezesInput = {
+  where?: Prisma.MemberSubscriptionWhereInput
+  data: Prisma.XOR<Prisma.MemberSubscriptionUpdateWithoutFreezesInput, Prisma.MemberSubscriptionUncheckedUpdateWithoutFreezesInput>
+}
+
+export type MemberSubscriptionUpdateWithoutFreezesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
+  billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
+  start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_expired?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notification_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  first_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  member?: Prisma.MemberUpdateOneRequiredWithoutMemberSubscriptionsNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutMemberSubscriptionNestedInput
+}
+
+export type MemberSubscriptionUncheckedUpdateWithoutFreezesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  member_id?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.IntFieldUpdateOperationsInput | number
+  discount?: Prisma.IntFieldUpdateOperationsInput | number
+  discount_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  admission_fee?: Prisma.IntFieldUpdateOperationsInput | number
+  billing_model?: Prisma.EnumBillingModelFieldUpdateOperationsInput | $Enums.BillingModel
+  start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_expired?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notification_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  first_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  second_reminder_sent?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutMemberSubscriptionNestedInput
 }
 
 export type MemberSubscriptionCreateWithoutPaymentsInput = {
@@ -863,9 +1028,11 @@ export type MemberSubscriptionCreateWithoutPaymentsInput = {
   is_deleted?: boolean
   churn_reason?: string | null
   churn_note?: string | null
+  frozen_since?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   member: Prisma.MemberCreateNestedOneWithoutMemberSubscriptionsInput
+  freezes?: Prisma.SubscriptionFreezeCreateNestedManyWithoutMemberSubscriptionInput
 }
 
 export type MemberSubscriptionUncheckedCreateWithoutPaymentsInput = {
@@ -886,8 +1053,10 @@ export type MemberSubscriptionUncheckedCreateWithoutPaymentsInput = {
   is_deleted?: boolean
   churn_reason?: string | null
   churn_note?: string | null
+  frozen_since?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  freezes?: Prisma.SubscriptionFreezeUncheckedCreateNestedManyWithoutMemberSubscriptionInput
 }
 
 export type MemberSubscriptionCreateOrConnectWithoutPaymentsInput = {
@@ -923,9 +1092,11 @@ export type MemberSubscriptionUpdateWithoutPaymentsInput = {
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   member?: Prisma.MemberUpdateOneRequiredWithoutMemberSubscriptionsNestedInput
+  freezes?: Prisma.SubscriptionFreezeUpdateManyWithoutMemberSubscriptionNestedInput
 }
 
 export type MemberSubscriptionUncheckedUpdateWithoutPaymentsInput = {
@@ -946,8 +1117,10 @@ export type MemberSubscriptionUncheckedUpdateWithoutPaymentsInput = {
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  freezes?: Prisma.SubscriptionFreezeUncheckedUpdateManyWithoutMemberSubscriptionNestedInput
 }
 
 export type MemberSubscriptionCreateManyMemberInput = {
@@ -967,6 +1140,7 @@ export type MemberSubscriptionCreateManyMemberInput = {
   is_deleted?: boolean
   churn_reason?: string | null
   churn_note?: string | null
+  frozen_since?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -988,9 +1162,11 @@ export type MemberSubscriptionUpdateWithoutMemberInput = {
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUpdateManyWithoutMemberSubscriptionNestedInput
+  freezes?: Prisma.SubscriptionFreezeUpdateManyWithoutMemberSubscriptionNestedInput
 }
 
 export type MemberSubscriptionUncheckedUpdateWithoutMemberInput = {
@@ -1010,9 +1186,11 @@ export type MemberSubscriptionUncheckedUpdateWithoutMemberInput = {
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutMemberSubscriptionNestedInput
+  freezes?: Prisma.SubscriptionFreezeUncheckedUpdateManyWithoutMemberSubscriptionNestedInput
 }
 
 export type MemberSubscriptionUncheckedUpdateManyWithoutMemberInput = {
@@ -1032,6 +1210,7 @@ export type MemberSubscriptionUncheckedUpdateManyWithoutMemberInput = {
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   churn_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   churn_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frozen_since?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1043,10 +1222,12 @@ export type MemberSubscriptionUncheckedUpdateManyWithoutMemberInput = {
 
 export type MemberSubscriptionCountOutputType = {
   payments: number
+  freezes: number
 }
 
 export type MemberSubscriptionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   payments?: boolean | MemberSubscriptionCountOutputTypeCountPaymentsArgs
+  freezes?: boolean | MemberSubscriptionCountOutputTypeCountFreezesArgs
 }
 
 /**
@@ -1064,6 +1245,13 @@ export type MemberSubscriptionCountOutputTypeDefaultArgs<ExtArgs extends runtime
  */
 export type MemberSubscriptionCountOutputTypeCountPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.PaymentWhereInput
+}
+
+/**
+ * MemberSubscriptionCountOutputType without action
+ */
+export type MemberSubscriptionCountOutputTypeCountFreezesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SubscriptionFreezeWhereInput
 }
 
 
@@ -1085,10 +1273,12 @@ export type MemberSubscriptionSelect<ExtArgs extends runtime.Types.Extensions.In
   is_deleted?: boolean
   churn_reason?: boolean
   churn_note?: boolean
+  frozen_since?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   member?: boolean | Prisma.MemberDefaultArgs<ExtArgs>
   payments?: boolean | Prisma.MemberSubscription$paymentsArgs<ExtArgs>
+  freezes?: boolean | Prisma.MemberSubscription$freezesArgs<ExtArgs>
   _count?: boolean | Prisma.MemberSubscriptionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["memberSubscription"]>
 
@@ -1110,6 +1300,7 @@ export type MemberSubscriptionSelectCreateManyAndReturn<ExtArgs extends runtime.
   is_deleted?: boolean
   churn_reason?: boolean
   churn_note?: boolean
+  frozen_since?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   member?: boolean | Prisma.MemberDefaultArgs<ExtArgs>
@@ -1133,6 +1324,7 @@ export type MemberSubscriptionSelectUpdateManyAndReturn<ExtArgs extends runtime.
   is_deleted?: boolean
   churn_reason?: boolean
   churn_note?: boolean
+  frozen_since?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   member?: boolean | Prisma.MemberDefaultArgs<ExtArgs>
@@ -1156,14 +1348,16 @@ export type MemberSubscriptionSelectScalar = {
   is_deleted?: boolean
   churn_reason?: boolean
   churn_note?: boolean
+  frozen_since?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MemberSubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "member_id" | "price" | "discount" | "discount_note" | "admission_fee" | "billing_model" | "start_date" | "end_date" | "is_expired" | "notification_sent" | "first_reminder_sent" | "second_reminder_sent" | "is_active" | "is_deleted" | "churn_reason" | "churn_note" | "createdAt" | "updatedAt", ExtArgs["result"]["memberSubscription"]>
+export type MemberSubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "member_id" | "price" | "discount" | "discount_note" | "admission_fee" | "billing_model" | "start_date" | "end_date" | "is_expired" | "notification_sent" | "first_reminder_sent" | "second_reminder_sent" | "is_active" | "is_deleted" | "churn_reason" | "churn_note" | "frozen_since" | "createdAt" | "updatedAt", ExtArgs["result"]["memberSubscription"]>
 export type MemberSubscriptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   member?: boolean | Prisma.MemberDefaultArgs<ExtArgs>
   payments?: boolean | Prisma.MemberSubscription$paymentsArgs<ExtArgs>
+  freezes?: boolean | Prisma.MemberSubscription$freezesArgs<ExtArgs>
   _count?: boolean | Prisma.MemberSubscriptionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MemberSubscriptionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1178,6 +1372,7 @@ export type $MemberSubscriptionPayload<ExtArgs extends runtime.Types.Extensions.
   objects: {
     member: Prisma.$MemberPayload<ExtArgs>
     payments: Prisma.$PaymentPayload<ExtArgs>[]
+    freezes: Prisma.$SubscriptionFreezePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1197,6 +1392,7 @@ export type $MemberSubscriptionPayload<ExtArgs extends runtime.Types.Extensions.
     is_deleted: boolean
     churn_reason: string | null
     churn_note: string | null
+    frozen_since: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["memberSubscription"]>
@@ -1595,6 +1791,7 @@ export interface Prisma__MemberSubscriptionClient<T, Null = never, ExtArgs exten
   readonly [Symbol.toStringTag]: "PrismaPromise"
   member<T extends Prisma.MemberDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MemberDefaultArgs<ExtArgs>>): Prisma.Prisma__MemberClient<runtime.Types.Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   payments<T extends Prisma.MemberSubscription$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MemberSubscription$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  freezes<T extends Prisma.MemberSubscription$freezesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MemberSubscription$freezesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubscriptionFreezePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1641,6 +1838,7 @@ export interface MemberSubscriptionFieldRefs {
   readonly is_deleted: Prisma.FieldRef<"MemberSubscription", 'Boolean'>
   readonly churn_reason: Prisma.FieldRef<"MemberSubscription", 'String'>
   readonly churn_note: Prisma.FieldRef<"MemberSubscription", 'String'>
+  readonly frozen_since: Prisma.FieldRef<"MemberSubscription", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"MemberSubscription", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MemberSubscription", 'DateTime'>
 }
@@ -2060,6 +2258,30 @@ export type MemberSubscription$paymentsArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.PaymentScalarFieldEnum | Prisma.PaymentScalarFieldEnum[]
+}
+
+/**
+ * MemberSubscription.freezes
+ */
+export type MemberSubscription$freezesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SubscriptionFreeze
+   */
+  select?: Prisma.SubscriptionFreezeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SubscriptionFreeze
+   */
+  omit?: Prisma.SubscriptionFreezeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubscriptionFreezeInclude<ExtArgs> | null
+  where?: Prisma.SubscriptionFreezeWhereInput
+  orderBy?: Prisma.SubscriptionFreezeOrderByWithRelationInput | Prisma.SubscriptionFreezeOrderByWithRelationInput[]
+  cursor?: Prisma.SubscriptionFreezeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SubscriptionFreezeScalarFieldEnum | Prisma.SubscriptionFreezeScalarFieldEnum[]
 }
 
 /**
