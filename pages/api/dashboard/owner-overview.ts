@@ -6,6 +6,7 @@ import { requireGymOwner } from "@/lib/ownersessioncheck"
 import { StatusCodes } from "http-status-codes"
 import { SubscriptionTypeEnum } from "@/prisma/generated/client"
 import { DASHBOARD } from "@/lib/constants";
+import { summarizeBalance } from "@/lib/member-balance";
 
 type OwnerOverviewResponse = {
   totals: {
@@ -18,6 +19,10 @@ type OwnerOverviewResponse = {
     revenueThisMonth: number
     revenueLastMonth: number
     revenueGrowthPct: number | null
+    /** Unpaid balance across all member subscriptions (partial payments). */
+    outstandingAmount: number
+    /** Members with an unpaid balance. */
+    outstandingMembers: number
   }
   charts: {
     revenueByMonth: Array<{ month: string; revenue: number }>
@@ -330,6 +335,28 @@ export default async function handler(
       }),
     ])
 
+    // Outstanding: every non-deleted subscription with an unpaid balance,
+    // including older (renewed or expired) ones — that money is still owed.
+    const balanceRows = await prisma.memberSubscription.findMany({
+      where: { is_deleted: false, member: memberNested },
+      select: {
+        member_id: true,
+        price: true,
+        discount: true,
+        admission_fee: true,
+        payments: { select: { amount: true } },
+      },
+    })
+    let outstandingAmount = 0
+    const membersOwing = new Set<string>()
+    for (const row of balanceRows) {
+      const { balance } = summarizeBalance(row, row.payments)
+      if (balance > 0) {
+        outstandingAmount += balance
+        membersOwing.add(row.member_id)
+      }
+    }
+
     const revenueThisMonth = paymentsThisMonth.reduce(
       (sum, p) => sum + (p.amount ?? 0),
       0
@@ -432,6 +459,8 @@ export default async function handler(
         revenueThisMonth,
         revenueLastMonth,
         revenueGrowthPct,
+        outstandingAmount,
+        outstandingMembers: membersOwing.size,
       },
       charts: {
         revenueByMonth,

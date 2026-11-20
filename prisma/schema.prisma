@@ -301,6 +301,11 @@ model MemberSubscription {
   id                  String        @id @default(uuid())
   member_id           String
   price               Int
+  // Fee breakdown: amount due = price - discount + admission_fee.
+  // Balance = amount due - sum(payments.amount). Partial payments are allowed.
+  discount            Int           @default(0)
+  discount_note       String?
+  admission_fee       Int           @default(0)
   billing_model       BillingModel
   start_date          DateTime
   end_date            DateTime

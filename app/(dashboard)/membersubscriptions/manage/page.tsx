@@ -29,10 +29,37 @@ import { cn } from "@/lib/utils";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
+import { FeeSummary } from "@/components/membersubscriptions/FeeSummary";
+import { amountDue } from "@/lib/member-balance";
 
 const MemberSubscriptionSchema = Yup.object({
   member_id: Yup.string().required("Member is required"),
-  price: Yup.number().required("Price is required").min(0, "Price must be positive"),
+  price: Yup.number()
+    .required("Price is required")
+    .integer("Use a whole amount")
+    .min(1, "Price must be greater than 0"),
+  discount: Yup.number()
+    .integer("Use a whole amount")
+    .min(0, "Discount can't be negative")
+    .test("max-price", "Discount can't be more than the price", function (value) {
+      return (value ?? 0) <= (Number(this.parent.price) || 0);
+    }),
+  discount_note: Yup.string().max(200, "Keep the note under 200 characters"),
+  admission_fee: Yup.number().integer("Use a whole amount").min(0, "Admission fee can't be negative"),
+  paid_in_full: Yup.boolean(),
+  amount_paid: Yup.number().when("paid_in_full", {
+    is: false,
+    then: (schema) =>
+      schema
+        .required("Enter how much was paid now (0 if nothing)")
+        .integer("Use a whole amount")
+        .min(0, "Amount can't be negative")
+        .test("max-due", "Can't be more than the total due", function (value) {
+          const { price, discount, admission_fee } = this.parent;
+          return (value ?? 0) <= amountDue({ price: Number(price) || 0, discount, admission_fee });
+        }),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   use_custom_dates: Yup.boolean(),
   months: Yup.number().when("use_custom_dates", {
     is: false,
@@ -165,6 +192,11 @@ const ManageMemberSubscriptionContent = () => {
     () => ({
       member_id: subscriptionData?.member_id || "",
       price: subscriptionData?.price || 0,
+      discount: subscriptionData?.discount ?? 0,
+      discount_note: subscriptionData?.discount_note ?? "",
+      admission_fee: subscriptionData?.admission_fee ?? 0,
+      paid_in_full: true,
+      amount_paid: 0,
       use_custom_dates: subscriptionData?.use_custom_dates ?? false,
       months: subscriptionData?.months || 1,
       start_date: subscriptionData?.start_date
@@ -177,6 +209,9 @@ const ManageMemberSubscriptionContent = () => {
     [
       subscriptionData?.member_id,
       subscriptionData?.price,
+      subscriptionData?.discount,
+      subscriptionData?.discount_note,
+      subscriptionData?.admission_fee,
       subscriptionData?.use_custom_dates,
       subscriptionData?.months,
       subscriptionData?.start_date,
@@ -198,9 +233,21 @@ const ManageMemberSubscriptionContent = () => {
       try {
         const submitData: any = {
           member_id: values.member_id,
-          price: values.price,
+          price: Number(values.price),
+          discount: Number(values.discount) || 0,
+          discount_note: values.discount_note,
+          admission_fee: Number(values.admission_fee) || 0,
           use_custom_dates: values.use_custom_dates,
         };
+        if (action === "create") {
+          submitData.amount_paid = values.paid_in_full
+            ? amountDue({
+                price: submitData.price,
+                discount: submitData.discount,
+                admission_fee: submitData.admission_fee,
+              })
+            : Number(values.amount_paid) || 0;
+        }
 
         if (values.use_custom_dates) {
           submitData.start_date = values.start_date.toISOString();
@@ -280,13 +327,119 @@ const ManageMemberSubscriptionContent = () => {
                 onBlur={formik.handleBlur}
                 disabled={action === "view"}
                 placeholder="Price"
-                min="0"
-                step="0.01"
+                min="1"
+                step="1"
               />
               {formik.touched.price && formik.errors.price && (
                 <p className="text-red-500 text-sm">{String(formik.errors.price)}</p>
               )}
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="admission_fee">Admission fee ({currencyCode})</Label>
+              <Input
+                id="admission_fee"
+                name="admission_fee"
+                type="number"
+                value={formik.values.admission_fee}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                disabled={action === "view"}
+                min="0"
+                step="1"
+              />
+              <p className="text-xs text-muted-foreground">One-time joining fee. Leave 0 if none.</p>
+              {formik.touched.admission_fee && formik.errors.admission_fee && (
+                <p className="text-red-500 text-sm">{String(formik.errors.admission_fee)}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="discount">Discount ({currencyCode})</Label>
+              <Input
+                id="discount"
+                name="discount"
+                type="number"
+                value={formik.values.discount}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                disabled={action === "view"}
+                min="0"
+                step="1"
+              />
+              {formik.touched.discount && formik.errors.discount && (
+                <p className="text-red-500 text-sm">{String(formik.errors.discount)}</p>
+              )}
+            </div>
+
+            {Number(formik.values.discount) > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="discount_note">Discount reason (optional)</Label>
+                <Input
+                  id="discount_note"
+                  name="discount_note"
+                  value={formik.values.discount_note}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  disabled={action === "view"}
+                  placeholder="e.g. Student, family, Ramadan offer"
+                />
+                {formik.touched.discount_note && formik.errors.discount_note && (
+                  <p className="text-red-500 text-sm">{String(formik.errors.discount_note)}</p>
+                )}
+              </div>
+            )}
+
+            {action === "create" && (
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="paid_in_full"
+                    checked={formik.values.paid_in_full}
+                    onCheckedChange={(checked) => formik.setFieldValue("paid_in_full", checked)}
+                  />
+                  <Label htmlFor="paid_in_full">Paid in full now</Label>
+                </div>
+                {!formik.values.paid_in_full && (
+                  <div className="space-y-2 pt-2 md:max-w-[calc(50%-1rem)]">
+                    <Label htmlFor="amount_paid">Amount paid now ({currencyCode})</Label>
+                    <Input
+                      id="amount_paid"
+                      name="amount_paid"
+                      type="number"
+                      value={formik.values.amount_paid}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      min="0"
+                      step="1"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Enter 0 if they&apos;ll pay later. Record the rest from the subscription&apos;s menu.
+                    </p>
+                    {formik.touched.amount_paid && formik.errors.amount_paid && (
+                      <p className="text-red-500 text-sm">{String(formik.errors.amount_paid)}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <FeeSummary
+              className="md:col-span-2"
+              amountDue={amountDue({
+                price: Number(formik.values.price) || 0,
+                discount: Number(formik.values.discount) || 0,
+                admission_fee: Number(formik.values.admission_fee) || 0,
+              })}
+              amountPaid={
+                action === "create"
+                  ? formik.values.paid_in_full
+                    ? Number.MAX_SAFE_INTEGER
+                    : Number(formik.values.amount_paid) || 0
+                  : subscriptionData?.amount_paid ?? 0
+              }
+              paidLabel={action === "create" ? "Paid now" : "Paid so far"}
+            />
 
             <div className="space-y-2 md:col-span-2">
               <div className="flex items-center space-x-2">
