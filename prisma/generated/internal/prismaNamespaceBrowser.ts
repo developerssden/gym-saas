@@ -64,6 +64,7 @@ export const ModelName = {
   Announcement: 'Announcement',
   OwnerSubscription: 'OwnerSubscription',
   MemberSubscription: 'MemberSubscription',
+  SubscriptionFreeze: 'SubscriptionFreeze',
   Payment: 'Payment',
   GymRegistration: 'GymRegistration'
 } as const
@@ -322,11 +323,28 @@ export const MemberSubscriptionScalarFieldEnum = {
   is_deleted: 'is_deleted',
   churn_reason: 'churn_reason',
   churn_note: 'churn_note',
+  frozen_since: 'frozen_since',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type MemberSubscriptionScalarFieldEnum = (typeof MemberSubscriptionScalarFieldEnum)[keyof typeof MemberSubscriptionScalarFieldEnum]
+
+
+export const SubscriptionFreezeScalarFieldEnum = {
+  id: 'id',
+  member_subscription_id: 'member_subscription_id',
+  start_date: 'start_date',
+  end_date: 'end_date',
+  days: 'days',
+  reason: 'reason',
+  frozen_by_id: 'frozen_by_id',
+  unfrozen_by_id: 'unfrozen_by_id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubscriptionFreezeScalarFieldEnum = (typeof SubscriptionFreezeScalarFieldEnum)[keyof typeof SubscriptionFreezeScalarFieldEnum]
 
 
 export const PaymentScalarFieldEnum = {

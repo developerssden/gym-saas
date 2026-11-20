@@ -71,6 +71,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           payments: {
             orderBy: { createdAt: "desc" },
           },
+          freezes: {
+            orderBy: { start_date: "desc" },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip,

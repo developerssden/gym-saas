@@ -295,6 +295,8 @@ export default async function handler(
       where: {
         is_active: true,
         is_deleted: false,
+        // Frozen subscriptions are paused: no reminders and no expiry until unfrozen.
+        frozen_since: null,
         OR: [{ is_expired: false }, { notification_sent: false }],
       },
       include: {

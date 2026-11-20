@@ -83,6 +83,7 @@ type SubscriptionRow = {
   endDate: string
   isActive: boolean
   isExpired: boolean
+  frozenSince?: string | null
   lastPaymentAmount: number | null
   lastPaymentDate: string | null
 }
@@ -201,11 +202,14 @@ const subscriptionColumns: ColumnDef<SubscriptionRow>[] = [
   {
     id: "status",
     accessorFn: (row) =>
-      row.isExpired ? "Expired" : row.isActive ? "Active" : "Inactive",
+      row.frozenSince ? "Frozen" : row.isExpired ? "Expired" : row.isActive ? "Active" : "Inactive",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
+      if (row.original.frozenSince) {
+        return <Badge variant="outline">Frozen</Badge>
+      }
       if (row.original.isExpired) {
         return <Badge variant="destructive">Expired</Badge>
       }
@@ -364,7 +368,7 @@ const OwnerDashboard = () => {
   } | null>(null)
 
   const reminderButton = React.useCallback(
-    (row: SubscriptionRow) => (
+    (row: SubscriptionRow) => row.frozenSince ? null : (
       <WhatsAppReminderButton
         memberName={row.memberName}
         phone={row.memberPhone}

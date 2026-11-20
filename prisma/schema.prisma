@@ -317,12 +317,34 @@ model MemberSubscription {
   is_deleted          Boolean       @default(false)
   churn_reason        String?
   churn_note          String?
+  // Set while the subscription is frozen (paused); see SubscriptionFreeze.
+  frozen_since        DateTime?
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
-  
+
   // Relations
   member              Member        @relation(fields: [member_id], references: [id])
   payments            Payment[]
+  freezes             SubscriptionFreeze[]
+}
+
+// One pause of a Member Subscription. While end_date is null the freeze is
+// ongoing; on unfreeze the subscription's end date moves out by `days`.
+model SubscriptionFreeze {
+  id                     String    @id @default(uuid())
+  member_subscription_id String
+  start_date             DateTime
+  end_date               DateTime?
+  days                   Int?
+  reason                 String?
+  frozen_by_id           String?
+  unfrozen_by_id         String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  memberSubscription MemberSubscription @relation(fields: [member_subscription_id], references: [id])
+
+  @@index([member_subscription_id])
 }
 
 model Payment {

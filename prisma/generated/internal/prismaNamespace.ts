@@ -397,6 +397,7 @@ export const ModelName = {
   Announcement: 'Announcement',
   OwnerSubscription: 'OwnerSubscription',
   MemberSubscription: 'MemberSubscription',
+  SubscriptionFreeze: 'SubscriptionFreeze',
   Payment: 'Payment',
   GymRegistration: 'GymRegistration'
 } as const
@@ -414,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "inviteToken" | "pushSubscription" | "inAppNotification" | "todo" | "gym" | "location" | "member" | "equipment" | "plan" | "announcement" | "ownerSubscription" | "memberSubscription" | "payment" | "gymRegistration"
+    modelProps: "user" | "inviteToken" | "pushSubscription" | "inAppNotification" | "todo" | "gym" | "location" | "member" | "equipment" | "plan" | "announcement" | "ownerSubscription" | "memberSubscription" | "subscriptionFreeze" | "payment" | "gymRegistration"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1380,6 +1381,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SubscriptionFreeze: {
+      payload: Prisma.$SubscriptionFreezePayload<ExtArgs>
+      fields: Prisma.SubscriptionFreezeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SubscriptionFreezeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SubscriptionFreezeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload>
+        }
+        findFirst: {
+          args: Prisma.SubscriptionFreezeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SubscriptionFreezeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload>
+        }
+        findMany: {
+          args: Prisma.SubscriptionFreezeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload>[]
+        }
+        create: {
+          args: Prisma.SubscriptionFreezeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload>
+        }
+        createMany: {
+          args: Prisma.SubscriptionFreezeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SubscriptionFreezeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload>[]
+        }
+        delete: {
+          args: Prisma.SubscriptionFreezeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload>
+        }
+        update: {
+          args: Prisma.SubscriptionFreezeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload>
+        }
+        deleteMany: {
+          args: Prisma.SubscriptionFreezeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SubscriptionFreezeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SubscriptionFreezeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload>[]
+        }
+        upsert: {
+          args: Prisma.SubscriptionFreezeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionFreezePayload>
+        }
+        aggregate: {
+          args: Prisma.SubscriptionFreezeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSubscriptionFreeze>
+        }
+        groupBy: {
+          args: Prisma.SubscriptionFreezeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubscriptionFreezeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SubscriptionFreezeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubscriptionFreezeCountAggregateOutputType> | number
+        }
+      }
+    }
     Payment: {
       payload: Prisma.$PaymentPayload<ExtArgs>
       fields: Prisma.PaymentFieldRefs
@@ -1805,11 +1880,28 @@ export const MemberSubscriptionScalarFieldEnum = {
   is_deleted: 'is_deleted',
   churn_reason: 'churn_reason',
   churn_note: 'churn_note',
+  frozen_since: 'frozen_since',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type MemberSubscriptionScalarFieldEnum = (typeof MemberSubscriptionScalarFieldEnum)[keyof typeof MemberSubscriptionScalarFieldEnum]
+
+
+export const SubscriptionFreezeScalarFieldEnum = {
+  id: 'id',
+  member_subscription_id: 'member_subscription_id',
+  start_date: 'start_date',
+  end_date: 'end_date',
+  days: 'days',
+  reason: 'reason',
+  frozen_by_id: 'frozen_by_id',
+  unfrozen_by_id: 'unfrozen_by_id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubscriptionFreezeScalarFieldEnum = (typeof SubscriptionFreezeScalarFieldEnum)[keyof typeof SubscriptionFreezeScalarFieldEnum]
 
 
 export const PaymentScalarFieldEnum = {
@@ -2188,6 +2280,7 @@ export type GlobalOmitConfig = {
   announcement?: Prisma.AnnouncementOmit
   ownerSubscription?: Prisma.OwnerSubscriptionOmit
   memberSubscription?: Prisma.MemberSubscriptionOmit
+  subscriptionFreeze?: Prisma.SubscriptionFreezeOmit
   payment?: Prisma.PaymentOmit
   gymRegistration?: Prisma.GymRegistrationOmit
 }
