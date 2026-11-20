@@ -41,7 +41,9 @@ export const options: NextAuthOptions = {
               email,
               is_deleted: false,
               is_active: true
-            }
+            },
+            // password is omitted globally (lib/prisma.ts); sign-in needs it to verify.
+            omit: { password: false },
           });
           if (!dbUser) {
             throw new Error('no_user_found');
