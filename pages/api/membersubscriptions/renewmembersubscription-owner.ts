@@ -8,6 +8,8 @@ import {
 } from "@/lib/subscription-helpers";
 import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
 import { amountDue, parseMoney, validateFeeInput } from "@/lib/member-balance";
+import { parseClientId, parseRecordedAt } from "@/lib/offline/request-fields";
+import { answerIfReplayed, isClientIdConflict } from "@/lib/offline/payment-replay";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -16,7 +18,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const access = await requireAccess(req, res, { permission: "membersubscriptions.renew" });
   if (!access) return;
 
+  // Idempotency key and real time of the renewal, sent by the app (also when syncing offline).
+  const clientId = parseClientId(req.body?.client_id);
+  const recordedAt = parseRecordedAt(req.body?.recorded_at);
+  if (!clientId.ok) return res.status(StatusCodes.BAD_REQUEST).json({ error: clientId.error });
+  if (!recordedAt.ok) return res.status(StatusCodes.BAD_REQUEST).json({ error: recordedAt.error });
+
   try {
+    // Before the "already active" check: a replayed renewal finds the new subscription active.
+    if (await answerIfReplayed(res, clientId.value, access.userId)) return;
+
     const {
       member_id,
       price,
@@ -136,7 +147,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      finalStartDate = new Date(); // Current date
+      // When it was renewed (offline renewals sync later), else now.
+      finalStartDate = recordedAt.value ? new Date(recordedAt.value) : new Date();
       finalEndDate = new Date(finalStartDate);
       finalEndDate.setMonth(finalEndDate.getMonth() + months);
 
@@ -201,9 +213,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           amount: paidNow,
           payment_method: paymentMethod,
           transaction_id: transactionId,
-          payment_date: req.body.payment_date ? new Date(req.body.payment_date) : new Date(),
+          payment_date: recordedAt.value ?? (req.body.payment_date ? new Date(req.body.payment_date) : new Date()),
           notes: req.body.notes || null,
           recorded_by_id: access.userId,
+          client_id: clientId.value,
         },
       });
 
@@ -215,6 +228,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: result,
     });
   } catch (err: unknown) {
+    // Same renewal sent twice at once: the transaction rolled back, the other one saved it.
+    if (isClientIdConflict(err) && (await answerIfReplayed(res, clientId.value, access.userId))) return;
     const message = err instanceof Error ? err.message : "Unknown error";
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: message });
   }

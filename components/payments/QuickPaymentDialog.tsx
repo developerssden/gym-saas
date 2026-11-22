@@ -3,12 +3,15 @@
 // Record a fee in three taps: open (1), pick the member (2), Save (3).
 // The amount and method are pre-filled from what the member owes, or from
 // their last subscription when it has ended (renew and pay in one step).
+//
+// Works offline too: members and what they owe come from the copy saved on
+// this device, and the payment is kept in the outbox until it can be synced.
 import { useState } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Search } from "lucide-react";
+import { ArrowLeft, Loader2, Search, WifiOff } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +20,12 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useMemberDirectory, useOnline, useOutbox } from "@/hooks/useOffline";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { applyPendingPayments, searchDirectory } from "@/lib/offline/outbox-types";
+import { submitPayment } from "@/lib/offline/submit";
 import type { FeeAction } from "@/lib/quick-payment";
+import { PAYMENT_QUERY_KEYS } from "@/lib/payment-queries";
 
 export type QuickPaymentMember = { id: string; name: string };
 
@@ -69,12 +76,24 @@ function QuickPaymentFlow({ onClose, initialMember }: { onClose: () => void; ini
   );
 }
 
+function OfflineNote({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="flex items-center gap-2 rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
+      <WifiOff className="size-4 shrink-0" />
+      <span>{children}</span>
+    </p>
+  );
+}
+
 function MemberPicker({ onPick }: { onPick: (m: QuickPaymentMember) => void }) {
   const { data: session } = useSession();
+  const online = useOnline();
+  const directory = useMemberDirectory();
   const [search, setSearch] = useState("");
   const debounced = useDebounce(search, 300);
   const gymId = session?.user?.selected_gym_id || undefined;
   const locationId = session?.user?.selected_location_id || undefined;
+  const ready = debounced.trim().length >= 2;
 
   const { data, isFetching } = useQuery({
     queryKey: ["quick-payment-members", debounced, gymId, locationId],
@@ -88,8 +107,13 @@ function MemberPicker({ onPick }: { onPick: (m: QuickPaymentMember) => void }) {
           location_id: locationId,
         })
       ).data.data,
-    enabled: debounced.trim().length >= 2,
+    enabled: online && ready,
   });
+
+  // Offline: search the copy of the member list saved on this device.
+  const results: Array<{ id: string; name: string; detail: string }> = online
+    ? (data ?? []).map(m => ({ id: m.id, name: memberName(m), detail: m.user.phone_number || m.location?.name || "" }))
+    : searchDirectory(directory.data?.data ?? [], debounced).map(m => ({ id: m.id, name: m.name, detail: m.phone ?? "" }));
 
   return (
     <>
@@ -97,6 +121,13 @@ function MemberPicker({ onPick }: { onPick: (m: QuickPaymentMember) => void }) {
         <DialogTitle>Record payment</DialogTitle>
         <DialogDescription>Find the member by name or phone number.</DialogDescription>
       </DialogHeader>
+      {!online && (
+        <OfflineNote>
+          {directory.data
+            ? "You're offline. Searching the members saved on this device; payments sync when you're back online."
+            : "You're offline and no member list is saved on this device yet. Open this once while online."}
+        </OfflineNote>
+      )}
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -108,24 +139,26 @@ function MemberPicker({ onPick }: { onPick: (m: QuickPaymentMember) => void }) {
           inputMode="search"
           aria-label="Search members"
         />
-        {isFetching && <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />}
+        {online && isFetching && (
+          <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        )}
       </div>
       <div className="max-h-80 overflow-y-auto">
-        {debounced.trim().length < 2 ? (
+        {!ready ? (
           <p className="py-6 text-center text-sm text-muted-foreground">Type at least 2 letters or digits.</p>
-        ) : data && data.length === 0 ? (
+        ) : (online ? data : true) && results.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">No members found.</p>
         ) : (
           <ul className="divide-y">
-            {(data ?? []).map(m => (
+            {results.map(m => (
               <li key={m.id}>
                 <button
                   type="button"
-                  onClick={() => onPick({ id: m.id, name: memberName(m) })}
+                  onClick={() => onPick({ id: m.id, name: m.name })}
                   className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-3 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
                 >
-                  <span className="font-medium">{memberName(m)}</span>
-                  <span className="text-sm text-muted-foreground">{m.user.phone_number || m.location?.name || ""}</span>
+                  <span className="font-medium">{m.name}</span>
+                  <span className="text-sm text-muted-foreground">{m.detail}</span>
                 </button>
               </li>
             ))}
@@ -137,10 +170,20 @@ function MemberPicker({ onPick }: { onPick: (m: QuickPaymentMember) => void }) {
 }
 
 function FeeForm({ member, onBack, onDone }: { member: QuickPaymentMember; onBack?: () => void; onDone: () => void }) {
+  const online = useOnline();
+  const directory = useMemberDirectory();
   const { data, isLoading, error } = useQuery({
     queryKey: ["member-fee", member.id],
     queryFn: async () => (await axios.post<FeeResponse>("/api/payments/member-fee", { member_id: member.id })).data,
+    enabled: online,
+    retry: false,
   });
+
+  // Offline (or the lookup failed): use what was saved on this device.
+  const saved = directory.data?.data.find(m => m.id === member.id);
+  const fallback = !online || error ? saved : undefined;
+  const action = data?.action ?? fallback?.action;
+  const phone = data?.member.phone ?? fallback?.phone;
 
   return (
     <>
@@ -153,45 +196,76 @@ function FeeForm({ member, onBack, onDone }: { member: QuickPaymentMember; onBac
           )}
           {member.name}
         </DialogTitle>
-        <DialogDescription>{data?.member.phone || "Record a payment"}</DialogDescription>
+        <DialogDescription>{phone || "Record a payment"}</DialogDescription>
       </DialogHeader>
-      {isLoading && (
+      {online && isLoading && (
         <div className="flex justify-center py-8">
           <Loader2 className="size-5 animate-spin text-muted-foreground" />
         </div>
       )}
-      {error && <p className="text-sm text-destructive">{getErrorMessage(error)}</p>}
-      {data && <FeeAmountForm member={member} action={data.action} onDone={onDone} />}
+      {!action && (!online || error) && (
+        <p className="text-sm text-destructive">
+          {!online
+            ? "This member isn't saved on this device, so their fee can't be recorded offline."
+            : getErrorMessage(error)}
+        </p>
+      )}
+      {action && (
+        <>
+          {fallback && (
+            <OfflineNote>Offline: using the fee saved on this device{directory.data ? ` (${shortDate(directory.data.savedAt)})` : ""}.</OfflineNote>
+          )}
+          <FeeAmountForm member={member} action={action} onDone={onDone} />
+        </>
+      )}
     </>
   );
 }
 
-function FeeAmountForm({ member, action, onDone }: { member: QuickPaymentMember; action: FeeAction; onDone: () => void }) {
+function FeeAmountForm({ member, action: serverAction, onDone }: { member: QuickPaymentMember; action: FeeAction; onDone: () => void }) {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
   const { can } = usePermissions();
   const { currencyCode, format } = useGymCurrency();
+  const outbox = useOutbox();
+  // Payments for this member still waiting on this device count as paid.
+  const { action, pendingAmount, blockedReason } = applyPendingPayments(
+    serverAction,
+    outbox.filter(i => i.memberId === member.id)
+  );
   const due = action.kind === "pay" ? action.balance : action.kind === "renew" ? action.amountDue : 0;
   const [amount, setAmount] = useState(String(due));
   const [method, setMethod] = useState<"CASH" | "BANK_TRANSFER">("CASH");
   const [transactionId, setTransactionId] = useState("");
 
   const mutation = useMutation({
+    // submitPayment handles being offline itself (queues the payment).
+    networkMode: "always",
     mutationFn: async () => {
       const value = Number(amount);
-      const payment = {
-        payment_method: method,
-        transaction_id: transactionId.trim() || undefined,
+      const payment = { payment_method: method, transaction_id: transactionId.trim() || undefined };
+      const common = {
+        userId: session?.user?.id ?? "",
+        memberId: member.id,
+        memberName: member.name,
+        amount: value,
+        method,
       };
       if (action.kind === "pay") {
-        return axios.post("/api/payments/createpayment", {
-          subscription_type: "MEMBER",
-          member_subscription_id: action.subscriptionId,
-          amount: value,
-          ...payment,
+        return submitPayment({
+          ...common,
+          kind: "payment",
+          subscriptionId: action.subscriptionId,
+          url: "/api/payments/createpayment",
+          body: { subscription_type: "MEMBER", member_subscription_id: action.subscriptionId, amount: value, ...payment },
         });
       }
-      if (action.kind === "renew") {
-        return axios.post("/api/membersubscriptions/renewmembersubscription-owner", {
+      if (action.kind !== "renew") throw new Error("Nothing to pay");
+      return submitPayment({
+        ...common,
+        kind: "renew",
+        url: "/api/membersubscriptions/renewmembersubscription-owner",
+        body: {
           member_id: member.id,
           price: action.price,
           discount: action.discount,
@@ -200,26 +274,30 @@ function FeeAmountForm({ member, action, onDone }: { member: QuickPaymentMember;
           use_custom_dates: false,
           amount_paid: value,
           ...payment,
-        });
-      }
+        },
+      });
     },
-    onSuccess: () => {
-      const left = due - Number(amount);
-      toast.success(
-        action.kind === "renew"
-          ? `Renewed and ${format(Number(amount))} recorded for ${member.name}.`
-          : left > 0
-            ? `Payment recorded. ${member.name} still owes ${format(left)}.`
-            : `Payment recorded. ${member.name} has paid in full.`
-      );
-      for (const key of ["membersubscriptions", "payments", "members", "ownerDashboardOverview", "monthly-report", "member-fee", "setup-progress"]) {
-        queryClient.invalidateQueries({ queryKey: [key] });
+    onSuccess: result => {
+      const value = Number(amount);
+      if (result === "queued") {
+        toast.success(`Saved on this device: ${format(value)} from ${member.name}. It will sync when you're back online.`);
+      } else {
+        const left = due - value;
+        toast.success(
+          action.kind === "renew"
+            ? `Renewed and ${format(value)} recorded for ${member.name}.`
+            : left > 0
+              ? `Payment recorded. ${member.name} still owes ${format(left)}.`
+              : `Payment recorded. ${member.name} has paid in full.`
+        );
+        for (const key of PAYMENT_QUERY_KEYS) queryClient.invalidateQueries({ queryKey: [key] });
       }
       onDone();
     },
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
+  if (blockedReason) return <p className="py-4 text-sm text-muted-foreground">{blockedReason}</p>;
   if (action.kind === "none") {
     return <p className="py-4 text-sm text-muted-foreground">{member.name} has no subscription yet. Create one from Member Subscriptions.</p>;
   }
@@ -259,6 +337,7 @@ function FeeAmountForm({ member, action, onDone }: { member: QuickPaymentMember;
           <>
             Owes <strong>{format(action.balance)}</strong>
             {action.balance < action.amountDue && <> of {format(action.amountDue)}</>} · subscription ends {shortDate(action.endDate)}
+            {pendingAmount > 0 && <> · {format(pendingAmount)} waiting to sync</>}
           </>
         ) : (
           <>

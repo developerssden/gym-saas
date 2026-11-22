@@ -238,6 +238,7 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
         subscriptionId={subscription.id}
         memberName={memberName}
         balance={balance}
+        memberId={subscription.member_id}
       />
 
       <ChurnReasonModal

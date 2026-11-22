@@ -6,13 +6,17 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useMemberDirectory } from "@/hooks/useOffline";
 import QuickPaymentDialog from "@/components/payments/QuickPaymentDialog";
 
 export function QuickPaymentButton() {
   const { can, isGymUser } = usePermissions();
   const [open, setOpen] = useState(false);
+  const canTakeFees = isGymUser && (can("payments.record") || can("membersubscriptions.renew"));
+  // Keep the member list on this device so fees can be recorded offline.
+  useMemberDirectory(canTakeFees);
 
-  if (!isGymUser || !(can("payments.record") || can("membersubscriptions.renew"))) return null;
+  if (!canTakeFees) return null;
 
   return (
     <>

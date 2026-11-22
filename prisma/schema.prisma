@@ -400,6 +400,9 @@ model Payment {
   payment_date            DateTime
   notes                   String?
   recorded_by_id          String?
+  // Set by the app when a payment is recorded (also offline): replaying the same
+  // request returns the existing payment instead of creating a duplicate.
+  client_id               String?             @unique
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
   

@@ -380,6 +380,7 @@ export const PaymentScalarFieldEnum = {
   payment_date: 'payment_date',
   notes: 'notes',
   recorded_by_id: 'recorded_by_id',
+  client_id: 'client_id',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

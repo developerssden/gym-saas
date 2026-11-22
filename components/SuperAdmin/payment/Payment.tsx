@@ -12,6 +12,8 @@ import DataFetchError from "@/components/common/DataFetchError";
 import { usePayments } from "@/hooks/use-payments";
 import { usePermissions } from "@/hooks/usePermissions";
 import QuickPaymentDialog from "@/components/payments/QuickPaymentDialog";
+import { PendingPaymentsList } from "@/components/offline/PendingPaymentsList";
+import { useOutbox } from "@/hooks/useOffline";
 import { columns } from "./columns";
 
 const Payments = ({ session }: { session: Session }) => {
@@ -20,6 +22,7 @@ const Payments = ({ session }: { session: Session }) => {
   const debouncedFilter = useDebounce(globalFilter, 1000);
   const { can, isGymUser } = usePermissions();
   const [quickOpen, setQuickOpen] = useState(false);
+  const outbox = useOutbox();
 
   // Use the hook
   const { data, isLoading, error, refetch } = usePayments({
@@ -38,6 +41,16 @@ const Payments = ({ session }: { session: Session }) => {
           </Link>
         )}
       </div>
+
+      {outbox.length > 0 && (
+        <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+          <p className="font-medium">Waiting to sync ({outbox.length})</p>
+          <p className="text-sm text-muted-foreground">
+            Recorded on this device while offline. They&apos;re sent automatically when the connection is back.
+          </p>
+          <PendingPaymentsList items={outbox} />
+        </div>
+      )}
 
       {isLoading && !data && (
         <div className="flex justify-center items-center h-64">

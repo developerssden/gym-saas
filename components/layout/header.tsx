@@ -5,6 +5,7 @@ import BreadCrumbs from "./breadcrumbs"
 import ProfileDropdown from "./profile"
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { QuickPaymentButton } from "@/components/payments/QuickPaymentButton"
+import { OfflineStatus } from "@/components/offline/OfflineStatus"
 
 export function SiteHeader() {
   return (
@@ -17,6 +18,7 @@ export function SiteHeader() {
         />
         <BreadCrumbs />
         <div className="ml-auto flex items-center gap-2">
+          <OfflineStatus />
           <QuickPaymentButton />
           <NotificationBell />
           <ProfileDropdown />
