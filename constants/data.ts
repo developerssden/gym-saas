@@ -10,6 +10,7 @@ import {
   CheckSquare,
   Package,
   Inbox,
+  Receipt,
 } from "lucide-react";
 
 type Role = "SUPER_ADMIN" | "GYM_OWNER" | "MEMBER";
@@ -69,6 +70,12 @@ export const routeItems: RouteItem[] = [
     href: "/payments",
     icon: CreditCard,
     permissions: ["SUPER_ADMIN","GYM_OWNER"	],
+  },
+  {
+    title: "Expenses",
+    href: "/expenses",
+    icon: Receipt,
+    permissions: ["GYM_OWNER"],
   },
   {
     title: "Plans",
