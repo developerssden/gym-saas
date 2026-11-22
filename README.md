@@ -15,13 +15,14 @@ Live: https://www.kettlio.com/
 - Shows the last loaded figures when the device is offline
 
 ### 👥 Members
-- Add, edit and search members
+- Add, edit and search members, by name or by phone number in any format (`0301…`, `+92 301…`)
 - Bulk import members from an Excel/CSV file (with a downloadable template)
 - Member subscriptions with start/end dates, monthly or yearly billing, and renewals
 - **Freeze / unfreeze** a subscription; the end date moves forward by the frozen days
 - Record why a member left (churn reason)
 
 ### 💳 Fees & payments
+- **Record a fee in 3 taps** from any page: tap "Record payment", pick the member, save. The amount is pre-filled from what they owe, or renews an ended subscription and takes the fee in one step
 - Record payments by cash or bank transfer
 - **Partial payments** and outstanding balances per member
 - Admission fee and discounts
@@ -37,6 +38,11 @@ Live: https://www.kettlio.com/
 - Record expenses by category (rent, bills, salaries and more)
 - Daily cash book of money in and money out
 - Monthly profit
+
+### 📈 Monthly report
+- Pick a month and download it as **PDF** or **Excel**
+- Fees collected (cash vs bank), expenses by category, profit and unpaid fees
+- New members, renewals, subscriptions ending, members lost and why, and top plans
 
 ### 🏢 Gyms, locations & equipment
 - Multiple gyms and locations per owner, within plan limits
@@ -70,8 +76,6 @@ Gym owners pay for their plan through **Polar** checkout, and the subscription i
 
 Not built yet. Each item has a GitHub issue:
 
-- [Monthly report as PDF and Excel](https://github.com/developerssden/gym-saas/issues/15)
-- [Record a fee in 2–3 taps and search members by phone](https://github.com/developerssden/gym-saas/issues/16)
 - [Record payments and check-ins while offline, sync later](https://github.com/developerssden/gym-saas/issues/17)
 - [Urdu / Roman Urdu language support](https://github.com/developerssden/gym-saas/issues/18)
 - [Setup checklist and empty states for new gym owners](https://github.com/developerssden/gym-saas/issues/19)
