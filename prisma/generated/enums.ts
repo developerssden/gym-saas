@@ -51,6 +51,17 @@ export const BillingModel = {
 export type BillingModel = (typeof BillingModel)[keyof typeof BillingModel]
 
 
+export const ExpenseCategory = {
+  RENT: 'RENT',
+  UTILITIES: 'UTILITIES',
+  SALARIES: 'SALARIES',
+  EQUIPMENT_REPAIRS: 'EQUIPMENT_REPAIRS',
+  OTHER: 'OTHER'
+} as const
+
+export type ExpenseCategory = (typeof ExpenseCategory)[keyof typeof ExpenseCategory]
+
+
 export const EquipmentCategory = {
   CARDIO: 'CARDIO',
   STRENGTH: 'STRENGTH',

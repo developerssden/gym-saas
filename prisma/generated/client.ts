@@ -75,6 +75,11 @@ export type Gym = Prisma.GymModel
  */
 export type Location = Prisma.LocationModel
 /**
+ * Model Expense
+ * 
+ */
+export type Expense = Prisma.ExpenseModel
+/**
  * Model Member
  * 
  */
@@ -104,6 +109,11 @@ export type OwnerSubscription = Prisma.OwnerSubscriptionModel
  * 
  */
 export type MemberSubscription = Prisma.MemberSubscriptionModel
+/**
+ * Model SubscriptionFreeze
+ * 
+ */
+export type SubscriptionFreeze = Prisma.SubscriptionFreezeModel
 /**
  * Model Payment
  * 

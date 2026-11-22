@@ -7,6 +7,7 @@ import { StatusCodes } from "http-status-codes"
 import { SubscriptionTypeEnum } from "@/prisma/generated/client"
 import { DASHBOARD } from "@/lib/constants";
 import { summarizeBalance } from "@/lib/member-balance";
+import { profit } from "@/lib/expenses";
 
 type OwnerOverviewResponse = {
   totals: {
@@ -23,6 +24,10 @@ type OwnerOverviewResponse = {
     outstandingAmount: number
     /** Members with an unpaid balance. */
     outstandingMembers: number
+    /** Expenses recorded this month (same window as revenueThisMonth). */
+    expensesThisMonth: number
+    /** revenueThisMonth - expensesThisMonth; can be negative. */
+    profitThisMonth: number
   }
   charts: {
     revenueByMonth: Array<{ month: string; revenue: number }>
@@ -41,6 +46,7 @@ type OwnerOverviewResponse = {
       endDate: string
       isActive: boolean
       isExpired: boolean
+      frozenSince: string | null
       lastPaymentAmount: number | null
       lastPaymentDate: string | null
     }>
@@ -56,6 +62,7 @@ type OwnerOverviewResponse = {
       endDate: string
       isActive: boolean
       isExpired: boolean
+      frozenSince: string | null
       lastPaymentAmount: number | null
       lastPaymentDate: string | null
     }>
@@ -361,6 +368,23 @@ export default async function handler(
       (sum, p) => sum + (p.amount ?? 0),
       0
     )
+
+    const expensesAggregate = await prisma.expense.aggregate({
+      where: {
+        is_deleted: false,
+        // Whole month: expenses are stored at 12:00 UTC on their day, so "until now"
+        // would hide one added this morning until the afternoon.
+        expense_date: { gte: thisMonthStart, lt: addMonths(thisMonthStart, 1) },
+        gym: {
+          owner_id: ownerId,
+          is_deleted: false,
+          ...(gym_id ? { id: gym_id } : {}),
+        },
+        ...(location_id ? { location_id } : {}),
+      },
+      _sum: { amount: true },
+    })
+    const expensesThisMonth = expensesAggregate._sum.amount ?? 0
     const revenueLastMonth = paymentsLastMonth.reduce(
       (sum, p) => sum + (p.amount ?? 0),
       0
@@ -430,6 +454,7 @@ export default async function handler(
         endDate: safeIso(s.end_date),
         isActive: Boolean(s.is_active),
         isExpired: Boolean(s.is_expired),
+        frozenSince: s.frozen_since ? safeIso(s.frozen_since) : null,
         lastPaymentAmount: lastPayment?.amount ?? null,
         lastPaymentDate: lastPayment?.payment_date ? safeIso(lastPayment.payment_date) : null,
       }
@@ -461,6 +486,8 @@ export default async function handler(
         revenueGrowthPct,
         outstandingAmount,
         outstandingMembers: membersOwing.size,
+        expensesThisMonth,
+        profitThisMonth: profit(revenueThisMonth, expensesThisMonth),
       },
       charts: {
         revenueByMonth,

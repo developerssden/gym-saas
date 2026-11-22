@@ -141,6 +141,7 @@ model Gym {
   members      Member[]
   equipment    Equipment[]
   locations    Location[]
+  expenses     Expense[]
 }
 
 model Location {
@@ -161,6 +162,35 @@ model Location {
   gym          Gym        @relation(fields: [gym_id], references: [id])
   members      Member[]
   equipment    Equipment[]
+  expenses     Expense[]
+}
+
+enum ExpenseCategory {
+  RENT
+  UTILITIES
+  SALARIES
+  EQUIPMENT_REPAIRS
+  OTHER
+}
+
+// Money a gym spends (rent, bills, salaries…). Profit = member payments - expenses.
+model Expense {
+  id             String          @id @default(uuid())
+  gym_id         String
+  location_id    String?
+  category       ExpenseCategory @default(OTHER)
+  amount         Int
+  expense_date   DateTime
+  note           String?
+  recorded_by_id String?
+  is_deleted     Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  gym      Gym       @relation(fields: [gym_id], references: [id])
+  location Location? @relation(fields: [location_id], references: [id])
+
+  @@index([gym_id, expense_date])
 }
 
 // Member model
@@ -317,12 +347,34 @@ model MemberSubscription {
   is_deleted          Boolean       @default(false)
   churn_reason        String?
   churn_note          String?
+  // Set while the subscription is frozen (paused); see SubscriptionFreeze.
+  frozen_since        DateTime?
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
-  
+
   // Relations
   member              Member        @relation(fields: [member_id], references: [id])
   payments            Payment[]
+  freezes             SubscriptionFreeze[]
+}
+
+// One pause of a Member Subscription. While end_date is null the freeze is
+// ongoing; on unfreeze the subscription's end date moves out by `days`.
+model SubscriptionFreeze {
+  id                     String    @id @default(uuid())
+  member_subscription_id String
+  start_date             DateTime
+  end_date               DateTime?
+  days                   Int?
+  reason                 String?
+  frozen_by_id           String?
+  unfrozen_by_id         String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  memberSubscription MemberSubscription @relation(fields: [member_subscription_id], references: [id])
+
+  @@index([member_subscription_id])
 }
 
 model Payment {

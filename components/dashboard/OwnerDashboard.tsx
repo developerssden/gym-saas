@@ -21,6 +21,8 @@ import {
   Users,
   Dumbbell,
   Wallet,
+  Receipt,
+  PiggyBank,
 } from "lucide-react"
 
 import { PageContainer } from "@/components/layout/page-container"
@@ -59,6 +61,8 @@ type OwnerDashboardOverview = {
     revenueGrowthPct: number | null
     outstandingAmount?: number
     outstandingMembers?: number
+    expensesThisMonth?: number
+    profitThisMonth?: number
   }
   charts: {
     revenueByMonth: Array<{ month: string; revenue: number }>
@@ -83,6 +87,7 @@ type SubscriptionRow = {
   endDate: string
   isActive: boolean
   isExpired: boolean
+  frozenSince?: string | null
   lastPaymentAmount: number | null
   lastPaymentDate: string | null
 }
@@ -201,11 +206,14 @@ const subscriptionColumns: ColumnDef<SubscriptionRow>[] = [
   {
     id: "status",
     accessorFn: (row) =>
-      row.isExpired ? "Expired" : row.isActive ? "Active" : "Inactive",
+      row.frozenSince ? "Frozen" : row.isExpired ? "Expired" : row.isActive ? "Active" : "Inactive",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
+      if (row.original.frozenSince) {
+        return <Badge variant="outline">Frozen</Badge>
+      }
       if (row.original.isExpired) {
         return <Badge variant="destructive">Expired</Badge>
       }
@@ -364,7 +372,7 @@ const OwnerDashboard = () => {
   } | null>(null)
 
   const reminderButton = React.useCallback(
-    (row: SubscriptionRow) => (
+    (row: SubscriptionRow) => row.frozenSince ? null : (
       <WhatsAppReminderButton
         memberName={row.memberName}
         phone={row.memberPhone}
@@ -541,6 +549,34 @@ const OwnerDashboard = () => {
               className={`text-2xl font-semibold ${(data.totals.outstandingAmount ?? 0) > 0 ? "text-destructive" : ""}`}
             >
               {formatMoney(data.totals.outstandingAmount ?? 0)}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Receipt className="size-4 text-muted-foreground" />
+                Expenses (MTD)
+              </CardTitle>
+              <CardDescription>Rent, bills, salaries this month</CardDescription>
+            </CardHeader>
+            <CardContent className="text-2xl font-semibold">
+              {formatMoney(data.totals.expensesThisMonth ?? 0)}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <PiggyBank className="size-4 text-muted-foreground" />
+                Profit (MTD)
+              </CardTitle>
+              <CardDescription>Collected minus expenses</CardDescription>
+            </CardHeader>
+            <CardContent
+              className={`text-2xl font-semibold ${(data.totals.profitThisMonth ?? 0) < 0 ? "text-destructive" : ""}`}
+            >
+              {formatMoney(data.totals.profitThisMonth ?? data.totals.revenueThisMonth)}
             </CardContent>
           </Card>
 

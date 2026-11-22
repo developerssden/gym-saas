@@ -19,7 +19,8 @@ interface Props {
   memberName: string;
 }
 
-function getStatusLabel(sub: { is_expired: boolean; is_active: boolean }) {
+function getStatusLabel(sub: { is_expired: boolean; is_active: boolean; frozen_since?: string | null }) {
+  if (sub.frozen_since) return { label: "Frozen", color: "outline" as const };
   if (sub.is_expired) return { label: "Expired", color: "destructive" as const };
   if (sub.is_active) return { label: "Active", color: "default" as const };
   return { label: "Inactive", color: "secondary" as const };
@@ -52,6 +53,14 @@ export function MemberSubscriptionHistoryDrawer({
     billing_model: string;
     is_expired: boolean;
     is_active: boolean;
+    frozen_since?: string | null;
+    freezes?: Array<{
+      id: string;
+      start_date: string;
+      end_date: string | null;
+      days: number | null;
+      reason: string | null;
+    }>;
   }> = data?.data ?? [];
 
   return (
@@ -87,6 +96,20 @@ export function MemberSubscriptionHistoryDrawer({
                 <span className="text-sm text-muted-foreground">
                   <CurrencyAmount amount={sub.price} /> · {sub.billing_model}
                 </span>
+                {sub.freezes && sub.freezes.length > 0 && (
+                  <ul className="mt-2 flex flex-col gap-1 border-t pt-2 text-xs text-muted-foreground">
+                    {sub.freezes.map((freeze) => (
+                      <li key={freeze.id}>
+                        <span className="font-medium text-foreground">Frozen</span>{" "}
+                        {format(new Date(freeze.start_date), "MMM d")}
+                        {freeze.end_date
+                          ? ` – ${format(new Date(freeze.end_date), "MMM d, yyyy")} (+${freeze.days ?? 0} day${freeze.days === 1 ? "" : "s"})`
+                          : " – now"}
+                        {freeze.reason ? ` · ${freeze.reason}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             );
           })}

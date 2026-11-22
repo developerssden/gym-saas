@@ -58,12 +58,14 @@ export const ModelName = {
   Todo: 'Todo',
   Gym: 'Gym',
   Location: 'Location',
+  Expense: 'Expense',
   Member: 'Member',
   Equipment: 'Equipment',
   Plan: 'Plan',
   Announcement: 'Announcement',
   OwnerSubscription: 'OwnerSubscription',
   MemberSubscription: 'MemberSubscription',
+  SubscriptionFreeze: 'SubscriptionFreeze',
   Payment: 'Payment',
   GymRegistration: 'GymRegistration'
 } as const
@@ -202,6 +204,23 @@ export const LocationScalarFieldEnum = {
 export type LocationScalarFieldEnum = (typeof LocationScalarFieldEnum)[keyof typeof LocationScalarFieldEnum]
 
 
+export const ExpenseScalarFieldEnum = {
+  id: 'id',
+  gym_id: 'gym_id',
+  location_id: 'location_id',
+  category: 'category',
+  amount: 'amount',
+  expense_date: 'expense_date',
+  note: 'note',
+  recorded_by_id: 'recorded_by_id',
+  is_deleted: 'is_deleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExpenseScalarFieldEnum = (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum]
+
+
 export const MemberScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -322,11 +341,28 @@ export const MemberSubscriptionScalarFieldEnum = {
   is_deleted: 'is_deleted',
   churn_reason: 'churn_reason',
   churn_note: 'churn_note',
+  frozen_since: 'frozen_since',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type MemberSubscriptionScalarFieldEnum = (typeof MemberSubscriptionScalarFieldEnum)[keyof typeof MemberSubscriptionScalarFieldEnum]
+
+
+export const SubscriptionFreezeScalarFieldEnum = {
+  id: 'id',
+  member_subscription_id: 'member_subscription_id',
+  start_date: 'start_date',
+  end_date: 'end_date',
+  days: 'days',
+  reason: 'reason',
+  frozen_by_id: 'frozen_by_id',
+  unfrozen_by_id: 'unfrozen_by_id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubscriptionFreezeScalarFieldEnum = (typeof SubscriptionFreezeScalarFieldEnum)[keyof typeof SubscriptionFreezeScalarFieldEnum]
 
 
 export const PaymentScalarFieldEnum = {
