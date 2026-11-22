@@ -72,12 +72,12 @@ Gym owners pay for their plan through **Polar** checkout, and the subscription i
 ### 📱 Works as an app
 - Installable PWA on phones and desktops
 - Offline page and cached dashboard data when the connection drops
+- **Record payments offline**: fees and renewals are kept on the device and sync automatically when the connection returns, without duplicates; anything the server refuses is shown for review
 
 ## 🗺️ Roadmap
 
 Not built yet. Each item has a GitHub issue:
 
-- [Record payments and check-ins while offline, sync later](https://github.com/developerssden/gym-saas/issues/17)
 - [Urdu / Roman Urdu language support](https://github.com/developerssden/gym-saas/issues/18)
 - [Member self-service: fee status and receipts](https://github.com/developerssden/gym-saas/issues/20)
 - [Biometric attendance and entrance (paid add-on)](https://github.com/developerssden/gym-saas/issues/11)
