@@ -71,19 +71,21 @@ const MemberSubscriptionsPage = () => {
     return redirect("/unauthorized");
   }
 
+  const createAction = !can("membersubscriptions.create") ? null : !isSubscriptionActive || subscriptionExpired ? (
+    <Button onClick={() => setShowExpiredModal(true)}>
+      Create Subscription
+    </Button>
+  ) : (
+    <Link href={`/membersubscriptions/manage?action=create`}>
+      <Button>Create Subscription</Button>
+    </Link>
+  );
+
   return (
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <h1 className="h1">Member Subscriptions</h1>
-        {!can("membersubscriptions.create") ? null : !isSubscriptionActive || subscriptionExpired ? (
-          <Button onClick={() => setShowExpiredModal(true)}>
-            Create Subscription
-          </Button>
-        ) : (
-          <Link href={`/membersubscriptions/manage?action=create`}>
-            <Button>Create Subscription</Button>
-          </Link>
-        )}
+        {createAction}
       </div>
 
       {!selectedGymId && (
@@ -117,6 +119,9 @@ const MemberSubscriptionsPage = () => {
             "member.user.last_name",
             "member.user.email",
           ]}
+          emptyMessage="No subscriptions yet"
+          emptyDescription="Give a member a monthly or yearly subscription to start tracking their fees and due dates."
+          emptyAction={createAction}
           pageCount={data.pageCount}
           rowCount={data.totalCount}
           onPaginationChange={setPagination}

@@ -11,13 +11,15 @@ import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
 import { usePayments } from "@/hooks/use-payments";
 import { usePermissions } from "@/hooks/usePermissions";
+import QuickPaymentDialog from "@/components/payments/QuickPaymentDialog";
 import { columns } from "./columns";
 
 const Payments = ({ session }: { session: Session }) => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 1000);
-  const { can } = usePermissions();
+  const { can, isGymUser } = usePermissions();
+  const [quickOpen, setQuickOpen] = useState(false);
 
   // Use the hook
   const { data, isLoading, error, refetch } = usePayments({
@@ -56,6 +58,17 @@ const Payments = ({ session }: { session: Session }) => {
           columns={columns}
           data={data.data}
           searchableColumns={["transaction_id"]}
+          emptyMessage="No payments yet"
+          emptyDescription={
+            isGymUser
+              ? "Record a member's fee and it shows up here, with a receipt you can share on WhatsApp."
+              : undefined
+          }
+          emptyAction={
+            isGymUser && can("payments.record") ? (
+              <Button onClick={() => setQuickOpen(true)}>Record payment</Button>
+            ) : undefined
+          }
           pageCount={data.pageCount}
           rowCount={data.totalCount}
           onPaginationChange={setPagination}
@@ -64,6 +77,7 @@ const Payments = ({ session }: { session: Session }) => {
           searchValue={globalFilter}
         />
       )}
+      {isGymUser && <QuickPaymentDialog open={quickOpen} onClose={() => setQuickOpen(false)} />}
     </PageContainer>
   );
 };

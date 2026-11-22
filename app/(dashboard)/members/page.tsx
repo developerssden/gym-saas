@@ -58,11 +58,7 @@ const MembersPage = () => {
     return redirect("/unauthorized");
   }
 
-  return (
-    <PageContainer>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Members</h1>
-        {!can("members.create") && !can("members.import") ? null : !isSubscriptionActive || subscriptionExpired ? (
+  const memberActions = !can("members.create") && !can("members.import") ? null : !isSubscriptionActive || subscriptionExpired ? (
           <Button onClick={() => setShowExpiredModal(true)}>
             Create Member
           </Button>
@@ -70,7 +66,7 @@ const MembersPage = () => {
           <div className="flex gap-2">
             {can("members.import") && (
               <Link href="/members/import">
-                <Button variant="outline">Bulk import</Button>
+                <Button variant="outline">Import from Excel</Button>
               </Link>
             )}
             {can("members.create") && (
@@ -79,7 +75,13 @@ const MembersPage = () => {
               </Link>
             )}
           </div>
-        )}
+        );
+
+  return (
+    <PageContainer>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="h1">Members</h1>
+        {memberActions}
       </div>
 
       {!selectedGymId && (
@@ -109,6 +111,10 @@ const MembersPage = () => {
           columns={columns}
           data={data.data}
           searchableColumns={["user.first_name", "user.last_name", "user.email", "user.phone_number"]}
+          emptyMessage="No members yet"
+          emptyDescription="Import your member list from Excel in one go, or add members one by one."
+          emptyAction={memberActions}
+          searchEmptyDescription="Try part of their name or phone number, e.g. 0301 234."
           pageCount={data.pageCount}
           rowCount={data.totalCount}
           onPaginationChange={setPagination}

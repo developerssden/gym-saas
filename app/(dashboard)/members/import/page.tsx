@@ -6,6 +6,7 @@ import { redirect, useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
+import { offerPushNotifications } from "@/lib/push-offer";
 import { Upload, Download, ArrowLeft } from "lucide-react";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { PageContainer } from "@/components/layout/page-container";
@@ -101,6 +102,7 @@ export default function MemberImportPage() {
         { headers: { "Content-Type": "multipart/form-data" } }
       );
       setResult(res.data);
+      if (res.data.succeeded > 0) offerPushNotifications();
       if (res.data.failed === 0) {
         toast.success(`Imported ${res.data.succeeded} members successfully`);
       } else {
