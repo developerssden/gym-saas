@@ -16,7 +16,7 @@ import path from "node:path";
 
 // Routes deliberately closed to staff. Adding a page? Either give it a
 // PERMISSION_PAGES entry or list it here (see .claude/rules/staff-permissions.md).
-const OWNER_ONLY_ROUTES = ["/staff", "/gyms", "/locations"];
+const OWNER_ONLY_ROUTES = ["/staff", "/gyms", "/locations", "/subscription"];
 const ADMIN_ONLY_ROUTES = ["/clients", "/subscriptions", "/plans", "/registrations", "/announcements"];
 const ALL_SIGNED_IN_ROUTES = ["/profile", "/notifications", "/unauthorized"];
 
