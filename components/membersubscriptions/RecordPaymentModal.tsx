@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -18,6 +17,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { useSession } from "next-auth/react";
+import { submitPayment } from "@/lib/offline/submit";
+import { PAYMENT_QUERY_KEYS } from "@/lib/payment-queries";
 
 type RecordPaymentModalProps = {
   open: boolean;
@@ -26,6 +28,8 @@ type RecordPaymentModalProps = {
   memberName: string;
   /** What's still owed; the amount defaults to this. */
   balance: number;
+  /** For the offline outbox: whose payment it is. */
+  memberId?: string;
 };
 
 /** Collect (part of) the remaining balance on a member subscription. */
@@ -40,8 +44,9 @@ export default function RecordPaymentModal(props: RecordPaymentModalProps) {
   );
 }
 
-function RecordPaymentForm({ onClose, subscriptionId, memberName, balance }: RecordPaymentModalProps) {
+function RecordPaymentForm({ onClose, subscriptionId, memberName, balance, memberId }: RecordPaymentModalProps) {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
   const { currencyCode, format } = useGymCurrency();
   const [amount, setAmount] = useState(String(balance));
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER">("CASH");
@@ -57,25 +62,40 @@ function RecordPaymentForm({ onClose, subscriptionId, memberName, balance }: Rec
         : null;
 
   const mutation = useMutation({
+    // submitPayment queues the payment on this device when offline.
+    networkMode: "always",
     mutationFn: () =>
-      axios.post("/api/payments/createpayment", {
-        subscription_type: "MEMBER",
-        member_subscription_id: subscriptionId,
+      submitPayment({
+        kind: "payment",
+        url: "/api/payments/createpayment",
+        body: {
+          subscription_type: "MEMBER",
+          member_subscription_id: subscriptionId,
+          amount: value,
+          payment_method: paymentMethod,
+          transaction_id: transactionId.trim() || undefined,
+          notes: notes.trim() || undefined,
+        },
+        userId: session?.user?.id ?? "",
+        memberId: memberId ?? subscriptionId,
+        memberName,
+        subscriptionId,
         amount: value,
-        payment_method: paymentMethod,
-        transaction_id: transactionId.trim() || undefined,
-        notes: notes.trim() || undefined,
+        method: paymentMethod,
       }),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result === "queued") {
+        toast.success(`Saved on this device: ${format(value)} from ${memberName}. It will sync when you're back online.`);
+        onClose();
+        return;
+      }
       const left = balance - value;
       toast.success(
         left > 0
           ? `Payment recorded. ${memberName} still owes ${format(left)}.`
           : `Payment recorded. ${memberName} has paid in full.`
       );
-      queryClient.invalidateQueries({ queryKey: ["membersubscriptions"] });
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
-      queryClient.invalidateQueries({ queryKey: ["ownerDashboardOverview"] });
+      for (const key of PAYMENT_QUERY_KEYS) queryClient.invalidateQueries({ queryKey: [key] });
       onClose();
     },
     onError: (err: unknown) => toast.error(getErrorMessage(err)),

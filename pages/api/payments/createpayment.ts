@@ -5,6 +5,8 @@ import { StatusCodes } from "http-status-codes";
 import { requireAccess, ownsGym } from "@/lib/access";
 import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
 import { parseMoney, summarizeBalance } from "@/lib/member-balance";
+import { parseClientId, parseRecordedAt } from "@/lib/offline/request-fields";
+import { answerIfReplayed, isClientIdConflict } from "@/lib/offline/payment-replay";
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,7 +22,15 @@ export default async function handler(
 
   const isGymOwner = !access.isAdmin;
 
+  // Idempotency key and real payment time, sent by the app (also when syncing offline payments).
+  const clientId = parseClientId(req.body?.client_id);
+  const recordedAt = parseRecordedAt(req.body?.recorded_at);
+  if (!clientId.ok) return res.status(StatusCodes.BAD_REQUEST).json({ error: clientId.error });
+  if (!recordedAt.ok) return res.status(StatusCodes.BAD_REQUEST).json({ error: recordedAt.error });
+
   try {
+    if (await answerIfReplayed(res, clientId.value, access.userId)) return;
+
     const {
       owner_subscription_id,
       member_subscription_id,
@@ -160,9 +170,10 @@ export default async function handler(
         amount: paymentAmount,
         payment_method: method,
         transaction_id: txId || null,
-        payment_date: payment_date ? new Date(payment_date) : new Date(),
+        payment_date: recordedAt.value ?? (payment_date ? new Date(payment_date) : new Date()),
         notes: notes || null,
         recorded_by_id: access.userId,
+        client_id: clientId.value,
       },
     });
 
@@ -171,6 +182,8 @@ export default async function handler(
       data: payment,
     });
   } catch (err: unknown) {
+    // Same payment sent twice at once: the other request saved it.
+    if (isClientIdConflict(err) && (await answerIfReplayed(res, clientId.value, access.userId))) return;
     const message = err instanceof Error ? err.message : "Unknown error";
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
