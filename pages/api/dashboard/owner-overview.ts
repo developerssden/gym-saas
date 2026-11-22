@@ -8,6 +8,7 @@ import { SubscriptionTypeEnum } from "@/prisma/generated/client"
 import { DASHBOARD } from "@/lib/constants";
 import { summarizeBalance } from "@/lib/member-balance";
 import { profit } from "@/lib/expenses";
+import { calendarMonthRange, formatCalendarMonth, previousCalendarMonth } from "@/lib/date-utils";
 
 type OwnerOverviewResponse = {
   totals: {
@@ -87,10 +88,6 @@ function addMonths(d: Date, months: number) {
   return new Date(d.getFullYear(), d.getMonth() + months, 1, 0, 0, 0, 0)
 }
 
-function endOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999)
-}
-
 function formatMonthLabel(d: Date) {
   return d.toLocaleDateString(undefined, { month: "short", year: "numeric" })
 }
@@ -152,9 +149,11 @@ export default async function handler(
     }
 
     const now = new Date()
-    const thisMonthStart = startOfMonth(now)
-    const lastMonthStart = addMonths(thisMonthStart, -1)
-    const lastMonthEnd = endOfMonth(lastMonthStart)
+    // Months in the business time zone, the same windows as the monthly report.
+    const currentMonth = formatCalendarMonth(now)
+    const thisMonth = calendarMonthRange(currentMonth)!
+    const lastMonth = calendarMonthRange(previousCalendarMonth(currentMonth))!
+    const thisMonthStart = thisMonth.start
 
     // Optional chart range override
     const requestedFrom = parseDate(req.body?.from)
@@ -250,7 +249,7 @@ export default async function handler(
       prisma.payment.findMany({
         where: {
           subscription_type: SubscriptionTypeEnum.MEMBER,
-          payment_date: { gte: lastMonthStart, lte: lastMonthEnd },
+          payment_date: { gte: lastMonth.start, lt: lastMonth.end },
           memberSubscription: {
             member: memberNested,
           },
@@ -378,7 +377,7 @@ export default async function handler(
         is_deleted: false,
         // Whole month: expenses are stored at 12:00 UTC on their day, so "until now"
         // would hide one added this morning until the afternoon.
-        expense_date: { gte: thisMonthStart, lt: addMonths(thisMonthStart, 1) },
+        expense_date: { gte: thisMonth.start, lt: thisMonth.end },
         gym: {
           AND: [ownedGymWhere(access)],
           is_deleted: false,

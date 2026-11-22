@@ -98,6 +98,14 @@ export const PERMISSION_PAGES: PermissionPage[] = [
       { key: "todos.delete", label: "Delete to-dos" },
     ],
   },
+  {
+    id: "reports",
+    label: "Reports",
+    routes: ["/reports"],
+    actions: [
+      { key: "reports.view", label: "View and download monthly reports", description: "Includes collected fees, expenses and profit" },
+    ],
+  },
 ];
 
 export const ALL_PERMISSIONS: string[] = PERMISSION_PAGES.flatMap(p =>

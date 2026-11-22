@@ -11,6 +11,7 @@ import {
   Package,
   Inbox,
   Receipt,
+  FileBarChart,
   UserCog,
 } from "lucide-react";
 
@@ -106,6 +107,12 @@ export const routeItems: RouteItem[] = [
     title: "Equipment",
     href: "/equipment",
     icon: Package,
+    permissions: ["GYM_OWNER", "STAFF"],
+  },
+  {
+    title: "Reports",
+    href: "/reports",
+    icon: FileBarChart,
     permissions: ["GYM_OWNER", "STAFF"],
   },
   {

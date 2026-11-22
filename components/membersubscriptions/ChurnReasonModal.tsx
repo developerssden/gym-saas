@@ -21,15 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CHURN_REASONS } from "@/lib/churn-reasons";
 
-const CHURN_REASONS = [
-  { value: "TOO_EXPENSIVE", label: "Too expensive" },
-  { value: "STOPPED_COMING", label: "Stopped coming" },
-  { value: "MOVED", label: "Moved away" },
-  { value: "SWITCHED_GYM", label: "Switched to another gym" },
-  { value: "MEDICAL", label: "Medical / health reasons" },
-  { value: "OTHER", label: "Other" },
-];
 
 interface ChurnReasonModalProps {
   open: boolean;
