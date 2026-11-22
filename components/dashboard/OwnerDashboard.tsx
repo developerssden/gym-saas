@@ -46,6 +46,7 @@ import RenewMemberModal from "@/components/dashboard/RenewMemberModal"
 import { WhatsAppReminderButton } from "@/components/common/whatsapp-actions"
 import { usePermissions } from "@/hooks/usePermissions"
 import OwnerSubscriptionBanner from "@/components/dashboard/OwnerSubscriptionBanner"
+import SetupChecklist from "@/components/dashboard/SetupChecklist"
 import { addDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
 
@@ -502,6 +503,8 @@ const OwnerDashboard = () => {
 
         {/* Plan and billing are the owner's business. */}
         {!isStaff && <OwnerSubscriptionBanner />}
+
+        {!isStaff && <SetupChecklist />}
 
         {!isOnline && (
           <div className="border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">

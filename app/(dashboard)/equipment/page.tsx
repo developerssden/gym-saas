@@ -66,19 +66,21 @@ const EquipmentPage = () => {
     return redirect("/unauthorized");
   }
 
+  const createAction = !can("equipment.create") ? null : !isSubscriptionActive || subscriptionExpired ? (
+    <Button onClick={() => setShowExpiredModal(true)}>
+      Create Equipment
+    </Button>
+  ) : (
+    <Link href={`/equipment/manage?action=create`}>
+      <Button disabled={!selectedGymId}>Create Equipment</Button>
+    </Link>
+  );
+
   return (
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <h1 className="h1">Equipment / Inventory</h1>
-        {!can("equipment.create") ? null : !isSubscriptionActive || subscriptionExpired ? (
-          <Button onClick={() => setShowExpiredModal(true)}>
-            Create Equipment
-          </Button>
-        ) : (
-          <Link href={`/equipment/manage?action=create`}>
-            <Button disabled={!selectedGymId}>Create Equipment</Button>
-          </Link>
-        )}
+        {createAction}
       </div>
 
       {!selectedGymId && (
@@ -108,6 +110,9 @@ const EquipmentPage = () => {
           columns={columns}
           data={data.data}
           searchableColumns={["name", "type"]}
+          emptyMessage="No equipment yet"
+          emptyDescription="Keep track of machines and weights, their condition and when they need repairs."
+          emptyAction={createAction}
           pageCount={data.pageCount}
           rowCount={data.totalCount}
           onPaginationChange={setPagination}

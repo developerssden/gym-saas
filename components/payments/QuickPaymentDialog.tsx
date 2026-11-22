@@ -212,7 +212,7 @@ function FeeAmountForm({ member, action, onDone }: { member: QuickPaymentMember;
             ? `Payment recorded. ${member.name} still owes ${format(left)}.`
             : `Payment recorded. ${member.name} has paid in full.`
       );
-      for (const key of ["membersubscriptions", "payments", "members", "ownerDashboardOverview", "monthly-report", "member-fee"]) {
+      for (const key of ["membersubscriptions", "payments", "members", "ownerDashboardOverview", "monthly-report", "member-fee", "setup-progress"]) {
         queryClient.invalidateQueries({ queryKey: [key] });
       }
       onDone();

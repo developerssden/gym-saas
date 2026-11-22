@@ -93,6 +93,15 @@ const TodosPage = () => {
           columns={columns}
           data={data.data}
           searchableColumns={["title", "description"]}
+          emptyMessage={statusFilter === "all" ? "No to-dos yet" : statusFilter === "completed" ? "No completed to-dos" : "Nothing pending"}
+          emptyDescription={statusFilter === "all" ? "Note jobs for the gym, like fixing a machine or paying a bill." : undefined}
+          emptyAction={
+            statusFilter === "all" && can("todos.create") ? (
+              <Link href={`/todos/manage?action=create`}>
+                <Button>Create Todo</Button>
+              </Link>
+            ) : undefined
+          }
           pageCount={data.pageCount}
           rowCount={data.totalCount}
           onPaginationChange={setPagination}

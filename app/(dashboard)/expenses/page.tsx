@@ -93,6 +93,13 @@ const ExpensesPage = () => {
           searchPlaceholder="Search by category or note"
           emptyMessage="No expenses yet"
           emptyDescription="Add rent, bills and salaries to see your real profit."
+          emptyAction={
+            can("expenses.create") ? (
+              <Button onClick={() => setAdding(true)} disabled={!selectedGymId}>
+                <Plus className="size-4" /> Add expense
+              </Button>
+            ) : undefined
+          }
           pageCount={data.pageCount}
           rowCount={data.totalCount}
           onPaginationChange={setPagination}

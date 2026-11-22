@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { offerPushNotifications } from "@/lib/push-offer";
 import axios from "axios";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -117,6 +118,8 @@ const ManageMemberContent = () => {
     onSuccess: () => {
       toast.success("Member created successfully");
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["setup-progress"] });
+      offerPushNotifications();
       router.push("/members");
     },
     onError: (err: any) => {
