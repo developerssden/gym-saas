@@ -20,6 +20,7 @@ import {
   TrendingUp,
   Users,
   Dumbbell,
+  Wallet,
 } from "lucide-react"
 
 import { PageContainer } from "@/components/layout/page-container"
@@ -56,6 +57,8 @@ type OwnerDashboardOverview = {
     revenueThisMonth: number
     revenueLastMonth: number
     revenueGrowthPct: number | null
+    outstandingAmount?: number
+    outstandingMembers?: number
   }
   charts: {
     revenueByMonth: Array<{ month: string; revenue: number }>
@@ -519,6 +522,25 @@ const OwnerDashboard = () => {
             </CardHeader>
             <CardContent className="text-2xl font-semibold">
               {formatMoney(data.totals.revenueThisMonth)}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Wallet className="size-4 text-muted-foreground" />
+                Outstanding
+              </CardTitle>
+              <CardDescription>
+                {(data.totals.outstandingMembers ?? 0) > 0
+                  ? `Owed by ${data.totals.outstandingMembers} member${data.totals.outstandingMembers === 1 ? "" : "s"}`
+                  : "Unpaid member fees"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent
+              className={`text-2xl font-semibold ${(data.totals.outstandingAmount ?? 0) > 0 ? "text-destructive" : ""}`}
+            >
+              {formatMoney(data.totals.outstandingAmount ?? 0)}
             </CardContent>
           </Card>
 

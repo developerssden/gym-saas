@@ -8,6 +8,7 @@ import PDFDocument from "pdfkit";
 import { Readable } from "stream";
 import { formatCurrency, resolveGymCountry } from "@/lib/currency";
 import { APP_NAME } from "@/constants/brand";
+import { summarizeBalance } from "@/lib/member-balance";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -274,30 +275,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     doc.text("Description", descX, tableTop + 10, { width: descWidth - 10 });
     doc.text("Amount", amountX, tableTop + 10, { width: amountWidth - 10, align: "right" });
 
-    // Table row
-    const rowY = tableTop + rowHeight;
-    doc
-      .font("Helvetica")
-      .rect(tableX, rowY, tableWidth, rowHeight)
-      .stroke();
+    // Table rows. Owner invoices: one line for the payment. Member receipts: the
+    // fee breakdown (price, discount, admission fee) and the total due.
+    type Row = { label: string; amount: string; bold?: boolean };
+    const rows: Row[] = [];
+    let memberTotals: { paidNow: number; paidToDate: number; balance: number; due: number } | null = null;
 
-    // Description based on subscription type
     if (isOwnerSubscription && plan) {
-      doc.text(`${plan.name} - ${sub.billing_model} Subscription`, descX, rowY + 10, {
-        width: descWidth - 10,
-        ellipsis: true,
+      rows.push({
+        label: `${plan.name} - ${sub.billing_model} Subscription`,
+        amount: formatMoney(payment.amount),
       });
     } else if (isMemberSubscription) {
-      const description = `Member Subscription - ${sub.billing_model} (${formatDate(sub.start_date)} to ${formatDate(sub.end_date)})`;
-      doc.text(description, descX, rowY + 10, {
-        width: descWidth - 10,
-        ellipsis: true,
+      rows.push({
+        label: `Membership fee - ${sub.billing_model} (${formatDate(sub.start_date)} to ${formatDate(sub.end_date)})`,
+        amount: formatMoney(sub.price),
       });
+      if (sub.discount > 0) {
+        rows.push({
+          label: `Discount${sub.discount_note ? ` (${sub.discount_note})` : ""}`,
+          amount: `- ${formatMoney(sub.discount)}`,
+        });
+      }
+      if (sub.admission_fee > 0) {
+        rows.push({ label: "Admission fee", amount: formatMoney(sub.admission_fee) });
+      }
+
+      // Paid to date = this payment and every earlier one on the subscription.
+      const paymentsSoFar = await prisma.payment.findMany({
+        where: {
+          member_subscription_id: sub.id,
+          createdAt: { lte: payment.createdAt },
+        },
+        select: { amount: true },
+      });
+      const summary = summarizeBalance(sub, paymentsSoFar);
+      memberTotals = {
+        paidNow: payment.amount,
+        paidToDate: summary.amount_paid,
+        balance: summary.balance,
+        due: summary.amount_due,
+      };
+      if (rows.length > 1) {
+        rows.push({ label: "Total due", amount: formatMoney(summary.amount_due), bold: true });
+      }
     }
-    doc.text(formatMoney(payment.amount), amountX, rowY + 10, { width: amountWidth - 10, align: "right" });
+
+    let rowY = tableTop + rowHeight;
+    for (const row of rows) {
+      doc
+        .font(row.bold ? "Helvetica-Bold" : "Helvetica")
+        .rect(tableX, rowY, tableWidth, rowHeight)
+        .stroke();
+      doc.text(row.label, descX, rowY + 10, { width: descWidth - 10, ellipsis: true });
+      doc.text(row.amount, amountX, rowY + 10, { width: amountWidth - 10, align: "right" });
+      rowY += rowHeight;
+    }
+    doc.font("Helvetica");
 
     // Notes section (if exists)
-    let notesY = rowY + rowHeight + 20;
+    let notesY = rowY + 20;
     if (payment.notes) {
       doc
         .fontSize(10)
@@ -314,16 +351,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const totalBoxWidth = 200;
     const totalBoxX = 50 + tableWidth - totalBoxWidth;
 
-    doc
-      .rect(totalBoxX, totalY, totalBoxWidth, 60)
-      .stroke()
-      .fontSize(10)
-      .font("Helvetica")
-      .text("Subtotal:", totalBoxX + 10, totalY + 10)
-      .text(formatMoney(payment.amount), totalBoxX + 100, totalY + 10, { align: "right" })
-      .font("Helvetica-Bold")
-      .text("Total:", totalBoxX + 10, totalY + 35)
-      .text(formatMoney(payment.amount), totalBoxX + 100, totalY + 35, { align: "right" });
+    if (memberTotals) {
+      // Member receipt: what was paid now, in total so far, and what's left.
+      const lines: Array<[string, string, boolean]> = [
+        ["Paid now:", formatMoney(memberTotals.paidNow), false],
+        ["Paid to date:", formatMoney(memberTotals.paidToDate), false],
+        [
+          memberTotals.balance > 0 ? "Balance due:" : "Balance:",
+          memberTotals.balance > 0 ? formatMoney(memberTotals.balance) : "Fully paid",
+          true,
+        ],
+      ];
+      doc.rect(totalBoxX, totalY, totalBoxWidth, 85).stroke().fontSize(10);
+      lines.forEach(([label, value, bold], i) => {
+        const y = totalY + 10 + i * 25;
+        doc
+          .font(bold ? "Helvetica-Bold" : "Helvetica")
+          .text(label, totalBoxX + 10, y)
+          .text(value, totalBoxX + 100, y, { width: totalBoxWidth - 110, align: "right" });
+      });
+    } else {
+      doc
+        .rect(totalBoxX, totalY, totalBoxWidth, 60)
+        .stroke()
+        .fontSize(10)
+        .font("Helvetica")
+        .text("Subtotal:", totalBoxX + 10, totalY + 10)
+        .text(formatMoney(payment.amount), totalBoxX + 100, totalY + 10, { align: "right" })
+        .font("Helvetica-Bold")
+        .text("Total:", totalBoxX + 10, totalY + 35)
+        .text(formatMoney(payment.amount), totalBoxX + 100, totalY + 35, { align: "right" });
+    }
 
     // Footer
     const footerY = 750;

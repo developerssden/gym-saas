@@ -1,5 +1,6 @@
 // pages/api/membersubscriptions/getmembersubscriptions.ts
 import { NextApiRequest, NextApiResponse } from "next";
+import { summarizeBalance } from "@/lib/member-balance";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAdminOrOwner } from "@/lib/sessioncheck";
@@ -79,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ]);
 
     return res.status(StatusCodes.OK).json({
-      data: subscriptions,
+      data: subscriptions.map((s) => ({ ...s, ...summarizeBalance(s, s.payments) })),
       totalCount,
       pageCount: Math.ceil(totalCount / limit),
     });

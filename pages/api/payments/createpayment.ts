@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAdminOrOwner } from "@/lib/sessioncheck";
 import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
+import { parseMoney, summarizeBalance } from "@/lib/member-balance";
 
 export default async function handler(
   req: NextApiRequest,
@@ -36,6 +37,13 @@ export default async function handler(
       return res.status(StatusCodes.BAD_REQUEST).json({
         error:
           "Missing required fields: amount, payment_method, subscription_type",
+      });
+    }
+
+    const paymentAmount = parseMoney(amount, Number.NaN);
+    if (!Number.isInteger(paymentAmount) || paymentAmount <= 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: "Amount must be a whole number greater than 0",
       });
     }
 
@@ -87,6 +95,7 @@ export default async function handler(
               gym: true,
             },
           },
+          payments: { select: { amount: true } },
         },
       });
 
@@ -100,6 +109,19 @@ export default async function handler(
       if (isGymOwner && memberSubscription.member.gym.owner_id !== session.user.id) {
         return res.status(StatusCodes.FORBIDDEN).json({
           error: "Forbidden – You can only create payments for your members' subscriptions",
+        });
+      }
+
+      // A member payment can't be more than what's still owed.
+      const { balance } = summarizeBalance(memberSubscription, memberSubscription.payments);
+      if (balance <= 0) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          error: "This subscription is already fully paid",
+        });
+      }
+      if (paymentAmount > balance) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          error: `Amount can't be more than the remaining balance (${balance})`,
         });
       }
     }
@@ -134,7 +156,7 @@ export default async function handler(
             ? member_subscription_id
             : null,
         subscription_type: subscription_type as SubscriptionTypeEnum,
-        amount: parseInt(amount),
+        amount: paymentAmount,
         payment_method: method,
         transaction_id: txId || null,
         payment_date: payment_date ? new Date(payment_date) : new Date(),

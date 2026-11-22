@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { requireGymOwner } from "@/lib/ownersessioncheck";
 import { isExpiredOrToday } from "@/lib/date-utils";
 import { notificationLifecycleReset } from "@/lib/subscription-lifecycle";
+import { parseMoney, validateFeeInput } from "@/lib/member-balance";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -21,9 +22,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       start_date,
       end_date,
       use_custom_dates,
+      discount,
+      discount_note,
+      admission_fee,
     } = req.body as {
       id: string;
       price?: number;
+      discount?: number;
+      discount_note?: string | null;
+      admission_fee?: number;
       months?: number;
       start_date?: string;
       end_date?: string;
@@ -72,8 +79,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Prepare update data
     const updateData: any = {};
 
-    if (price !== undefined) {
-      updateData.price = parseInt(String(price));
+    // Fee fields: validate the combination after applying the changes.
+    const fee = {
+      price: parseMoney(price, existing.price),
+      discount: parseMoney(discount, existing.discount),
+      admission_fee: parseMoney(admission_fee, existing.admission_fee),
+    };
+    const feeError = validateFeeInput(fee);
+    if (feeError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: feeError });
+    }
+    if (price !== undefined) updateData.price = fee.price;
+    if (discount !== undefined) updateData.discount = fee.discount;
+    if (admission_fee !== undefined) updateData.admission_fee = fee.admission_fee;
+    if (discount_note !== undefined || discount !== undefined) {
+      updateData.discount_note =
+        fee.discount > 0 ? (discount_note ?? existing.discount_note)?.trim() || null : null;
     }
 
     // Handle date updates
