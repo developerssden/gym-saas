@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
@@ -18,6 +19,7 @@ import { columns } from "@/components/expenses/columns";
 
 const ExpensesPage = () => {
   const { data: session, status } = useSession({ required: true });
+  const { can } = usePermissions();
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 800);
@@ -45,11 +47,11 @@ const ExpensesPage = () => {
       });
       return res.data;
     },
-    enabled: status === "authenticated" && session?.user?.role === "GYM_OWNER" && !!selectedGymId,
+    enabled: status === "authenticated" && (session?.user?.role === "GYM_OWNER" || session?.user?.role === "STAFF") && !!selectedGymId,
   });
 
   if (status === "loading") return <FullScreenLoader />;
-  if (session?.user?.role !== "GYM_OWNER") return redirect("/unauthorized");
+  if (session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") return redirect("/unauthorized");
 
   return (
     <PageContainer>
@@ -58,9 +60,11 @@ const ExpensesPage = () => {
           <h1 className="h1">Expenses</h1>
           <p className="text-sm text-muted-foreground">Rent, bills, salaries and repairs. Profit = collected − expenses.</p>
         </div>
-        <Button onClick={() => setAdding(true)} disabled={!selectedGymId} className="h-11">
-          <Plus className="size-4" /> Add expense
-        </Button>
+        {can("expenses.create") && (
+          <Button onClick={() => setAdding(true)} disabled={!selectedGymId} className="h-11">
+            <Plus className="size-4" /> Add expense
+          </Button>
+        )}
       </div>
 
       {!selectedGymId ? (
@@ -70,7 +74,7 @@ const ExpensesPage = () => {
           </p>
         </div>
       ) : (
-        <CashBook gymId={selectedGymId} locationId={selectedLocationId} />
+        can("expenses.cashbook") && <CashBook gymId={selectedGymId} locationId={selectedLocationId} />
       )}
 
       {isLoading && !data && selectedGymId && (

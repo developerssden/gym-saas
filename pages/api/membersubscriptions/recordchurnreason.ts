@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, gymScope } from "@/lib/access";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "membersubscriptions.edit" });
+  if (!access) return;
 
   try {
     const { id, churn_reason, churn_note } = req.body as {
@@ -29,9 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         id,
         is_deleted: false,
         member: {
-          gym: {
-            owner_id: session.user.id,
-          },
+          ...gymScope(access),
         },
       },
     });

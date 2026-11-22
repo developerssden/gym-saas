@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, ownsGym } from "@/lib/access";
 import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
 import { hashPassword } from "@/lib/authHelper";
 import {
@@ -14,8 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "members.create" });
+  if (!access) return;
+  const ownerId = access.ownerId!;
 
   try {
     const {
@@ -69,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
 
-    if (!gym || gym.is_deleted || gym.owner_id !== session.user.id) {
+    if (!ownsGym(access, gym)) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "UNAUTHORIZED_GYM",
         message: "Gym does not belong to you",
@@ -103,7 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     // Check subscription limits (per location)
-    const limitCheck = await checkLimitExceeded(session.user.id, "member", location_id);
+    const limitCheck = await checkLimitExceeded(ownerId, "member", location_id);
     if (limitCheck.exceeded) {
       return res.status(StatusCodes.CONFLICT).json({
         error: "LIMIT_EXCEEDED",
@@ -116,7 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Check if subscription is active
-    const validation = await validateOwnerSubscription(session.user.id);
+    const validation = await validateOwnerSubscription(ownerId);
     if (!validation.isActive) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "SUBSCRIPTION_EXPIRED",
@@ -126,6 +127,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check if user already exists as member
     if (user_id) {
+      // Only a plain member-role account may be attached; otherwise the role
+      // rewrite below could turn an owner, staff or admin login into a member.
+      const target = await prisma.user.findFirst({
+        where: { id: user_id, role: "MEMBER", is_deleted: false },
+        select: { id: true },
+      });
+      if (!target) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid user_id" });
+      }
       const existingMember = await prisma.member.findUnique({
         where: { user_id },
       });

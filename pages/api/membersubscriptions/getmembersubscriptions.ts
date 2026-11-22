@@ -3,16 +3,19 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { summarizeBalance } from "@/lib/member-balance";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { requireAccess } from "@/lib/access";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireAdminOrOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, {
+    permission: ["membersubscriptions.view", "payments.record"],
+    allowAdmin: true,
+  });
+  if (!access) return;
 
-  const isGymOwner = session.user.role === "GYM_OWNER";
+  const isGymOwner = !access.isAdmin;
 
   try {
     const {
@@ -35,13 +38,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where.member_id = member_id;
     }
 
-    // For GYM_OWNER: only show subscriptions for their members
+    // Owners and staff: only subscriptions for their members (staff: their gym only)
     if (isGymOwner) {
+      const gymId = access.staffGymId ?? gym_id;
       where.member = {
         gym: {
-          owner_id: session.user.id,
+          owner_id: access.ownerId,
           is_deleted: false,
-          ...(gym_id ? { id: gym_id } : {}),
+          ...(gymId ? { id: gymId } : {}),
         },
         ...(location_id ? { location_id } : {}),
         ...(search?.trim()
@@ -70,6 +74,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
           payments: {
             orderBy: { createdAt: "desc" },
+            include: {
+              recordedBy: { select: { id: true, first_name: true, last_name: true, role: true } },
+            },
           },
           freezes: {
             orderBy: { start_date: "desc" },

@@ -61,6 +61,7 @@ export function useSubscriptionValidation({
         max_locations: 0,
         max_members: 0,
         max_equipment: 0,
+        max_staff: 0,
       }
     );
   }, [session]);

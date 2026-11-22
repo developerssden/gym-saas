@@ -35,6 +35,10 @@ const SubscriptionSchema = Yup.object({
   max_equipment: Yup.number()
     .typeError("Must be a number")
     .required("Max equipment is required"),
+  max_staff: Yup.number()
+    .typeError("Must be a number")
+    .min(0, "Can't be negative")
+    .required("Max staff is required"),
   is_active: Yup.boolean(),
   polar_product_id: Yup.string()
     .transform((v) => (v === "" ? null : v))
@@ -104,6 +108,8 @@ const ManageSubscriptionsContent = () => {
       max_locations: subscriptionData?.max_locations || "",
       max_members: subscriptionData?.max_members || "",
       max_equipment: subscriptionData?.max_equipment || "",
+      // `??` so a plan with 0 staff seats shows 0, not the default.
+      max_staff: subscriptionData?.max_staff ?? 2,
       is_active: subscriptionData?.is_active || true,
       polar_product_id: subscriptionData?.polar_product_id || "",
       polar_checkout_url_monthly: subscriptionData?.polar_checkout_url_monthly || "",
@@ -251,6 +257,22 @@ const ManageSubscriptionsContent = () => {
                 <p className="text-red-500 text-sm">
                   {formik.errors.max_equipment}
                 </p>
+              )}
+            </div>
+
+            {/* Max Staff */}
+            <div className="space-y-1">
+              <Label>Max Staff Logins</Label>
+              <Input
+                name="max_staff"
+                type="number"
+                min={0}
+                value={formik.values.max_staff}
+                onChange={formik.handleChange}
+                disabled={action === "view"}
+              />
+              {typeof formik.errors.max_staff === "string" && (
+                <p className="text-red-500 text-sm">{formik.errors.max_staff}</p>
               )}
             </div>
 

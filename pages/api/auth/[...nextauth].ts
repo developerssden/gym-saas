@@ -8,6 +8,26 @@ import { NextApiHandler } from 'next';
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
+/**
+ * Gyms a user can select: an owner's own gyms, or a staff member's one
+ * assigned gym (and only while their owner still owns it).
+ */
+async function selectableGymsWhere(userId: string, role: string) {
+  if (role === 'STAFF') {
+    const staff = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { staff_owner_id: true, staff_gym_id: true },
+    });
+    return {
+      id: staff?.staff_gym_id ?? '__none__',
+      owner_id: staff?.staff_owner_id ?? '__none__',
+      is_deleted: false,
+      is_active: true,
+    };
+  }
+  return { owner_id: userId, is_deleted: false, is_active: true };
+}
+
 const authHandler: NextApiHandler = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -88,14 +108,10 @@ export const options: NextAuthOptions = {
         token.last_name = user.last_name;
         token.remember = user.remember === true;
         
-        // For GYM_OWNER, set default gym and location on first login
-        if (user.role === 'GYM_OWNER') {
+        // For GYM_OWNER and STAFF, set default gym and location on first login
+        if (user.role === 'GYM_OWNER' || user.role === 'STAFF') {
           const gyms = await prisma.gym.findMany({
-            where: {
-              owner_id: user.id,
-              is_deleted: false,
-              is_active: true
-            },
+            where: await selectableGymsWhere(user.id, user.role),
             orderBy: {
               createdAt: 'asc'
             },
@@ -123,14 +139,10 @@ export const options: NextAuthOptions = {
             }
           }
         }
-      } else if (token.role === 'GYM_OWNER' && !token.selected_gym_id && token.sub) {
+      } else if ((token.role === 'GYM_OWNER' || token.role === 'STAFF') && !token.selected_gym_id && token.sub) {
         // If token doesn't have selected_gym_id (e.g., after refresh), set defaults
         const gyms = await prisma.gym.findMany({
-          where: {
-            owner_id: token.sub,
-            is_deleted: false,
-            is_active: true
-          },
+          where: await selectableGymsWhere(token.sub, token.role),
           orderBy: {
             createdAt: 'asc'
           },
@@ -159,9 +171,9 @@ export const options: NextAuthOptions = {
         }
       }
 
-      // Handle session updates
+      // Handle session updates. Role is never taken from the client: a
+      // session update must not be able to promote a staff login.
       if (trigger === 'update' && session) {
-        token.role = session.user.role;
         token.first_name = session.user.first_name;
         token.last_name = session.user.last_name;
         if (session.user.selected_location_id !== undefined) {
@@ -169,6 +181,22 @@ export const options: NextAuthOptions = {
         }
         if (session.user.selected_gym_id !== undefined) {
           token.selected_gym_id = session.user.selected_gym_id;
+        }
+      }
+
+      // Staff permissions live in the token so proxy.ts can gate pages.
+      // Re-read them whenever the token is refreshed, so an owner's changes
+      // (or deactivation) reach the staff member's next page load.
+      if (token.role === 'STAFF' && token.sub) {
+        const staff = await prisma.user.findFirst({
+          where: { id: token.sub, role: 'STAFF', is_active: true, is_deleted: false },
+          select: { staff_permissions: true, staff_gym_id: true },
+        });
+        token.staff_permissions = staff?.staff_permissions ?? [];
+        // A staff member may only ever have their assigned gym selected.
+        if (staff?.staff_gym_id && token.selected_gym_id !== staff.staff_gym_id) {
+          token.selected_gym_id = staff.staff_gym_id;
+          token.selected_location_id = null;
         }
       }
 
@@ -231,26 +259,37 @@ export const options: NextAuthOptions = {
           session.user.max_equipment = activeSubscription.plan.max_equipment;
         }
         
-        // For GYM_OWNER, fetch gyms and locations
+        // Staff work on their owner's data: the owner's plan and subscription
+        // apply, and they only see their assigned gym.
+        let businessOwnerId: string | null = null;
         if (userData.role === 'GYM_OWNER') {
+          businessOwnerId = userData.id;
+        } else if (userData.role === 'STAFF') {
+          const owner = userData.staff_owner_id
+            ? await prisma.user.findFirst({
+                where: { id: userData.staff_owner_id, role: 'GYM_OWNER', is_active: true, is_deleted: false },
+                select: { id: true },
+              })
+            : null;
+          businessOwnerId = owner?.id ?? null;
+          session.user.staff_owner_id = businessOwnerId;
+          session.user.staff_gym_id = userData.staff_gym_id;
+          session.user.staff_permissions = businessOwnerId ? userData.staff_permissions : [];
+        }
+
+        // For GYM_OWNER and STAFF, fetch gyms and locations
+        if (businessOwnerId) {
+          const gymsWhere = await selectableGymsWhere(userData.id, userData.role);
           const gyms = await prisma.gym.findMany({
-            where: {
-              owner_id: userData.id,
-              is_deleted: false,
-              is_active: true
-            },
+            where: gymsWhere,
             orderBy: {
               createdAt: 'asc'
             }
           });
-          
+
           const locations = await prisma.location.findMany({
             where: {
-              gym: {
-                owner_id: userData.id,
-                is_deleted: false,
-                is_active: true
-              },
+              gym: gymsWhere,
               is_deleted: false,
               is_active: true
             },
@@ -273,10 +312,10 @@ export const options: NextAuthOptions = {
             country: loc.country,
           }));
 
-          // Add subscription status for GYM_OWNER
+          // Add subscription status (the owner's, for staff too)
           const activeSubscription = await prisma.ownerSubscription.findFirst({
             where: {
-              owner_id: userData.id,
+              owner_id: businessOwnerId,
               is_deleted: false,
               is_active: true,
               is_expired: false
@@ -297,7 +336,8 @@ export const options: NextAuthOptions = {
               max_gyms: activeSubscription.plan.max_gyms,
               max_locations: activeSubscription.plan.max_locations,
               max_members: activeSubscription.plan.max_members,
-              max_equipment: activeSubscription.plan.max_equipment
+              max_equipment: activeSubscription.plan.max_equipment,
+              max_staff: activeSubscription.plan.max_staff
             };
           } else {
             session.user.subscription_active = false;
@@ -307,7 +347,8 @@ export const options: NextAuthOptions = {
               max_gyms: 0,
               max_locations: 0,
               max_members: 0,
-              max_equipment: 0
+              max_equipment: 0,
+              max_staff: 0
             };
           }
         }

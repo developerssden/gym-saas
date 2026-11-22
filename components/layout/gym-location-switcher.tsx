@@ -74,7 +74,8 @@ export function GymLocationSwitcher() {
     [session?.user, update]
   )
 
-  if (session?.user?.role !== "GYM_OWNER" || gyms.length === 0) {
+  const role = session?.user?.role
+  if ((role !== "GYM_OWNER" && role !== "STAFF") || gyms.length === 0) {
     return null
   }
 

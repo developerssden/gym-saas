@@ -10,6 +10,7 @@ export interface PlanType {
     max_locations: number
     max_members: number
     max_equipment: number
+    max_staff: number
     is_active: boolean
     is_deleted: boolean
     createdAt: Date

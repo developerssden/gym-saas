@@ -19,7 +19,7 @@ const DashboardPage = () => {
     return <AdminDashboard />;
   }
 
-  if (role === 'GYM_OWNER') {
+  if (role === 'GYM_OWNER' || role === 'STAFF') {
     return <OwnerDashboard />;
   }
 

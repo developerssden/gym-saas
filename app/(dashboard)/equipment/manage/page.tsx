@@ -295,7 +295,7 @@ const ManageEquipmentContent = () => {
   if (status === "loading" || (loadingEquipment && action !== "create")) {
     return <FullScreenLoader />;
   }
-  if (session?.user?.role !== "GYM_OWNER") {
+  if (session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
     return redirect("/unauthorized");
   }
 

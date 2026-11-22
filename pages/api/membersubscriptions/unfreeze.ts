@@ -3,7 +3,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
 import prisma from "@/lib/prisma";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, ownsGym } from "@/lib/access";
 import { isExpiredOrToday } from "@/lib/date-utils";
 import { notificationLifecycleReset } from "@/lib/subscription-lifecycle";
 import { computeUnfreeze, parseCalendarDay } from "@/lib/subscription-freeze";
@@ -13,8 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "membersubscriptions.freeze" });
+  if (!access) return;
 
   try {
     const { id, back_on } = (req.body ?? {}) as {
@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!subscription || subscription.is_deleted) {
       return res.status(StatusCodes.NOT_FOUND).json({ error: "Member subscription not found" });
     }
-    if (subscription.member.gym.owner_id !== session.user.id) {
+    if (!ownsGym(access, { id: subscription.member.gym_id, owner_id: subscription.member.gym.owner_id })) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "Forbidden – Member subscription does not belong to your gym",
       });
@@ -58,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (openFreeze) {
         await tx.subscriptionFreeze.update({
           where: { id: openFreeze.id },
-          data: { end_date: backOn, days: result.days, unfrozen_by_id: session.user.id },
+          data: { end_date: backOn, days: result.days, unfrozen_by_id: access.userId },
         });
       }
       return tx.memberSubscription.update({

@@ -17,6 +17,8 @@ import {
 import { CurrencyAmount } from "@/components/common/CurrencyAmount";
 import { resolveGymCountry } from "@/lib/currency";
 import { ShareReceiptMenuItem } from "@/components/common/whatsapp-actions";
+import { usePermissions } from "@/hooks/usePermissions";
+import { recordedByLabel } from "@/lib/recorded-by";
 
 const formatDate = (value: unknown) => {
   const d = value instanceof Date ? value : new Date(value as any);
@@ -112,6 +114,11 @@ export const columns: ColumnDef<Payment>[] = [
     cell: ({ row }) => row.original.subscription_type,
   },
   {
+    id: "recorded_by",
+    header: "Recorded by",
+    cell: ({ row }) => recordedByLabel(row.original.recordedBy),
+  },
+  {
     id: "actions",
     header: "Actions",
     enableHiding: false,
@@ -120,6 +127,9 @@ export const columns: ColumnDef<Payment>[] = [
 ];
 
 const ActionCell = ({ payment }: { payment: Payment }) => {
+  const { can, isGymUser } = usePermissions();
+  // Admins share no receipts; owners always can, staff with the WhatsApp permission.
+  const canShare = isGymUser && can("membersubscriptions.whatsapp");
   const handleGenerateInvoice = async () => {
     try {
       const response = await axios.post(
@@ -158,7 +168,7 @@ const ActionCell = ({ payment }: { payment: Payment }) => {
           <FileText className="mr-2 h-4 w-4" />
           Generate Invoice
         </DropdownMenuItem>
-        {payment.subscription_type === "MEMBER" && payment.memberSubscription?.member && (
+        {payment.subscription_type === "MEMBER" && payment.memberSubscription?.member && canShare && (
           <ShareReceiptMenuItem
             paymentId={payment.id}
             memberName={

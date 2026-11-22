@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { requireAccess, gymScope } from "@/lib/access";
 import { Prisma } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,10 +10,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  const session = await requireAdminOrOwner(req, res);
-  if (!session) return;
-
-  const isGymOwner = session.user.role === "GYM_OWNER";
+  // Member lists also feed the member pickers on subscriptions and payments.
+  const access = await requireAccess(req, res, {
+    permission: ["members.view", "membersubscriptions.view", "membersubscriptions.create", "payments.record"],
+    allowAdmin: true,
+  });
+  if (!access) return;
 
   try {
     const {
@@ -50,15 +52,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const whereClause: Prisma.MemberWhereInput = {
       gym_id: gym_id ? gym_id : undefined,
       location_id: location_id ? location_id : undefined,
-      // For GYM_OWNER: only show members from their gyms
-      ...(isGymOwner
-        ? {
-            gym: {
-              owner_id: session.user.id,
-              is_deleted: false,
-            },
-          }
-        : {}),
+      // Owners and staff: only members from their gyms
+      ...gymScope(access),
       OR: or.length ? or : undefined,
     };
 

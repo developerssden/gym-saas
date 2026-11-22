@@ -34,6 +34,7 @@ import { MemberSubscriptionHistoryDrawer } from "@/components/membersubscription
 import { WhatsAppReminderMenuItem } from "@/components/common/whatsapp-actions";
 import RecordPaymentModal from "@/components/membersubscriptions/RecordPaymentModal";
 import FreezeDialog from "@/components/membersubscriptions/FreezeDialog";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export type MemberSubscription = {
   id: string;
@@ -69,6 +70,7 @@ export type MemberSubscription = {
 // Separate component for actions cell to use hooks
 function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberSubscription }) {
   const queryClient = useQueryClient();
+  const { can } = usePermissions();
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [showChurnModal, setShowChurnModal] = useState(false);
   const [showHistoryDrawer, setShowHistoryDrawer] = useState(false);
@@ -105,19 +107,21 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link href={`/membersubscriptions/manage?action=edit&id=${subscription.id}`}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </Link>
-          </DropdownMenuItem>
-          {balance > 0 && (
+          {can("membersubscriptions.edit") && (
+            <DropdownMenuItem asChild>
+              <Link href={`/membersubscriptions/manage?action=edit&id=${subscription.id}`}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </Link>
+            </DropdownMenuItem>
+          )}
+          {balance > 0 && can("payments.record") && (
             <DropdownMenuItem onClick={() => setShowRecordPayment(true)}>
               <Banknote className="mr-2 h-4 w-4" />
               Record payment
             </DropdownMenuItem>
           )}
-          {isFrozen ? (
+          {!can("membersubscriptions.freeze") ? null : isFrozen ? (
             <DropdownMenuItem onClick={() => setFreezeMode("unfreeze")}>
               <Sun className="mr-2 h-4 w-4" />
               Unfreeze (member is back)
@@ -130,7 +134,7 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
               </DropdownMenuItem>
             )
           )}
-          {!isFrozen && <WhatsAppReminderMenuItem
+          {!isFrozen && can("membersubscriptions.whatsapp") && <WhatsAppReminderMenuItem
             memberName={memberName}
             phone={subscription.member.user.phone_number}
             gymName={subscription.member.gym?.name}
@@ -143,18 +147,22 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
             <History className="mr-2 h-4 w-4" />
             View History
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => setShowRenewModal(true)}
-            disabled={subscription.is_active && !subscription.is_expired}
-          >
-            <RotateCw className="mr-2 h-4 w-4" />
-            Renew
-          </DropdownMenuItem>
-          {subscription.is_expired && (
+          {can("membersubscriptions.renew") && (
+            <DropdownMenuItem
+              onClick={() => setShowRenewModal(true)}
+              disabled={subscription.is_active && !subscription.is_expired}
+            >
+              <RotateCw className="mr-2 h-4 w-4" />
+              Renew
+            </DropdownMenuItem>
+          )}
+          {subscription.is_expired && can("membersubscriptions.edit") && (
             <DropdownMenuItem onClick={() => setShowChurnModal(true)}>
               Record why they left
             </DropdownMenuItem>
           )}
+          {can("membersubscriptions.delete") && (
+          <>
           <DropdownMenuSeparator />
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -192,6 +200,8 @@ function MemberSubscriptionActionsCell({ subscription }: { subscription: MemberS
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

@@ -22,20 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     cnic,
   } = req.body;
 
-  if (
-    !token ||
-    !email ||
-    !password ||
-    !first_name ||
-    !last_name ||
-    !phone_number ||
-    !date_of_birth ||
-    !address ||
-    !city ||
-    !state ||
-    !zip_code ||
-    !country
-  ) {
+  if (!token || !email || !password) {
     return res.status(400).json({ message: "All required fields must be filled" });
   }
 
@@ -46,13 +33,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const hashedToken = hashToken(token);
   const inviteRecord = await prisma.inviteToken.findUnique({
     where: { token: hashedToken },
+    include: { user: { select: { role: true, is_deleted: true } } },
   });
+
+  // Staff only give a name, phone and password; owners fill in their full profile.
+  const isStaff = inviteRecord?.user.role === "STAFF";
+  const missingField = isStaff
+    ? !first_name || !phone_number
+    : !first_name ||
+      !last_name ||
+      !phone_number ||
+      !date_of_birth ||
+      !address ||
+      !city ||
+      !state ||
+      !zip_code ||
+      !country;
+  if (inviteRecord && missingField) {
+    return res.status(400).json({ message: "All required fields must be filled" });
+  }
 
   if (!inviteRecord) {
     return res.status(400).json({ message: "Invalid invite link" });
   }
 
-  if (inviteRecord.used) {
+  if (inviteRecord.used || inviteRecord.user.is_deleted) {
     return res.status(400).json({ message: "This invite link has already been used" });
   }
 
@@ -71,21 +76,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await prisma.$transaction([
     prisma.user.update({
       where: { id: inviteRecord.user_id },
-      data: {
-        first_name,
-        last_name,
-        phone_number,
-        date_of_birth: new Date(date_of_birth),
-        address,
-        city,
-        state,
-        zip_code,
-        country,
-        cnic: cnic ?? null,
-        password: hashedPassword,
-        is_active: true,
-        onboarding_completed: true,
-      },
+      data: isStaff
+        ? {
+            first_name,
+            last_name: last_name || null,
+            phone_number,
+            password: hashedPassword,
+            is_active: true,
+            onboarding_completed: true,
+          }
+        : {
+            first_name,
+            last_name,
+            phone_number,
+            date_of_birth: new Date(date_of_birth),
+            address,
+            city,
+            state,
+            zip_code,
+            country,
+            cnic: cnic ?? null,
+            password: hashedPassword,
+            is_active: true,
+            onboarding_completed: true,
+          },
     }),
     prisma.inviteToken.update({
       where: { token: hashedToken },

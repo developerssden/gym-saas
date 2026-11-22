@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
 import prisma from "@/lib/prisma";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess } from "@/lib/access";
 import { parseCalendarDay } from "@/lib/date-utils";
 import { validateExpenseInput, type ExpenseCategoryValue } from "@/lib/expenses";
 import { findOwnedExpense } from "@/lib/expenses-server";
@@ -12,8 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "expenses.edit" });
+  if (!access) return;
 
   try {
     const { id, category, amount, expense_date, note } = (req.body ?? {}) as {
@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
     if (!id) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Expense ID is required" });
 
-    const existing = await findOwnedExpense(session.user.id, id);
+    const existing = await findOwnedExpense(access, id);
     if (!existing) return res.status(StatusCodes.NOT_FOUND).json({ error: "Expense not found" });
 
     const next = {

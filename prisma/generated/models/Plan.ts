@@ -33,6 +33,7 @@ export type PlanAvgAggregateOutputType = {
   max_locations: number | null
   max_members: number | null
   max_equipment: number | null
+  max_staff: number | null
 }
 
 export type PlanSumAggregateOutputType = {
@@ -42,6 +43,7 @@ export type PlanSumAggregateOutputType = {
   max_locations: number | null
   max_members: number | null
   max_equipment: number | null
+  max_staff: number | null
 }
 
 export type PlanMinAggregateOutputType = {
@@ -53,6 +55,7 @@ export type PlanMinAggregateOutputType = {
   max_locations: number | null
   max_members: number | null
   max_equipment: number | null
+  max_staff: number | null
   createdAt: Date | null
   updatedAt: Date | null
   is_active: boolean | null
@@ -71,6 +74,7 @@ export type PlanMaxAggregateOutputType = {
   max_locations: number | null
   max_members: number | null
   max_equipment: number | null
+  max_staff: number | null
   createdAt: Date | null
   updatedAt: Date | null
   is_active: boolean | null
@@ -89,6 +93,7 @@ export type PlanCountAggregateOutputType = {
   max_locations: number
   max_members: number
   max_equipment: number
+  max_staff: number
   createdAt: number
   updatedAt: number
   is_active: number
@@ -107,6 +112,7 @@ export type PlanAvgAggregateInputType = {
   max_locations?: true
   max_members?: true
   max_equipment?: true
+  max_staff?: true
 }
 
 export type PlanSumAggregateInputType = {
@@ -116,6 +122,7 @@ export type PlanSumAggregateInputType = {
   max_locations?: true
   max_members?: true
   max_equipment?: true
+  max_staff?: true
 }
 
 export type PlanMinAggregateInputType = {
@@ -127,6 +134,7 @@ export type PlanMinAggregateInputType = {
   max_locations?: true
   max_members?: true
   max_equipment?: true
+  max_staff?: true
   createdAt?: true
   updatedAt?: true
   is_active?: true
@@ -145,6 +153,7 @@ export type PlanMaxAggregateInputType = {
   max_locations?: true
   max_members?: true
   max_equipment?: true
+  max_staff?: true
   createdAt?: true
   updatedAt?: true
   is_active?: true
@@ -163,6 +172,7 @@ export type PlanCountAggregateInputType = {
   max_locations?: true
   max_members?: true
   max_equipment?: true
+  max_staff?: true
   createdAt?: true
   updatedAt?: true
   is_active?: true
@@ -268,6 +278,7 @@ export type PlanGroupByOutputType = {
   max_locations: number
   max_members: number
   max_equipment: number
+  max_staff: number
   createdAt: Date
   updatedAt: Date
   is_active: boolean
@@ -309,6 +320,7 @@ export type PlanWhereInput = {
   max_locations?: Prisma.IntFilter<"Plan"> | number
   max_members?: Prisma.IntFilter<"Plan"> | number
   max_equipment?: Prisma.IntFilter<"Plan"> | number
+  max_staff?: Prisma.IntFilter<"Plan"> | number
   createdAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   is_active?: Prisma.BoolFilter<"Plan"> | boolean
@@ -328,6 +340,7 @@ export type PlanOrderByWithRelationInput = {
   max_locations?: Prisma.SortOrder
   max_members?: Prisma.SortOrder
   max_equipment?: Prisma.SortOrder
+  max_staff?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
@@ -351,6 +364,7 @@ export type PlanWhereUniqueInput = Prisma.AtLeast<{
   max_locations?: Prisma.IntFilter<"Plan"> | number
   max_members?: Prisma.IntFilter<"Plan"> | number
   max_equipment?: Prisma.IntFilter<"Plan"> | number
+  max_staff?: Prisma.IntFilter<"Plan"> | number
   createdAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   is_active?: Prisma.BoolFilter<"Plan"> | boolean
@@ -369,6 +383,7 @@ export type PlanOrderByWithAggregationInput = {
   max_locations?: Prisma.SortOrder
   max_members?: Prisma.SortOrder
   max_equipment?: Prisma.SortOrder
+  max_staff?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
@@ -395,6 +410,7 @@ export type PlanScalarWhereWithAggregatesInput = {
   max_locations?: Prisma.IntWithAggregatesFilter<"Plan"> | number
   max_members?: Prisma.IntWithAggregatesFilter<"Plan"> | number
   max_equipment?: Prisma.IntWithAggregatesFilter<"Plan"> | number
+  max_staff?: Prisma.IntWithAggregatesFilter<"Plan"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Plan"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Plan"> | Date | string
   is_active?: Prisma.BoolWithAggregatesFilter<"Plan"> | boolean
@@ -413,6 +429,7 @@ export type PlanCreateInput = {
   max_locations?: number
   max_members: number
   max_equipment: number
+  max_staff?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   is_active?: boolean
@@ -432,6 +449,7 @@ export type PlanUncheckedCreateInput = {
   max_locations?: number
   max_members: number
   max_equipment: number
+  max_staff?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   is_active?: boolean
@@ -451,6 +469,7 @@ export type PlanUpdateInput = {
   max_locations?: Prisma.IntFieldUpdateOperationsInput | number
   max_members?: Prisma.IntFieldUpdateOperationsInput | number
   max_equipment?: Prisma.IntFieldUpdateOperationsInput | number
+  max_staff?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -470,6 +489,7 @@ export type PlanUncheckedUpdateInput = {
   max_locations?: Prisma.IntFieldUpdateOperationsInput | number
   max_members?: Prisma.IntFieldUpdateOperationsInput | number
   max_equipment?: Prisma.IntFieldUpdateOperationsInput | number
+  max_staff?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -489,6 +509,7 @@ export type PlanCreateManyInput = {
   max_locations?: number
   max_members: number
   max_equipment: number
+  max_staff?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   is_active?: boolean
@@ -507,6 +528,7 @@ export type PlanUpdateManyMutationInput = {
   max_locations?: Prisma.IntFieldUpdateOperationsInput | number
   max_members?: Prisma.IntFieldUpdateOperationsInput | number
   max_equipment?: Prisma.IntFieldUpdateOperationsInput | number
+  max_staff?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -525,6 +547,7 @@ export type PlanUncheckedUpdateManyInput = {
   max_locations?: Prisma.IntFieldUpdateOperationsInput | number
   max_members?: Prisma.IntFieldUpdateOperationsInput | number
   max_equipment?: Prisma.IntFieldUpdateOperationsInput | number
+  max_staff?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -543,6 +566,7 @@ export type PlanCountOrderByAggregateInput = {
   max_locations?: Prisma.SortOrder
   max_members?: Prisma.SortOrder
   max_equipment?: Prisma.SortOrder
+  max_staff?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
@@ -559,6 +583,7 @@ export type PlanAvgOrderByAggregateInput = {
   max_locations?: Prisma.SortOrder
   max_members?: Prisma.SortOrder
   max_equipment?: Prisma.SortOrder
+  max_staff?: Prisma.SortOrder
 }
 
 export type PlanMaxOrderByAggregateInput = {
@@ -570,6 +595,7 @@ export type PlanMaxOrderByAggregateInput = {
   max_locations?: Prisma.SortOrder
   max_members?: Prisma.SortOrder
   max_equipment?: Prisma.SortOrder
+  max_staff?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
@@ -588,6 +614,7 @@ export type PlanMinOrderByAggregateInput = {
   max_locations?: Prisma.SortOrder
   max_members?: Prisma.SortOrder
   max_equipment?: Prisma.SortOrder
+  max_staff?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
@@ -604,6 +631,7 @@ export type PlanSumOrderByAggregateInput = {
   max_locations?: Prisma.SortOrder
   max_members?: Prisma.SortOrder
   max_equipment?: Prisma.SortOrder
+  max_staff?: Prisma.SortOrder
 }
 
 export type PlanScalarRelationFilter = {
@@ -634,6 +662,7 @@ export type PlanCreateWithoutOwnerSubscriptionsInput = {
   max_locations?: number
   max_members: number
   max_equipment: number
+  max_staff?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   is_active?: boolean
@@ -652,6 +681,7 @@ export type PlanUncheckedCreateWithoutOwnerSubscriptionsInput = {
   max_locations?: number
   max_members: number
   max_equipment: number
+  max_staff?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   is_active?: boolean
@@ -686,6 +716,7 @@ export type PlanUpdateWithoutOwnerSubscriptionsInput = {
   max_locations?: Prisma.IntFieldUpdateOperationsInput | number
   max_members?: Prisma.IntFieldUpdateOperationsInput | number
   max_equipment?: Prisma.IntFieldUpdateOperationsInput | number
+  max_staff?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -704,6 +735,7 @@ export type PlanUncheckedUpdateWithoutOwnerSubscriptionsInput = {
   max_locations?: Prisma.IntFieldUpdateOperationsInput | number
   max_members?: Prisma.IntFieldUpdateOperationsInput | number
   max_equipment?: Prisma.IntFieldUpdateOperationsInput | number
+  max_staff?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -753,6 +785,7 @@ export type PlanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   max_locations?: boolean
   max_members?: boolean
   max_equipment?: boolean
+  max_staff?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   is_active?: boolean
@@ -773,6 +806,7 @@ export type PlanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   max_locations?: boolean
   max_members?: boolean
   max_equipment?: boolean
+  max_staff?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   is_active?: boolean
@@ -791,6 +825,7 @@ export type PlanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   max_locations?: boolean
   max_members?: boolean
   max_equipment?: boolean
+  max_staff?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   is_active?: boolean
@@ -809,6 +844,7 @@ export type PlanSelectScalar = {
   max_locations?: boolean
   max_members?: boolean
   max_equipment?: boolean
+  max_staff?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   is_active?: boolean
@@ -818,7 +854,7 @@ export type PlanSelectScalar = {
   polar_checkout_url_yearly?: boolean
 }
 
-export type PlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "monthly_price" | "yearly_price" | "max_gyms" | "max_locations" | "max_members" | "max_equipment" | "createdAt" | "updatedAt" | "is_active" | "is_deleted" | "polar_product_id" | "polar_checkout_url_monthly" | "polar_checkout_url_yearly", ExtArgs["result"]["plan"]>
+export type PlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "monthly_price" | "yearly_price" | "max_gyms" | "max_locations" | "max_members" | "max_equipment" | "max_staff" | "createdAt" | "updatedAt" | "is_active" | "is_deleted" | "polar_product_id" | "polar_checkout_url_monthly" | "polar_checkout_url_yearly", ExtArgs["result"]["plan"]>
 export type PlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ownerSubscriptions?: boolean | Prisma.Plan$ownerSubscriptionsArgs<ExtArgs>
   _count?: boolean | Prisma.PlanCountOutputTypeDefaultArgs<ExtArgs>
@@ -840,6 +876,7 @@ export type $PlanPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     max_locations: number
     max_members: number
     max_equipment: number
+    max_staff: number
     createdAt: Date
     updatedAt: Date
     is_active: boolean
@@ -1279,6 +1316,7 @@ export interface PlanFieldRefs {
   readonly max_locations: Prisma.FieldRef<"Plan", 'Int'>
   readonly max_members: Prisma.FieldRef<"Plan", 'Int'>
   readonly max_equipment: Prisma.FieldRef<"Plan", 'Int'>
+  readonly max_staff: Prisma.FieldRef<"Plan", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Plan", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Plan", 'DateTime'>
   readonly is_active: Prisma.FieldRef<"Plan", 'Boolean'>

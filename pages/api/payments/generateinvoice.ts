@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { requireAccess, ownsGym } from "@/lib/access";
 import { SubscriptionTypeEnum } from "@/prisma/generated/client";
 import PDFDocument from "pdfkit";
 import { Readable } from "stream";
@@ -14,10 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireAdminOrOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: ["payments.record", "payments.view"], allowAdmin: true });
+  if (!access) return;
 
-  const isGymOwner = session.user.role === "GYM_OWNER";
+  const isGymOwner = !access.isAdmin;
 
   try {
     const { payment_id } = req.body;
@@ -32,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const payment = await prisma.payment.findUnique({
       where: { id: payment_id },
       include: {
+        recordedBy: { select: { first_name: true, last_name: true } },
         ownerSubscription: {
           include: {
             plan: true,
@@ -67,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (
         payment.subscription_type !== SubscriptionTypeEnum.MEMBER ||
         !payment.memberSubscription ||
-        payment.memberSubscription.member.gym.owner_id !== session.user.id
+        !ownsGym(access, payment.memberSubscription.member.gym)
       ) {
         return res.status(StatusCodes.FORBIDDEN).json({
           error: "Forbidden – You can only generate invoices for your members' payments",
@@ -173,6 +174,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (payment.transaction_id) {
       doc.text(`Transaction ID: ${payment.transaction_id}`, leftColumnX, (leftY += 15), { width: leftColumnWidth });
+    }
+
+    const recordedByName = [payment.recordedBy?.first_name, payment.recordedBy?.last_name]
+      .filter(Boolean)
+      .join(" ");
+    if (isMemberSubscription && recordedByName) {
+      doc.text(`Received by: ${recordedByName}`, leftColumnX, (leftY += 15), { width: leftColumnWidth });
     }
 
     // Company/Business Info (right side) - positioned in separate column

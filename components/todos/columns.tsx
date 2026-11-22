@@ -18,6 +18,7 @@ import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export type Todo = {
   id: string;
@@ -102,40 +103,49 @@ export const columns: ColumnDef<Todo>[] = [
     id: "actions",
     header: "Actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const todo = row.original;
-      const queryClient = useQueryClient();
+    cell: ({ row }) => <TodoActionsCell todo={row.original} />,
+  },
+];
 
-      const deleteMutation = useMutation({
-        mutationFn: async () => {
-          await axios.post("/api/todos/deletetodo", { id: todo.id });
-        },
-        onSuccess: () => {
-          toast.success("Todo deleted successfully");
-          queryClient.invalidateQueries({ queryKey: ["todos"] });
-        },
-        onError: (err: unknown) => toast.error(getErrorMessage(err)),
-      });
+// Separate component so the actions cell can use hooks
+function TodoActionsCell({ todo }: { todo: Todo }) {
+  const queryClient = useQueryClient();
+  const { can } = usePermissions();
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/todos/manage?action=edit&id=${todo.id}`}>
-                Edit todo
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/todos/manage?action=view&id=${todo.id}`}>
-                View details
-              </Link>
-            </DropdownMenuItem>
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      await axios.post("/api/todos/deletetodo", { id: todo.id });
+    },
+    onSuccess: () => {
+      toast.success("Todo deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+    },
+    onError: (err: unknown) => toast.error(getErrorMessage(err)),
+  });
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {can("todos.edit") && (
+          <DropdownMenuItem asChild>
+            <Link href={`/todos/manage?action=edit&id=${todo.id}`}>
+              Edit todo
+            </Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem asChild>
+          <Link href={`/todos/manage?action=view&id=${todo.id}`}>
+            View details
+          </Link>
+        </DropdownMenuItem>
+        {can("todos.delete") && (
+          <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
@@ -148,9 +158,9 @@ export const columns: ColumnDef<Todo>[] = [
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

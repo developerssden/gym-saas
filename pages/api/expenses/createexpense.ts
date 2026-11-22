@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
 import prisma from "@/lib/prisma";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess } from "@/lib/access";
 import { parseCalendarDay } from "@/lib/date-utils";
 import { validateExpenseInput, type ExpenseCategoryValue } from "@/lib/expenses";
 import { verifyGymAndLocation } from "@/lib/expenses-server";
@@ -12,8 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "expenses.create" });
+  if (!access) return;
 
   try {
     const { gym_id, location_id, category, amount, expense_date, note } = (req.body ?? {}) as {
@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const date = expense_date ? parseCalendarDay(expense_date) : new Date();
     if (!date) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid date" });
 
-    const ownershipError = await verifyGymAndLocation(session.user.id, gym_id, location_id);
+    const ownershipError = await verifyGymAndLocation(access, gym_id, location_id);
     if (ownershipError) return res.status(StatusCodes.BAD_REQUEST).json({ error: ownershipError });
 
     const expense = await prisma.expense.create({
@@ -43,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         amount: Number(amount),
         expense_date: date,
         note: typeof note === "string" ? note.trim() || null : null,
-        recorded_by_id: session.user.id,
+        recorded_by_id: access.userId,
       },
     });
 

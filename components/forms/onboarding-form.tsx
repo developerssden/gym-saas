@@ -27,6 +27,8 @@ export function OnboardingForm() {
 
   const email = searchParams?.get("email") ?? "";
   const token = searchParams?.get("token") ?? "";
+  // Staff invites only ask for a name, phone and password.
+  const isStaff = searchParams?.get("kind") === "staff";
 
   const [form, setForm] = useState({
     first_name: "",
@@ -78,7 +80,7 @@ export function OnboardingForm() {
       return;
     }
 
-    if (!form.date_of_birth) {
+    if (!isStaff && !form.date_of_birth) {
       setError("Date of birth is required");
       return;
     }
@@ -91,14 +93,18 @@ export function OnboardingForm() {
         first_name: form.first_name,
         last_name: form.last_name,
         phone_number: form.phone_number,
-        date_of_birth: form.date_of_birth.toISOString(),
-        address: form.address,
-        city: form.city,
-        state: form.state,
-        zip_code: form.zip_code,
-        country: form.country,
-        cnic: form.cnic || undefined,
         password: form.password,
+        ...(isStaff
+          ? {}
+          : {
+              date_of_birth: form.date_of_birth?.toISOString(),
+              address: form.address,
+              city: form.city,
+              state: form.state,
+              zip_code: form.zip_code,
+              country: form.country,
+              cnic: form.cnic || undefined,
+            }),
       });
       setSuccess(true);
       setTimeout(() => router.push("/sign-in"), 3000);
@@ -139,7 +145,9 @@ export function OnboardingForm() {
             </div>
             <h1 className="text-xl font-bold">Complete Your Profile</h1>
             <p className="text-muted-foreground text-center text-sm">
-              Set up your gym owner account to get started.
+              {isStaff
+                ? "Set up your staff account to get started."
+                : "Set up your gym owner account to get started."}
             </p>
           </div>
 
@@ -183,7 +191,7 @@ export function OnboardingForm() {
                 placeholder="Enter last name"
                 value={form.last_name}
                 onChange={handleChange}
-                required
+                required={!isStaff}
                 disabled={loading}
               />
             </div>
@@ -202,6 +210,8 @@ export function OnboardingForm() {
               />
             </div>
 
+            {!isStaff && (
+            <>
             <div className="flex flex-col gap-3">
               <Label htmlFor="date_of_birth" className="px-1">
                 Date of birth
@@ -314,6 +324,8 @@ export function OnboardingForm() {
                 }}
               />
             </div>
+            </>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>

@@ -10,6 +10,7 @@ export type Plan = {
     max_locations: number
     max_members: number
     max_equipment: number
+    max_staff: number
     is_active: boolean
     is_deleted: boolean
     createdAt: Date
@@ -69,6 +70,15 @@ export type Payment = {
     updatedAt: Date
     ownerSubscription?: OwnerSubscription
     memberSubscription?: MemberSubscription
+    /** Who recorded the payment (owner or staff). */
+    recordedBy?: PaymentRecorder | null
+}
+
+export type PaymentRecorder = {
+    id?: string
+    first_name: string | null
+    last_name: string | null
+    role: string
 }
 
 export type Client = {

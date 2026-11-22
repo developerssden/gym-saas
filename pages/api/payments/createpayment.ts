@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { requireAccess, ownsGym } from "@/lib/access";
 import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
 import { parseMoney, summarizeBalance } from "@/lib/member-balance";
 
@@ -15,10 +15,10 @@ export default async function handler(
       .status(StatusCodes.METHOD_NOT_ALLOWED)
       .json({ message: "Method not allowed" });
 
-  const session = await requireAdminOrOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "payments.record", allowAdmin: true });
+  if (!access) return;
 
-  const isGymOwner = session.user.role === "GYM_OWNER";
+  const isGymOwner = !access.isAdmin;
 
   try {
     const {
@@ -81,7 +81,8 @@ export default async function handler(
       }
 
       // For GYM_OWNER: verify they own this subscription
-      if (isGymOwner && ownerSubscription.owner_id !== session.user.id) {
+      // Staff never record owner (platform) payments.
+      if (isGymOwner && (access.isStaff || ownerSubscription.owner_id !== access.ownerId)) {
         return res.status(StatusCodes.FORBIDDEN).json({
           error: "Forbidden – You can only create payments for your own subscriptions",
         });
@@ -106,7 +107,7 @@ export default async function handler(
       }
 
       // For GYM_OWNER: verify member belongs to their gym
-      if (isGymOwner && memberSubscription.member.gym.owner_id !== session.user.id) {
+      if (!ownsGym(access, memberSubscription.member.gym)) {
         return res.status(StatusCodes.FORBIDDEN).json({
           error: "Forbidden – You can only create payments for your members' subscriptions",
         });
@@ -161,7 +162,7 @@ export default async function handler(
         transaction_id: txId || null,
         payment_date: payment_date ? new Date(payment_date) : new Date(),
         notes: notes || null,
-        recorded_by_id: session.user.id,
+        recorded_by_id: access.userId,
       },
     });
 

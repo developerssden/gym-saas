@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import fs from "fs";
 import { StatusCodes } from "http-status-codes";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, ownsGym } from "@/lib/access";
 import {
   checkLimitExceeded,
   validateOwnerSubscription,
@@ -56,8 +56,9 @@ export default async function handler(
     });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "members.import" });
+  if (!access) return;
+  const ownerId = access.ownerId!;
 
   try {
     const { fields, files } = await parseForm(req);
@@ -83,7 +84,7 @@ export default async function handler(
       select: { id: true, owner_id: true, is_deleted: true },
     });
 
-    if (!gym || gym.is_deleted || gym.owner_id !== session.user.id) {
+    if (!ownsGym(access, gym)) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "UNAUTHORIZED_GYM",
         message: "Gym does not belong to you",
@@ -102,7 +103,7 @@ export default async function handler(
     }
 
     const subscriptionValidation = await validateOwnerSubscription(
-      session.user.id
+      ownerId
     );
     if (!subscriptionValidation.isActive) {
       return res.status(StatusCodes.FORBIDDEN).json({
@@ -152,7 +153,7 @@ export default async function handler(
     }
 
     const limitCheck = await checkLimitExceeded(
-      session.user.id,
+      ownerId,
       "member",
       locationId
     );
@@ -195,7 +196,7 @@ export default async function handler(
           mode,
           gymId,
           locationId,
-          session.user.id
+          access.userId
         );
         results.push({
           row: row.rowNumber,

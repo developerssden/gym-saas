@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess } from "@/lib/access";
 import { buildTemplateCsv, buildTemplateXlsxBuffer } from "@/lib/bulk-import/template";
 
 export default async function handler(
@@ -13,8 +13,8 @@ export default async function handler(
     });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "members.import" });
+  if (!access) return;
 
   const format = (req.query.format as string)?.toLowerCase() ?? "csv";
 

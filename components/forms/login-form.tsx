@@ -79,7 +79,8 @@ export function LoginForm({
       const updatedSession = await getSession();
       const userRole = updatedSession?.user?.role;
 
-      if (userRole === "SUPER_ADMIN" || userRole === "GYM_OWNER") {
+      if (userRole === "SUPER_ADMIN" || userRole === "GYM_OWNER" || userRole === "STAFF") {
+        // Staff without the dashboard are redirected to their first page by proxy.ts.
         router.push("/dashboard");
         router.refresh();
       } else {

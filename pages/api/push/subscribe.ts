@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/prisma/generated/client";
-import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { requireOwnAccount } from "@/lib/access";
 
 type SubscribeBody = {
   endpoint?: string;
@@ -38,7 +38,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await requireAdminOrOwner(req, res);
+  const session = await requireOwnAccount(req, res, { allowAdmin: true });
   if (!session) return;
 
   const userId = session.user.id;

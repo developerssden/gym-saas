@@ -51,3 +51,51 @@ export async function sendInviteEmail(
 
   await sendEmail(email, subject, text, buildInviteEmailHtml(inviteUrl, isResend));
 }
+
+/** Onboarding link for a staff invite; the form then asks only for staff details. */
+export function buildStaffInviteUrl(email: string, rawToken: string): string {
+  return `${buildInviteUrl(email, rawToken)}&kind=staff`;
+}
+
+export function buildStaffInviteEmailHtml(
+  inviteUrl: string,
+  gymName: string,
+  ownerName: string,
+  isResend = false
+): string {
+  const heading = isResend
+    ? "Your invite link has been renewed"
+    : `Join ${escapeHtml(gymName)} on ${APP_NAME}`;
+  const intro = `${escapeHtml(ownerName)} has added you as staff at ${escapeHtml(gymName)}. Click the button below to set your password and start using ${APP_NAME}.`;
+
+  return `
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+      <h2 style="color: #1a1a1a;">${heading}</h2>
+      <p style="color: #444;">${intro}</p>
+      <a href="${escapeHtml(inviteUrl)}"
+         style="display:inline-block;margin-top:16px;padding:12px 24px;background:#e07b39;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">
+        Set Up My Account
+      </a>
+      <p style="margin-top:24px;color:#888;font-size:13px;">This link expires in 48 hours. If you did not expect this invitation, you can ignore this email.</p>
+    </div>
+  `;
+}
+
+export async function sendStaffInviteEmail(
+  email: string,
+  inviteUrl: string,
+  gymName: string,
+  ownerName: string,
+  isResend = false
+): Promise<void> {
+  const subject = isResend
+    ? `Your ${APP_NAME} invite link has been renewed`
+    : `${ownerName} added you as staff at ${gymName}`;
+  const text = `${ownerName} has added you as staff at ${gymName} on ${APP_NAME}. Set up your account here: ${inviteUrl}`;
+  await sendEmail(
+    email,
+    subject,
+    text,
+    buildStaffInviteEmailHtml(inviteUrl, gymName, ownerName, isResend)
+  );
+}

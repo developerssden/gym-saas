@@ -61,7 +61,8 @@ const ManagePaymentContent = () => {
 
   const [saving, setSaving] = useState(false);
 
-  const isGymOwner = session?.user?.role === "GYM_OWNER";
+  // Staff record member payments the same way the owner does.
+  const isGymOwner = session?.user?.role === "GYM_OWNER" || session?.user?.role === "STAFF";
 
   const { data: paymentData, isLoading: fetchingPayment } = useQuery({
     queryKey: ["payment", paymentId],
@@ -189,7 +190,7 @@ const ManagePaymentContent = () => {
   });
 
   if (status === "loading") return <FullScreenLoader />;
-  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER") {
+  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
     return redirect("/unauthorized");
   }
 

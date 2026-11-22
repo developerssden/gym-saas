@@ -3,6 +3,7 @@
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { usePermissions } from "@/hooks/usePermissions";
 import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -18,6 +19,7 @@ import { SubscriptionExpiredModal } from "@/components/subscription/Subscription
 
 const MemberSubscriptionsPage = () => {
   const { data: session, status } = useSession({ required: true });
+  const { can } = usePermissions();
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 1000);
@@ -46,7 +48,7 @@ const MemberSubscriptionsPage = () => {
       });
       return res.data;
     },
-    enabled: status === "authenticated" && session?.user?.role === "GYM_OWNER" && !!selectedGymId,
+    enabled: status === "authenticated" && (session?.user?.role === "GYM_OWNER" || session?.user?.role === "STAFF") && !!selectedGymId,
   });
 
   // Client-side only: API returns all subs ordered by createdAt desc;
@@ -65,7 +67,7 @@ const MemberSubscriptionsPage = () => {
   if (status === "loading") {
     return <FullScreenLoader />;
   }
-  if (session?.user?.role !== "GYM_OWNER") {
+  if (session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
     return redirect("/unauthorized");
   }
 
@@ -73,7 +75,7 @@ const MemberSubscriptionsPage = () => {
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <h1 className="h1">Member Subscriptions</h1>
-        {!isSubscriptionActive || subscriptionExpired ? (
+        {!can("membersubscriptions.create") ? null : !isSubscriptionActive || subscriptionExpired ? (
           <Button onClick={() => setShowExpiredModal(true)}>
             Create Subscription
           </Button>
