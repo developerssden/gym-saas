@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { memberIdsMatchingPhone, phoneSearchDigits } from "@/lib/members/phone-search";
 import { requireAccess } from "@/lib/access";
+import type { Prisma } from "@/prisma/generated/client";
+import { gymSummarySelect, memberListUserSelect } from "@/lib/api-selects";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -31,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.MemberSubscriptionWhereInput = {
       is_deleted: false,
     };
 
@@ -46,7 +48,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const phoneMatches = phoneDigits ? await memberIdsMatchingPhone(phoneDigits, access.ownerId) : [];
       where.member = {
         gym: {
-          owner_id: access.ownerId,
+          // Always set for owners and staff; "" matches nothing if it ever isn't.
+          owner_id: access.ownerId ?? "",
           is_deleted: false,
           ...(gymId ? { id: gymId } : {}),
         },
@@ -77,19 +80,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where,
         include: {
           member: {
-            include: {
-              user: true,
-              gym: true,
+            select: {
+              id: true,
+              user_id: true,
+              gym_id: true,
+              location_id: true,
+              user: { select: memberListUserSelect },
+              gym: { select: gymSummarySelect },
             },
           },
-          payments: {
-            orderBy: { createdAt: "desc" },
-            include: {
-              recordedBy: { select: { id: true, first_name: true, last_name: true, role: true } },
-            },
-          },
+          // Only to work out the balance; not sent to the browser.
+          payments: { select: { amount: true } },
           freezes: {
             orderBy: { start_date: "desc" },
+            select: { id: true, start_date: true, end_date: true, days: true, reason: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -100,7 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ]);
 
     return res.status(StatusCodes.OK).json({
-      data: subscriptions.map((s) => ({ ...s, ...summarizeBalance(s, s.payments) })),
+      data: subscriptions.map(({ payments, ...s }) => ({ ...s, ...summarizeBalance(s, payments) })),
       totalCount,
       pageCount: Math.ceil(totalCount / limit),
     });

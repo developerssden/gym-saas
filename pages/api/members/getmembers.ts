@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess, gymScope } from "@/lib/access";
 import { Prisma } from "@/prisma/generated/client";
+import { memberListSelect } from "@/lib/api-selects";
 import { memberIdsMatchingPhone, phoneSearchDigits } from "@/lib/members/phone-search";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -67,11 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!hasPagination && !hasSearch) {
       const members = await prisma.member.findMany({
         where: whereClause,
-        include: {
-          user: true,
-          gym: true,
-          location: true,
-        },
+        select: memberListSelect,
         orderBy: { joinedAt: "desc" },
       });
 
@@ -89,11 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const [members, totalCount] = await Promise.all([
       prisma.member.findMany({
         where: whereClause,
-        include: {
-          user: true,
-          gym: true,
-          location: true,
-        },
+        select: memberListSelect,
         orderBy: { joinedAt: "desc" },
         skip,
         take: pageLimit,

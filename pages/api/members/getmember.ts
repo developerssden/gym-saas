@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess, ownsGym } from "@/lib/access";
+import { gymSummarySelect, locationSummarySelect, memberProfileUserSelect } from "@/lib/api-selects";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -22,10 +23,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const member = await prisma.member.findUnique({
       where: { id },
-      include: {
-        user: true,
-        gym: true,
-        location: true,
+      select: {
+        id: true,
+        user_id: true,
+        gym_id: true,
+        location_id: true,
+        joinedAt: true,
+        // The edit form's fields only.
+        user: { select: memberProfileUserSelect },
+        gym: { select: { ...gymSummarySelect, owner_id: true } },
+        location: { select: locationSummarySelect },
       },
     });
 
@@ -40,7 +47,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    return res.status(StatusCodes.OK).json(member);
+    // owner_id was only needed for the check above.
+    const { owner_id: _ownerId, ...gym } = member.gym;
+    void _ownerId;
+    return res.status(StatusCodes.OK).json({ ...member, gym });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: message });

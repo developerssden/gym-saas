@@ -1,9 +1,16 @@
 // pages/api/payments/getpayments.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
+import {
+  gymSummarySelect,
+  locationSummarySelect,
+  memberListUserSelect,
+  ownerSummarySelect,
+  recordedBySelect,
+} from "@/lib/api-selects";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess, gymScope } from "@/lib/access";
-import { SubscriptionTypeEnum } from "@/prisma/generated/client";
+import { Prisma, SubscriptionTypeEnum } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -26,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.PaymentWhereInput = {};
 
     // For GYM_OWNER: only show payments for their MEMBERS' subscriptions (not their own owner subscriptions)
     if (isGymOwner) {
@@ -66,24 +73,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       prisma.payment.findMany({
         where,
         include: {
-          recordedBy: { select: { id: true, first_name: true, last_name: true, role: true } },
+          recordedBy: { select: recordedBySelect },
           ownerSubscription: {
-            include: {
-              plan: true,
-              owner: true,
+            select: {
+              id: true,
+              owner_id: true,
+              plan_id: true,
+              billing_model: true,
+              start_date: true,
+              end_date: true,
+              plan: { select: { id: true, name: true } },
+              owner: { select: ownerSummarySelect },
             },
           },
           memberSubscription: {
-            include: {
+            select: {
+              id: true,
+              member_id: true,
+              price: true,
+              billing_model: true,
+              start_date: true,
+              end_date: true,
               member: {
-                include: {
-                  user: true,
-                  gym: {
-                    select: { id: true, name: true, country: true },
-                  },
-                  location: {
-                    select: { id: true, name: true, country: true },
-                  },
+                select: {
+                  id: true,
+                  user: { select: memberListUserSelect },
+                  gym: { select: gymSummarySelect },
+                  location: { select: locationSummarySelect },
                 },
               },
             },
