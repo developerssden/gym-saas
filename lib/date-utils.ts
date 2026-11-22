@@ -142,3 +142,39 @@ function localMidnight(midnightUtc: number, timeZone: string): Date {
   const guess = midnightUtc - timeZoneOffsetMinutes(new Date(midnightUtc), timeZone) * 60_000;
   return new Date(midnightUtc - timeZoneOffsetMinutes(new Date(guess), timeZone) * 60_000);
 }
+
+const MONTH_ONLY = /^(\d{4})-(\d{2})$/;
+
+/** `YYYY-MM` for the month `date` falls in, in `timeZone`. */
+export function formatCalendarMonth(
+  date: Date,
+  timeZone = DEFAULT_BUSINESS_TIME_ZONE
+): string {
+  return formatCalendarDate(date, timeZone).slice(0, 7);
+}
+
+/**
+ * The exact instants a calendar month starts and ends in `timeZone`, for range
+ * queries: `{ gte: start, lt: end }`. `month` is `YYYY-MM`. Null if invalid.
+ */
+export function calendarMonthRange(
+  month: string,
+  timeZone = DEFAULT_BUSINESS_TIME_ZONE
+): { start: Date; end: Date } | null {
+  const match = typeof month === "string" ? MONTH_ONLY.exec(month.trim()) : null;
+  if (!match) return null;
+  const year = Number(match[1]);
+  const monthIndex = Number(match[2]) - 1;
+  if (monthIndex < 0 || monthIndex > 11) return null;
+  return {
+    start: localMidnight(Date.UTC(year, monthIndex, 1), timeZone),
+    end: localMidnight(Date.UTC(year, monthIndex + 1, 1), timeZone),
+  };
+}
+
+/** The `YYYY-MM` before `month` (e.g. "2026-01" → "2025-12"). */
+export function previousCalendarMonth(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 2, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
