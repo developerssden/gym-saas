@@ -29,6 +29,7 @@ const Gyms = ({ session }: { session: Session }) => {
   });
 
   const {
+    isSubscriptionActive,
     currentGyms,
     gymLimit,
     isAtGymLimit,
@@ -68,7 +69,20 @@ const Gyms = ({ session }: { session: Session }) => {
         </Link>
       </div>
 
-      {isGymOwner && (
+      {isGymOwner && !isSubscriptionActive && (
+        <section
+          className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm"
+          aria-labelledby="no-active-plan"
+        >
+          <p id="no-active-plan" className="font-semibold text-destructive">No active plan</p>
+          <p className="mt-1 text-muted-foreground">
+            Your plan has expired or isn&apos;t active yet, so you can&apos;t add more gyms. Your existing gyms keep
+            working. Contact support to renew.
+          </p>
+        </section>
+      )}
+
+      {isGymOwner && isSubscriptionActive && (
         <section
           className="mb-6 rounded-lg border border-border bg-card p-4 text-card-foreground"
           aria-labelledby="gym-plan-usage"
