@@ -1,132 +1,130 @@
 # Kettlio – Gym Management Platform
 
-Kettlio is a full-stack **Gym Management SaaS platform** built to help gym owners manage their daily operations from one place.
+Kettlio is a full-stack **gym management SaaS** that helps gym owners run members, fees and day-to-day money from one place, on desktop or phone.
 
-The platform provides tools for **member management, memberships, attendance, inventory, equipment, staff tasks, billing, payments, and business analytics**.
-
-## 🚀 Live Demo
-
-https://www.kettlio.com/
+Live: https://www.kettlio.com/
 
 ## ✨ Features
 
-### 📊 Dashboard
-- Real-time gym overview
-- Active member statistics
-- Revenue tracking
-- Daily check-ins
-- Business performance metrics
+### 📊 Owner dashboard
+- Active members, revenue this month and revenue compared with last month
+- Expenses this month and profit (fees collected minus expenses)
+- Charts of revenue and new members over time
+- Recent payments and member subscriptions at a glance
+- Filter by gym and location
+- Shows the last loaded figures when the device is offline
 
-### 👥 Member Management
-- Create and manage gym members
-- Member profiles
-- Membership management
-- Membership expiry tracking
-- Attendance tracking
-- Payment tracking
-- Membership renewals
+### 👥 Members
+- Add, edit and search members
+- Bulk import members from an Excel/CSV file (with a downloadable template)
+- Member subscriptions with start/end dates, monthly or yearly billing, and renewals
+- **Freeze / unfreeze** a subscription; the end date moves forward by the frozen days
+- Record why a member left (churn reason)
 
-### 🏋️ Inventory & Equipment
-- Manage gym equipment
-- Manage gym merchandise
-- Track inventory quantities
-- Monitor stock levels
-- Low-stock alerts
-- Equipment management
+### 💳 Fees & payments
+- Record payments by cash or bank transfer
+- **Partial payments** and outstanding balances per member
+- Admission fee and discounts
+- PDF invoices / receipts
 
-### 📋 Task Management
-- Create staff tasks
-- Assign tasks to staff
-- Track task status
-- Manage gym cleaning and maintenance activities
+### 📲 Reminders & sharing
+- Daily email to gym owners listing members whose fees run out soon
+- Notification when members' subscriptions expire, with a downloadable PDF list
+- **One-tap WhatsApp** fee reminders and receipt sharing to members
+- In-app notifications and web push notifications
 
-### 💳 Finance & Billing
-- Member payment tracking
-- Invoice generation
-- Revenue tracking
-- Expense management
-- Financial reports
+### 💰 Expenses & cash book
+- Record expenses by category (rent, bills, salaries and more)
+- Daily cash book of money in and money out
+- Monthly profit
 
-### 📈 Reports & Analytics
-- Member statistics
-- Attendance analytics
-- Revenue reports
-- Gym performance metrics
-- Business insights
+### 🏢 Gyms, locations & equipment
+- Multiple gyms and locations per owner, within plan limits
+- Equipment register with category, condition, usage and status
+- To-do list for the gym
 
-### 🔐 Authentication
-- User authentication
-- Protected routes
-- Session management
-- NextAuth integration
+### 🛠️ Platform administration (super admin)
+- Manage gym owners (clients), invite them by email and resend invites
+- Manage gyms, locations, plans and owner subscriptions
+- Review sign-up requests from the landing page
+- Send announcements to all owners, all members or one person
 
-### 💰 Subscription Plans
+### 💰 Subscription plans
+Plans are managed by the super admin, not hard-coded. Each plan sets:
+- Monthly and yearly price
+- Maximum gyms, locations, members and equipment items
 
-The application supports different SaaS plans for gym businesses.
+Gym owners pay for their plan through **Polar** checkout, and the subscription is kept in sync via Polar webhooks. Current plans and prices are shown on https://www.kettlio.com/.
 
-#### Basic Plan
-- 1 gym
-- 1 location
-- Up to 200 members
-- Up to 200 equipment items
-- Automated expiry reminders
-- PDF invoices
-- Member payment tracking
+### 📱 Works as an app
+- Installable PWA on phones and desktops
+- Offline page and cached dashboard data when the connection drops
 
-#### Pro Plan
-- Up to 2 gyms
-- Up to 5 locations
-- Up to 500 members per location
-- Up to 500 equipment items per location
-- Automated expiry reminders
-- PDF invoices
-- Member payment tracking
+## 🗺️ Roadmap
 
-## 🛠️ Tech Stack
+Not built yet. Each item has a GitHub issue:
 
-### Frontend
+- [Staff logins with limited permissions](https://github.com/developerssden/gym-saas/issues/14)
+- [Monthly report as PDF and Excel](https://github.com/developerssden/gym-saas/issues/15)
+- [Record a fee in 2–3 taps and search members by phone](https://github.com/developerssden/gym-saas/issues/16)
+- [Record payments and check-ins while offline, sync later](https://github.com/developerssden/gym-saas/issues/17)
+- [Urdu / Roman Urdu language support](https://github.com/developerssden/gym-saas/issues/18)
+- [Setup checklist and empty states for new gym owners](https://github.com/developerssden/gym-saas/issues/19)
+- [Member self-service: fee status and receipts](https://github.com/developerssden/gym-saas/issues/20)
+- [Biometric attendance and entrance (paid add-on)](https://github.com/developerssden/gym-saas/issues/11)
 
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- Responsive UI
+## 🛠️ Tech stack
 
-### Backend
+- **Framework:** Next.js 16, React 19, TypeScript
+- **UI:** Tailwind CSS 4, shadcn/ui (Radix), TanStack Table, TanStack Query
+- **Backend:** Next.js API routes, Prisma 7, PostgreSQL
+- **Auth:** NextAuth
+- **Billing:** Polar
+- **Email & notifications:** Nodemailer (Gmail), Web Push
+- **Documents:** PDFKit (invoices, reports), SheetJS (Excel import)
+- **PWA:** Serwist
+- **Hosting:** Vercel, with a daily cron job (`/api/cron/check-subscriptions`)
 
-- Next.js API Routes
-- TypeScript
-- Prisma ORM
-- PostgreSQL
-- NextAuth
+## 🚀 Getting started
 
-### Development
+```bash
+npm install          # also runs prisma generate
+npm run db:push:dev  # create the database schema
+npm run seed         # create the super admin user
+npm run dev
+```
 
-- Git
-- ESLint
-- Automated Testing
-- Vercel
-- Environment Variables
+Create a `.env` file with these variables:
 
-## 📁 Project Structure
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `NEXTAUTH_URL`, `NEXTAUTH_SECRET` | NextAuth |
+| `APP_URL` | Public URL used in emails and invite links |
+| `APP_TIME_ZONE` | Time zone used for due dates and reminders |
+| `GMAIL_USER`, `GMAIL_APP_PASSWORD` | Sending email |
+| `REGISTRATION_NOTIFY_EMAIL` | Who is told about new sign-up requests |
+| `CRON_SECRET` | Protects the cron endpoint |
+| `POLAR_WEBHOOK_SECRET` | Verifies Polar webhooks |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Web push |
+
+See `docs/CRON_SETUP.md` for setting up the daily cron job.
+
+Run the tests with `npm test` and lint with `npm run lint`.
+
+## 📁 Project structure
 
 ```text
-kettlio/
-│
-├── app/                 # Next.js application routes
-├── components/          # Reusable UI components
-├── constants/           # Application constants
-├── docs/                # Project documentation
-├── hooks/               # Custom React hooks
-├── lib/                 # Utility functions and libraries
-├── pages/               # Pages and API functionality
-├── prisma/              # Prisma schema and database configuration
-├── providers/           # Application providers
-├── public/              # Static assets
-├── scripts/             # Utility scripts
-├── tests/               # Automated tests
-│
-├── .vscode/             # VS Code configuration
-├── package.json
-├── tsconfig.json
-└── README.md
+app/          Next.js routes (auth, dashboard, landing page)
+components/   UI components
+constants/    App constants, including branding (constants/brand.ts)
+docs/         Project documentation
+hooks/        React hooks
+lib/          Business logic (billing, reminders, expenses, WhatsApp, cron…)
+pages/api/    API routes
+prisma/       Database schema and seed
+providers/    React providers
+public/       Static assets
+scripts/      Database and maintenance scripts
+tests/        Automated tests
+```
