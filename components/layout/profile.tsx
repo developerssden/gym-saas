@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Moon, Sun, User } from "lucide-react";
+import { LogOut, Moon, Sun, User, CreditCard } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
@@ -75,6 +75,14 @@ export default function ProfileDropdown() {
             <Link href="/profile" className="cursor-pointer">
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {user?.role === "GYM_OWNER" && (
+          <DropdownMenuItem asChild>
+            <Link href="/subscription" className="cursor-pointer">
+              <CreditCard className="mr-2 h-4 w-4" />
+              <span>Subscription</span>
             </Link>
           </DropdownMenuItem>
         )}

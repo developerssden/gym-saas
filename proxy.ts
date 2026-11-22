@@ -38,7 +38,7 @@ const ROUTE_GATES: RouteGate[] = [
     roles: ['SUPER_ADMIN', 'GYM_OWNER', 'STAFF'],
   },
   {
-    routes: ['/staff'],
+    routes: ['/staff', '/subscription'],
     roles: ['GYM_OWNER'],
   },
   {
