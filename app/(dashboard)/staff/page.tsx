@@ -36,7 +36,7 @@ type StaffRow = {
   staff_gym: { id: string; name: string } | null;
 };
 
-type StaffResponse = { data: StaffRow[]; seats: { used: number; max: number } };
+type StaffResponse = { data: StaffRow[]; seats: { used: number; max: number; planActive: boolean } };
 
 const STATUS_BADGE: Record<StaffRow["status"], { label: string; variant: "default" | "secondary" | "outline" }> = {
   active: { label: "Active", variant: "default" },
@@ -146,7 +146,17 @@ const StaffPage = () => {
   if (!isOwner) return redirect("/unauthorized");
 
   const seats = data?.seats;
-  const atLimit = !!seats && seats.used >= seats.max;
+  // Why the owner can't invite, if they can't: no active plan, a plan without
+  // staff logins, or every seat taken.
+  const blockedReason = !seats
+    ? null
+    : !seats.planActive
+      ? "no-plan"
+      : seats.max === 0
+        ? "no-staff-on-plan"
+        : seats.used >= seats.max
+          ? "seats-full"
+          : null;
 
   return (
     <PageContainer>
@@ -158,13 +168,13 @@ const StaffPage = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {seats && (
+          {seats?.planActive && seats.max > 0 && (
             <span className="text-sm text-muted-foreground">
               {seats.used} of {seats.max} seats used
             </span>
           )}
-          {atLimit ? (
-            <Button disabled title="Your plan's staff limit is reached">
+          {blockedReason ? (
+            <Button disabled>
               <Plus className="size-4" /> Invite staff
             </Button>
           ) : (
@@ -177,7 +187,20 @@ const StaffPage = () => {
         </div>
       </div>
 
-      {atLimit && (
+      {blockedReason === "no-plan" && (
+        <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
+          <p className="font-semibold text-destructive">No active plan</p>
+          <p className="mt-1 text-muted-foreground">
+            Your plan has expired or isn&apos;t active yet, so you can&apos;t invite staff. Contact support to renew.
+          </p>
+        </div>
+      )}
+      {blockedReason === "no-staff-on-plan" && (
+        <div className="mb-4 rounded-md bg-muted p-4 text-sm text-muted-foreground">
+          Your plan doesn&apos;t include staff logins. Upgrade your plan to invite staff.
+        </div>
+      )}
+      {blockedReason === "seats-full" && (
         <div className="mb-4 rounded-md bg-muted p-4 text-sm text-muted-foreground">
           You&apos;ve used all {seats!.max} staff seats on your plan. Deactivate someone to free a seat, or upgrade your plan.
         </div>

@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess, ownedGymWhere } from "@/lib/access";
-import { checkLimitExceeded } from "@/lib/subscription-validation";
+import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -14,6 +14,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const ownerId = access.ownerId!;
 
   try {
+    // Same rule as gyms, locations, members and staff: no active plan, nothing new.
+    // (checkLimitExceeded allows everything when there's no plan.)
+    const validation = await validateOwnerSubscription(ownerId);
+    if (!validation.isActive) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        error: "SUBSCRIPTION_EXPIRED",
+        message: "Your plan isn't active, so you can't add equipment. Contact support to renew.",
+      });
+    }
+
     console.log("=== Equipment Create Request ===");
     
     const {

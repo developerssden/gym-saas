@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 import { requireAccess } from "@/lib/access";
 import { normalizePermissions } from "@/lib/staff-permissions";
 import { STAFF_SELECT, findOwnedStaff, staffStatus } from "@/lib/staff";
-import { checkLimitExceeded } from "@/lib/subscription-validation";
+import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
 import type { Prisma } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -66,8 +66,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           error: "This person hasn't accepted their invite yet. Resend or cancel the invite instead.",
         });
       }
-      // Reactivating takes a seat back.
+      // Reactivating takes a seat back, and needs an active plan.
       if (is_active && !staff.is_active) {
+        const validation = await validateOwnerSubscription(ownerId);
+        if (!validation.isActive) {
+          return res.status(StatusCodes.FORBIDDEN).json({
+            error: "SUBSCRIPTION_EXPIRED",
+            message: "Your plan isn't active, so you can't reactivate staff. Contact support to renew.",
+          });
+        }
         const seats = await checkLimitExceeded(ownerId, "staff");
         if (seats.exceeded) {
           return res.status(StatusCodes.CONFLICT).json({

@@ -36,8 +36,11 @@ export function SubscriptionLimitModal({
     gym: "Gyms",
     location: "Locations",
     member: "Members",
-    equipment: "Equipment/Inventory",
+    equipment: "Equipment",
+    staff: "Staff logins",
   }
+  // A plan that allows none of this resource at all, rather than one that's full.
+  const notIncluded = max === 0
 
   const resourceLabel = resourceLabels[resourceType] || resourceType
 
@@ -47,18 +50,26 @@ export function SubscriptionLimitModal({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-destructive" />
-            <DialogTitle className="font-display">Plan limit reached</DialogTitle>
+            <DialogTitle className="font-display">{notIncluded ? "Not in your plan" : "Plan limit reached"}</DialogTitle>
           </div>
           <DialogDescription>
-            You have reached your plan limit for {resourceLabel.toLowerCase()}.
+            {notIncluded
+              ? `Your plan doesn't include ${resourceLabel.toLowerCase()}.`
+              : `You have reached your plan limit for ${resourceLabel.toLowerCase()}.`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-2">
           <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-4">
             <p className="text-sm text-muted-foreground">
-              Current usage: <span className="font-semibold">{current}</span> /{" "}
-              <span className="font-semibold">{max}</span> {resourceLabel.toLowerCase()}
+              {notIncluded ? (
+                <>Not included in your plan</>
+              ) : (
+                <>
+                  Current usage: <span className="font-semibold">{current}</span> /{" "}
+                  <span className="font-semibold">{max}</span> {resourceLabel.toLowerCase()}
+                </>
+              )}
             </p>
             {planName && (
               <p className="text-sm text-muted-foreground">
