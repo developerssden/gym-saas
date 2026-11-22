@@ -13,6 +13,17 @@ if (!process.env.DATABASE_URL) {
   process.exit(0);
 }
 
+// Preview builds (any pushed branch) share the production database, so they
+// must not change its schema: an unmerged branch's columns would land in
+// production and then block main's builds. Local builds have no VERCEL_ENV and
+// still sync. If Preview ever gets its own DATABASE_URL, set
+// DB_PUSH_ON_PREVIEW=1 for Preview to sync it again.
+const vercelEnv = process.env.VERCEL_ENV;
+if (vercelEnv && vercelEnv !== "production" && process.env.DB_PUSH_ON_PREVIEW !== "1") {
+  console.log(`[db-deploy] VERCEL_ENV=${vercelEnv}: skipping schema sync (production builds only).`);
+  process.exit(0);
+}
+
 console.log("[db-deploy] prisma db push");
 
 const result = spawnSync("prisma", ["db", "push"], {
