@@ -43,6 +43,12 @@ Live: https://www.kettlio.com/
 - Equipment register with category, condition, usage and status
 - To-do list for the gym
 
+### 🧑‍🤝‍🧑 Staff logins
+- Gym owners invite staff by email; each staff member works in one gym
+- A permission page with checkboxes for what each staff member can see and do on every page (e.g. record payments but not see revenue, add members but not delete them)
+- Deactivate, reactivate, resend or cancel invites
+- Payments and receipts show who recorded them
+
 ### 🛠️ Platform administration (super admin)
 - Manage gym owners (clients), invite them by email and resend invites
 - Manage gyms, locations, plans and owner subscriptions
@@ -52,7 +58,7 @@ Live: https://www.kettlio.com/
 ### 💰 Subscription plans
 Plans are managed by the super admin, not hard-coded. Each plan sets:
 - Monthly and yearly price
-- Maximum gyms, locations, members and equipment items
+- Maximum gyms, locations, members, equipment items and staff logins
 
 Gym owners pay for their plan through **Polar** checkout, and the subscription is kept in sync via Polar webhooks. Current plans and prices are shown on https://www.kettlio.com/.
 
@@ -64,7 +70,6 @@ Gym owners pay for their plan through **Polar** checkout, and the subscription i
 
 Not built yet. Each item has a GitHub issue:
 
-- [Staff logins with limited permissions](https://github.com/developerssden/gym-saas/issues/14)
 - [Monthly report as PDF and Excel](https://github.com/developerssden/gym-saas/issues/15)
 - [Record a fee in 2–3 taps and search members by phone](https://github.com/developerssden/gym-saas/issues/16)
 - [Record payments and check-ins while offline, sync later](https://github.com/developerssden/gym-saas/issues/17)
