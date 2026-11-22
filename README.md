@@ -13,6 +13,7 @@ Live: https://www.kettlio.com/
 - Recent payments and member subscriptions at a glance
 - Filter by gym and location
 - Shows the last loaded figures when the device is offline
+- **Setup checklist** for new owners (gym, location, members, first payment, notifications, install the app) that ticks off from real data and disappears when done
 
 ### 👥 Members
 - Add, edit and search members, by name or by phone number in any format (`0301…`, `+92 301…`)
@@ -78,7 +79,6 @@ Not built yet. Each item has a GitHub issue:
 
 - [Record payments and check-ins while offline, sync later](https://github.com/developerssden/gym-saas/issues/17)
 - [Urdu / Roman Urdu language support](https://github.com/developerssden/gym-saas/issues/18)
-- [Setup checklist and empty states for new gym owners](https://github.com/developerssden/gym-saas/issues/19)
 - [Member self-service: fee status and receipts](https://github.com/developerssden/gym-saas/issues/20)
 - [Biometric attendance and entrance (paid add-on)](https://github.com/developerssden/gym-saas/issues/11)
 
