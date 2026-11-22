@@ -9,7 +9,7 @@ const PaymentsPage = () => {
   if (status === "loading") {
     return <FullScreenLoader />;
   }
-  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER") {
+  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
     return redirect("/unauthorized");
   }
   return <Payments session={session} />;

@@ -1737,7 +1737,10 @@ export const UserScalarFieldEnum = {
   is_deleted: 'is_deleted',
   onboarding_completed: 'onboarding_completed',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  staff_owner_id: 'staff_owner_id',
+  staff_gym_id: 'staff_gym_id',
+  staff_permissions: 'staff_permissions'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -1906,6 +1909,7 @@ export const PlanScalarFieldEnum = {
   max_locations: 'max_locations',
   max_members: 'max_members',
   max_equipment: 'max_equipment',
+  max_staff: 'max_staff',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   is_active: 'is_active',

@@ -28,6 +28,7 @@ import { CurrencyAmount } from "@/components/common/CurrencyAmount";
 import ExpenseDialog, { invalidateExpenseQueries, type ExpenseRow } from "@/components/expenses/ExpenseDialog";
 import { expenseCategoryLabel } from "@/lib/expenses";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export const columns: ColumnDef<ExpenseRow>[] = [
   {
@@ -72,6 +73,7 @@ export const columns: ColumnDef<ExpenseRow>[] = [
 
 function ExpenseActions({ expense }: { expense: ExpenseRow }) {
   const queryClient = useQueryClient();
+  const { can } = usePermissions();
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -84,6 +86,10 @@ function ExpenseActions({ expense }: { expense: ExpenseRow }) {
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
+  const canEdit = can("expenses.edit");
+  const canDelete = can("expenses.delete");
+  if (!canEdit && !canDelete) return null;
+
   return (
     <>
       <DropdownMenu>
@@ -94,14 +100,18 @@ function ExpenseActions({ expense }: { expense: ExpenseRow }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setEditing(true)}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem className="text-destructive" onClick={() => setConfirmDelete(true)}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
+          {canEdit && (
+            <DropdownMenuItem onClick={() => setEditing(true)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+          )}
+          {canDelete && (
+            <DropdownMenuItem className="text-destructive" onClick={() => setConfirmDelete(true)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

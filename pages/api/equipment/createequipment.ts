@@ -2,15 +2,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, ownedGymWhere } from "@/lib/access";
 import { checkLimitExceeded } from "@/lib/subscription-validation";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "equipment.create" });
+  if (!access) return;
+  const ownerId = access.ownerId!;
 
   try {
     console.log("=== Equipment Create Request ===");
@@ -85,11 +86,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Verify gym belongs to owner
-    console.log("Checking gym ownership:", { gym_id, owner_id: session.user.id });
+    console.log("Checking gym ownership:", { gym_id, owner_id: ownerId });
     const gym = await prisma.gym.findFirst({
       where: {
         id: gym_id,
-        owner_id: session.user.id,
+        AND: [ownedGymWhere(access)],
         is_deleted: false,
       },
     });
@@ -126,7 +127,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Check equipment limit for this location
       console.log("Checking equipment limit for location:", location_id);
       const limitCheck = await checkLimitExceeded(
-        session.user.id,
+        ownerId,
         "equipment",
         location_id
       );

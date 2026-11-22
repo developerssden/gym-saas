@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
 import PDFDocument from "pdfkit";
 import prisma from "@/lib/prisma";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, ownedGymWhere } from "@/lib/access";
 import { parseExpiredMembersNotice } from "@/lib/notifications/expired-members-notice";
 import { notificationsErrorResponse } from "@/lib/notifications/api-error";
 
@@ -28,8 +28,8 @@ export default async function handler(
       .json({ message: "Method not allowed" });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "membersubscriptions.view" });
+  if (!access) return;
 
   const notice = parseExpiredMembersNotice(req.query);
   if (!notice || notice.entries.length > MAX_ENTRIES) {
@@ -42,7 +42,7 @@ export default async function handler(
     const subscriptions = await prisma.memberSubscription.findMany({
       where: {
         id: { in: notice.entries.map((entry) => entry.subscriptionId) },
-        member: { gym: { owner_id: session.user.id } },
+        member: { gym: { AND: [ownedGymWhere(access)] } },
       },
       select: {
         id: true,

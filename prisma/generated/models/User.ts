@@ -45,6 +45,8 @@ export type UserMinAggregateOutputType = {
   onboarding_completed: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  staff_owner_id: string | null
+  staff_gym_id: string | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -68,6 +70,8 @@ export type UserMaxAggregateOutputType = {
   onboarding_completed: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  staff_owner_id: string | null
+  staff_gym_id: string | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -91,6 +95,9 @@ export type UserCountAggregateOutputType = {
   onboarding_completed: number
   createdAt: number
   updatedAt: number
+  staff_owner_id: number
+  staff_gym_id: number
+  staff_permissions: number
   _all: number
 }
 
@@ -116,6 +123,8 @@ export type UserMinAggregateInputType = {
   onboarding_completed?: true
   createdAt?: true
   updatedAt?: true
+  staff_owner_id?: true
+  staff_gym_id?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -139,6 +148,8 @@ export type UserMaxAggregateInputType = {
   onboarding_completed?: true
   createdAt?: true
   updatedAt?: true
+  staff_owner_id?: true
+  staff_gym_id?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -162,6 +173,9 @@ export type UserCountAggregateInputType = {
   onboarding_completed?: true
   createdAt?: true
   updatedAt?: true
+  staff_owner_id?: true
+  staff_gym_id?: true
+  staff_permissions?: true
   _all?: true
 }
 
@@ -258,6 +272,9 @@ export type UserGroupByOutputType = {
   onboarding_completed: boolean
   createdAt: Date
   updatedAt: Date
+  staff_owner_id: string | null
+  staff_gym_id: string | null
+  staff_permissions: string[]
   _count: UserCountAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
@@ -302,6 +319,9 @@ export type UserWhereInput = {
   onboarding_completed?: Prisma.BoolFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  staff_owner_id?: Prisma.StringNullableFilter<"User"> | string | null
+  staff_gym_id?: Prisma.StringNullableFilter<"User"> | string | null
+  staff_permissions?: Prisma.StringNullableListFilter<"User">
   todos?: Prisma.TodoListRelationFilter
   gyms_owned?: Prisma.GymListRelationFilter
   member?: Prisma.XOR<Prisma.MemberNullableScalarRelationFilter, Prisma.MemberWhereInput> | null
@@ -311,6 +331,9 @@ export type UserWhereInput = {
   pushSubscriptions?: Prisma.PushSubscriptionListRelationFilter
   notifications?: Prisma.InAppNotificationListRelationFilter
   targetedAnnouncements?: Prisma.AnnouncementListRelationFilter
+  staff_owner?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  staff_accounts?: Prisma.UserListRelationFilter
+  staff_gym?: Prisma.XOR<Prisma.GymNullableScalarRelationFilter, Prisma.GymWhereInput> | null
 }
 
 export type UserOrderByWithRelationInput = {
@@ -334,6 +357,9 @@ export type UserOrderByWithRelationInput = {
   onboarding_completed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  staff_owner_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  staff_gym_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  staff_permissions?: Prisma.SortOrder
   todos?: Prisma.TodoOrderByRelationAggregateInput
   gyms_owned?: Prisma.GymOrderByRelationAggregateInput
   member?: Prisma.MemberOrderByWithRelationInput
@@ -343,6 +369,9 @@ export type UserOrderByWithRelationInput = {
   pushSubscriptions?: Prisma.PushSubscriptionOrderByRelationAggregateInput
   notifications?: Prisma.InAppNotificationOrderByRelationAggregateInput
   targetedAnnouncements?: Prisma.AnnouncementOrderByRelationAggregateInput
+  staff_owner?: Prisma.UserOrderByWithRelationInput
+  staff_accounts?: Prisma.UserOrderByRelationAggregateInput
+  staff_gym?: Prisma.GymOrderByWithRelationInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -369,6 +398,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   onboarding_completed?: Prisma.BoolFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  staff_owner_id?: Prisma.StringNullableFilter<"User"> | string | null
+  staff_gym_id?: Prisma.StringNullableFilter<"User"> | string | null
+  staff_permissions?: Prisma.StringNullableListFilter<"User">
   todos?: Prisma.TodoListRelationFilter
   gyms_owned?: Prisma.GymListRelationFilter
   member?: Prisma.XOR<Prisma.MemberNullableScalarRelationFilter, Prisma.MemberWhereInput> | null
@@ -378,6 +410,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   pushSubscriptions?: Prisma.PushSubscriptionListRelationFilter
   notifications?: Prisma.InAppNotificationListRelationFilter
   targetedAnnouncements?: Prisma.AnnouncementListRelationFilter
+  staff_owner?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  staff_accounts?: Prisma.UserListRelationFilter
+  staff_gym?: Prisma.XOR<Prisma.GymNullableScalarRelationFilter, Prisma.GymWhereInput> | null
 }, "id">
 
 export type UserOrderByWithAggregationInput = {
@@ -401,6 +436,9 @@ export type UserOrderByWithAggregationInput = {
   onboarding_completed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  staff_owner_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  staff_gym_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  staff_permissions?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
@@ -430,6 +468,9 @@ export type UserScalarWhereWithAggregatesInput = {
   onboarding_completed?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
+  staff_owner_id?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  staff_gym_id?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  staff_permissions?: Prisma.StringNullableListFilter<"User">
 }
 
 export type UserCreateInput = {
@@ -453,6 +494,7 @@ export type UserCreateInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
@@ -462,6 +504,9 @@ export type UserCreateInput = {
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -485,6 +530,9 @@ export type UserUncheckedCreateInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
@@ -494,6 +542,7 @@ export type UserUncheckedCreateInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserUpdateInput = {
@@ -517,6 +566,7 @@ export type UserUpdateInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
@@ -526,6 +576,9 @@ export type UserUpdateInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -549,6 +602,9 @@ export type UserUncheckedUpdateInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
@@ -558,6 +614,7 @@ export type UserUncheckedUpdateInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -581,6 +638,9 @@ export type UserCreateManyInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
 }
 
 export type UserUpdateManyMutationInput = {
@@ -604,6 +664,7 @@ export type UserUpdateManyMutationInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -627,6 +688,32 @@ export type UserUncheckedUpdateManyInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
+}
+
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
+}
+
+export type UserListRelationFilter = {
+  every?: Prisma.UserWhereInput
+  some?: Prisma.UserWhereInput
+  none?: Prisma.UserWhereInput
+}
+
+export type UserOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -650,6 +737,9 @@ export type UserCountOrderByAggregateInput = {
   onboarding_completed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  staff_owner_id?: Prisma.SortOrder
+  staff_gym_id?: Prisma.SortOrder
+  staff_permissions?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -673,6 +763,8 @@ export type UserMaxOrderByAggregateInput = {
   onboarding_completed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  staff_owner_id?: Prisma.SortOrder
+  staff_gym_id?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -696,6 +788,8 @@ export type UserMinOrderByAggregateInput = {
   onboarding_completed?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  staff_owner_id?: Prisma.SortOrder
+  staff_gym_id?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -703,9 +797,28 @@ export type UserScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput
 }
 
-export type UserNullableScalarRelationFilter = {
-  is?: Prisma.UserWhereInput | null
-  isNot?: Prisma.UserWhereInput | null
+export type UserCreatestaff_permissionsInput = {
+  set: string[]
+}
+
+export type UserCreateNestedOneWithoutStaff_accountsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_accountsInput, Prisma.UserUncheckedCreateWithoutStaff_accountsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_accountsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedManyWithoutStaff_ownerInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_ownerInput, Prisma.UserUncheckedCreateWithoutStaff_ownerInput> | Prisma.UserCreateWithoutStaff_ownerInput[] | Prisma.UserUncheckedCreateWithoutStaff_ownerInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_ownerInput | Prisma.UserCreateOrConnectWithoutStaff_ownerInput[]
+  createMany?: Prisma.UserCreateManyStaff_ownerInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
+export type UserUncheckedCreateNestedManyWithoutStaff_ownerInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_ownerInput, Prisma.UserUncheckedCreateWithoutStaff_ownerInput> | Prisma.UserCreateWithoutStaff_ownerInput[] | Prisma.UserUncheckedCreateWithoutStaff_ownerInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_ownerInput | Prisma.UserCreateOrConnectWithoutStaff_ownerInput[]
+  createMany?: Prisma.UserCreateManyStaff_ownerInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -730,6 +843,49 @@ export type BoolFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type UserUpdatestaff_permissionsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type UserUpdateOneWithoutStaff_accountsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_accountsInput, Prisma.UserUncheckedCreateWithoutStaff_accountsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_accountsInput
+  upsert?: Prisma.UserUpsertWithoutStaff_accountsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutStaff_accountsInput, Prisma.UserUpdateWithoutStaff_accountsInput>, Prisma.UserUncheckedUpdateWithoutStaff_accountsInput>
+}
+
+export type UserUpdateManyWithoutStaff_ownerNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_ownerInput, Prisma.UserUncheckedCreateWithoutStaff_ownerInput> | Prisma.UserCreateWithoutStaff_ownerInput[] | Prisma.UserUncheckedCreateWithoutStaff_ownerInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_ownerInput | Prisma.UserCreateOrConnectWithoutStaff_ownerInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutStaff_ownerInput | Prisma.UserUpsertWithWhereUniqueWithoutStaff_ownerInput[]
+  createMany?: Prisma.UserCreateManyStaff_ownerInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutStaff_ownerInput | Prisma.UserUpdateWithWhereUniqueWithoutStaff_ownerInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutStaff_ownerInput | Prisma.UserUpdateManyWithWhereWithoutStaff_ownerInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+}
+
+export type UserUncheckedUpdateManyWithoutStaff_ownerNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_ownerInput, Prisma.UserUncheckedCreateWithoutStaff_ownerInput> | Prisma.UserCreateWithoutStaff_ownerInput[] | Prisma.UserUncheckedCreateWithoutStaff_ownerInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_ownerInput | Prisma.UserCreateOrConnectWithoutStaff_ownerInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutStaff_ownerInput | Prisma.UserUpsertWithWhereUniqueWithoutStaff_ownerInput[]
+  createMany?: Prisma.UserCreateManyStaff_ownerInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutStaff_ownerInput | Prisma.UserUpdateWithWhereUniqueWithoutStaff_ownerInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutStaff_ownerInput | Prisma.UserUpdateManyWithWhereWithoutStaff_ownerInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
 export type UserCreateNestedOneWithoutInviteTokensInput = {
@@ -794,12 +950,54 @@ export type UserCreateNestedOneWithoutGyms_ownedInput = {
   connect?: Prisma.UserWhereUniqueInput
 }
 
+export type UserCreateNestedManyWithoutStaff_gymInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_gymInput, Prisma.UserUncheckedCreateWithoutStaff_gymInput> | Prisma.UserCreateWithoutStaff_gymInput[] | Prisma.UserUncheckedCreateWithoutStaff_gymInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_gymInput | Prisma.UserCreateOrConnectWithoutStaff_gymInput[]
+  createMany?: Prisma.UserCreateManyStaff_gymInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
+export type UserUncheckedCreateNestedManyWithoutStaff_gymInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_gymInput, Prisma.UserUncheckedCreateWithoutStaff_gymInput> | Prisma.UserCreateWithoutStaff_gymInput[] | Prisma.UserUncheckedCreateWithoutStaff_gymInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_gymInput | Prisma.UserCreateOrConnectWithoutStaff_gymInput[]
+  createMany?: Prisma.UserCreateManyStaff_gymInputEnvelope
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
 export type UserUpdateOneRequiredWithoutGyms_ownedNestedInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutGyms_ownedInput, Prisma.UserUncheckedCreateWithoutGyms_ownedInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutGyms_ownedInput
   upsert?: Prisma.UserUpsertWithoutGyms_ownedInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutGyms_ownedInput, Prisma.UserUpdateWithoutGyms_ownedInput>, Prisma.UserUncheckedUpdateWithoutGyms_ownedInput>
+}
+
+export type UserUpdateManyWithoutStaff_gymNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_gymInput, Prisma.UserUncheckedCreateWithoutStaff_gymInput> | Prisma.UserCreateWithoutStaff_gymInput[] | Prisma.UserUncheckedCreateWithoutStaff_gymInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_gymInput | Prisma.UserCreateOrConnectWithoutStaff_gymInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutStaff_gymInput | Prisma.UserUpsertWithWhereUniqueWithoutStaff_gymInput[]
+  createMany?: Prisma.UserCreateManyStaff_gymInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutStaff_gymInput | Prisma.UserUpdateWithWhereUniqueWithoutStaff_gymInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutStaff_gymInput | Prisma.UserUpdateManyWithWhereWithoutStaff_gymInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+}
+
+export type UserUncheckedUpdateManyWithoutStaff_gymNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutStaff_gymInput, Prisma.UserUncheckedCreateWithoutStaff_gymInput> | Prisma.UserCreateWithoutStaff_gymInput[] | Prisma.UserUncheckedCreateWithoutStaff_gymInput[]
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutStaff_gymInput | Prisma.UserCreateOrConnectWithoutStaff_gymInput[]
+  upsert?: Prisma.UserUpsertWithWhereUniqueWithoutStaff_gymInput | Prisma.UserUpsertWithWhereUniqueWithoutStaff_gymInput[]
+  createMany?: Prisma.UserCreateManyStaff_gymInputEnvelope
+  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+  update?: Prisma.UserUpdateWithWhereUniqueWithoutStaff_gymInput | Prisma.UserUpdateWithWhereUniqueWithoutStaff_gymInput[]
+  updateMany?: Prisma.UserUpdateManyWithWhereWithoutStaff_gymInput | Prisma.UserUpdateManyWithWhereWithoutStaff_gymInput[]
+  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
 export type UserCreateNestedOneWithoutMemberInput = {
@@ -862,6 +1060,287 @@ export type UserUpdateOneWithoutRecordedPaymentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRecordedPaymentsInput, Prisma.UserUpdateWithoutRecordedPaymentsInput>, Prisma.UserUncheckedUpdateWithoutRecordedPaymentsInput>
 }
 
+export type UserCreateWithoutStaff_accountsInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
+}
+
+export type UserUncheckedCreateWithoutStaff_accountsInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+}
+
+export type UserCreateOrConnectWithoutStaff_accountsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaff_accountsInput, Prisma.UserUncheckedCreateWithoutStaff_accountsInput>
+}
+
+export type UserCreateWithoutStaff_ownerInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
+}
+
+export type UserUncheckedCreateWithoutStaff_ownerInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
+}
+
+export type UserCreateOrConnectWithoutStaff_ownerInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaff_ownerInput, Prisma.UserUncheckedCreateWithoutStaff_ownerInput>
+}
+
+export type UserCreateManyStaff_ownerInputEnvelope = {
+  data: Prisma.UserCreateManyStaff_ownerInput | Prisma.UserCreateManyStaff_ownerInput[]
+  skipDuplicates?: boolean
+}
+
+export type UserUpsertWithoutStaff_accountsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutStaff_accountsInput, Prisma.UserUncheckedUpdateWithoutStaff_accountsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaff_accountsInput, Prisma.UserUncheckedCreateWithoutStaff_accountsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutStaff_accountsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutStaff_accountsInput, Prisma.UserUncheckedUpdateWithoutStaff_accountsInput>
+}
+
+export type UserUpdateWithoutStaff_accountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUpdateOneWithoutUserNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
+}
+
+export type UserUncheckedUpdateWithoutStaff_accountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+}
+
+export type UserUpsertWithWhereUniqueWithoutStaff_ownerInput = {
+  where: Prisma.UserWhereUniqueInput
+  update: Prisma.XOR<Prisma.UserUpdateWithoutStaff_ownerInput, Prisma.UserUncheckedUpdateWithoutStaff_ownerInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaff_ownerInput, Prisma.UserUncheckedCreateWithoutStaff_ownerInput>
+}
+
+export type UserUpdateWithWhereUniqueWithoutStaff_ownerInput = {
+  where: Prisma.UserWhereUniqueInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutStaff_ownerInput, Prisma.UserUncheckedUpdateWithoutStaff_ownerInput>
+}
+
+export type UserUpdateManyWithWhereWithoutStaff_ownerInput = {
+  where: Prisma.UserScalarWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateManyMutationInput, Prisma.UserUncheckedUpdateManyWithoutStaff_ownerInput>
+}
+
+export type UserScalarWhereInput = {
+  AND?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+  OR?: Prisma.UserScalarWhereInput[]
+  NOT?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
+  id?: Prisma.StringFilter<"User"> | string
+  first_name?: Prisma.StringNullableFilter<"User"> | string | null
+  last_name?: Prisma.StringNullableFilter<"User"> | string | null
+  phone_number?: Prisma.StringNullableFilter<"User"> | string | null
+  address?: Prisma.StringNullableFilter<"User"> | string | null
+  city?: Prisma.StringNullableFilter<"User"> | string | null
+  state?: Prisma.StringNullableFilter<"User"> | string | null
+  zip_code?: Prisma.StringNullableFilter<"User"> | string | null
+  country?: Prisma.StringNullableFilter<"User"> | string | null
+  date_of_birth?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  cnic?: Prisma.StringNullableFilter<"User"> | string | null
+  profile_picture?: Prisma.StringNullableFilter<"User"> | string | null
+  email?: Prisma.StringNullableFilter<"User"> | string | null
+  password?: Prisma.StringNullableFilter<"User"> | string | null
+  role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
+  is_active?: Prisma.BoolFilter<"User"> | boolean
+  is_deleted?: Prisma.BoolFilter<"User"> | boolean
+  onboarding_completed?: Prisma.BoolFilter<"User"> | boolean
+  createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  staff_owner_id?: Prisma.StringNullableFilter<"User"> | string | null
+  staff_gym_id?: Prisma.StringNullableFilter<"User"> | string | null
+  staff_permissions?: Prisma.StringNullableListFilter<"User">
+}
+
 export type UserCreateWithoutInviteTokensInput = {
   id?: string
   first_name?: string | null
@@ -883,6 +1362,7 @@ export type UserCreateWithoutInviteTokensInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
@@ -891,6 +1371,9 @@ export type UserCreateWithoutInviteTokensInput = {
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateWithoutInviteTokensInput = {
@@ -914,6 +1397,9 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
@@ -922,6 +1408,7 @@ export type UserUncheckedCreateWithoutInviteTokensInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserCreateOrConnectWithoutInviteTokensInput = {
@@ -961,6 +1448,7 @@ export type UserUpdateWithoutInviteTokensInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
@@ -969,6 +1457,9 @@ export type UserUpdateWithoutInviteTokensInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInviteTokensInput = {
@@ -992,6 +1483,9 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
@@ -1000,6 +1494,7 @@ export type UserUncheckedUpdateWithoutInviteTokensInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
 }
 
 export type UserCreateWithoutPushSubscriptionsInput = {
@@ -1023,6 +1518,7 @@ export type UserCreateWithoutPushSubscriptionsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
@@ -1031,6 +1527,9 @@ export type UserCreateWithoutPushSubscriptionsInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateWithoutPushSubscriptionsInput = {
@@ -1054,6 +1553,9 @@ export type UserUncheckedCreateWithoutPushSubscriptionsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
@@ -1062,6 +1564,7 @@ export type UserUncheckedCreateWithoutPushSubscriptionsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserCreateOrConnectWithoutPushSubscriptionsInput = {
@@ -1101,6 +1604,7 @@ export type UserUpdateWithoutPushSubscriptionsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
@@ -1109,6 +1613,9 @@ export type UserUpdateWithoutPushSubscriptionsInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPushSubscriptionsInput = {
@@ -1132,6 +1639,9 @@ export type UserUncheckedUpdateWithoutPushSubscriptionsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
@@ -1140,6 +1650,7 @@ export type UserUncheckedUpdateWithoutPushSubscriptionsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -1163,6 +1674,7 @@ export type UserCreateWithoutNotificationsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
@@ -1171,6 +1683,9 @@ export type UserCreateWithoutNotificationsInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -1194,6 +1709,9 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
@@ -1202,6 +1720,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -1241,6 +1760,7 @@ export type UserUpdateWithoutNotificationsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
@@ -1249,6 +1769,9 @@ export type UserUpdateWithoutNotificationsInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -1272,6 +1795,9 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
@@ -1280,6 +1806,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
 }
 
 export type UserCreateWithoutTodosInput = {
@@ -1303,6 +1830,7 @@ export type UserCreateWithoutTodosInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
@@ -1311,6 +1839,9 @@ export type UserCreateWithoutTodosInput = {
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateWithoutTodosInput = {
@@ -1334,6 +1865,9 @@ export type UserUncheckedCreateWithoutTodosInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
@@ -1342,6 +1876,7 @@ export type UserUncheckedCreateWithoutTodosInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserCreateOrConnectWithoutTodosInput = {
@@ -1381,6 +1916,7 @@ export type UserUpdateWithoutTodosInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
@@ -1389,6 +1925,9 @@ export type UserUpdateWithoutTodosInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTodosInput = {
@@ -1412,6 +1951,9 @@ export type UserUncheckedUpdateWithoutTodosInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
@@ -1420,6 +1962,7 @@ export type UserUncheckedUpdateWithoutTodosInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
 }
 
 export type UserCreateWithoutGyms_ownedInput = {
@@ -1443,6 +1986,7 @@ export type UserCreateWithoutGyms_ownedInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
@@ -1451,6 +1995,9 @@ export type UserCreateWithoutGyms_ownedInput = {
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateWithoutGyms_ownedInput = {
@@ -1474,6 +2021,9 @@ export type UserUncheckedCreateWithoutGyms_ownedInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
@@ -1482,11 +2032,92 @@ export type UserUncheckedCreateWithoutGyms_ownedInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserCreateOrConnectWithoutGyms_ownedInput = {
   where: Prisma.UserWhereUniqueInput
   create: Prisma.XOR<Prisma.UserCreateWithoutGyms_ownedInput, Prisma.UserUncheckedCreateWithoutGyms_ownedInput>
+}
+
+export type UserCreateWithoutStaff_gymInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
+  inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+}
+
+export type UserUncheckedCreateWithoutStaff_gymInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
+  member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
+  inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
+}
+
+export type UserCreateOrConnectWithoutStaff_gymInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaff_gymInput, Prisma.UserUncheckedCreateWithoutStaff_gymInput>
+}
+
+export type UserCreateManyStaff_gymInputEnvelope = {
+  data: Prisma.UserCreateManyStaff_gymInput | Prisma.UserCreateManyStaff_gymInput[]
+  skipDuplicates?: boolean
 }
 
 export type UserUpsertWithoutGyms_ownedInput = {
@@ -1521,6 +2152,7 @@ export type UserUpdateWithoutGyms_ownedInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
@@ -1529,6 +2161,9 @@ export type UserUpdateWithoutGyms_ownedInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGyms_ownedInput = {
@@ -1552,6 +2187,9 @@ export type UserUncheckedUpdateWithoutGyms_ownedInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
@@ -1560,6 +2198,23 @@ export type UserUncheckedUpdateWithoutGyms_ownedInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
+}
+
+export type UserUpsertWithWhereUniqueWithoutStaff_gymInput = {
+  where: Prisma.UserWhereUniqueInput
+  update: Prisma.XOR<Prisma.UserUpdateWithoutStaff_gymInput, Prisma.UserUncheckedUpdateWithoutStaff_gymInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutStaff_gymInput, Prisma.UserUncheckedCreateWithoutStaff_gymInput>
+}
+
+export type UserUpdateWithWhereUniqueWithoutStaff_gymInput = {
+  where: Prisma.UserWhereUniqueInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutStaff_gymInput, Prisma.UserUncheckedUpdateWithoutStaff_gymInput>
+}
+
+export type UserUpdateManyWithWhereWithoutStaff_gymInput = {
+  where: Prisma.UserScalarWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateManyMutationInput, Prisma.UserUncheckedUpdateManyWithoutStaff_gymInput>
 }
 
 export type UserCreateWithoutMemberInput = {
@@ -1583,6 +2238,7 @@ export type UserCreateWithoutMemberInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionCreateNestedManyWithoutOwnerInput
@@ -1591,6 +2247,9 @@ export type UserCreateWithoutMemberInput = {
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateWithoutMemberInput = {
@@ -1614,6 +2273,9 @@ export type UserUncheckedCreateWithoutMemberInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedCreateNestedManyWithoutOwnerInput
@@ -1622,6 +2284,7 @@ export type UserUncheckedCreateWithoutMemberInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserCreateOrConnectWithoutMemberInput = {
@@ -1661,6 +2324,7 @@ export type UserUpdateWithoutMemberInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
@@ -1669,6 +2333,9 @@ export type UserUpdateWithoutMemberInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMemberInput = {
@@ -1692,6 +2359,9 @@ export type UserUncheckedUpdateWithoutMemberInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
@@ -1700,6 +2370,7 @@ export type UserUncheckedUpdateWithoutMemberInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
 }
 
 export type UserCreateWithoutTargetedAnnouncementsInput = {
@@ -1723,6 +2394,7 @@ export type UserCreateWithoutTargetedAnnouncementsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
@@ -1731,6 +2403,9 @@ export type UserCreateWithoutTargetedAnnouncementsInput = {
   inviteTokens?: Prisma.InviteTokenCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateWithoutTargetedAnnouncementsInput = {
@@ -1754,6 +2429,9 @@ export type UserUncheckedCreateWithoutTargetedAnnouncementsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
@@ -1762,6 +2440,7 @@ export type UserUncheckedCreateWithoutTargetedAnnouncementsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserCreateOrConnectWithoutTargetedAnnouncementsInput = {
@@ -1801,6 +2480,7 @@ export type UserUpdateWithoutTargetedAnnouncementsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
@@ -1809,6 +2489,9 @@ export type UserUpdateWithoutTargetedAnnouncementsInput = {
   inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTargetedAnnouncementsInput = {
@@ -1832,6 +2515,9 @@ export type UserUncheckedUpdateWithoutTargetedAnnouncementsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
@@ -1840,6 +2526,7 @@ export type UserUncheckedUpdateWithoutTargetedAnnouncementsInput = {
   inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
 }
 
 export type UserCreateWithoutOwnerSubscriptionsInput = {
@@ -1863,6 +2550,7 @@ export type UserCreateWithoutOwnerSubscriptionsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
@@ -1871,6 +2559,9 @@ export type UserCreateWithoutOwnerSubscriptionsInput = {
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateWithoutOwnerSubscriptionsInput = {
@@ -1894,6 +2585,9 @@ export type UserUncheckedCreateWithoutOwnerSubscriptionsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
@@ -1902,6 +2596,7 @@ export type UserUncheckedCreateWithoutOwnerSubscriptionsInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserCreateOrConnectWithoutOwnerSubscriptionsInput = {
@@ -1941,6 +2636,7 @@ export type UserUpdateWithoutOwnerSubscriptionsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
@@ -1949,6 +2645,9 @@ export type UserUpdateWithoutOwnerSubscriptionsInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnerSubscriptionsInput = {
@@ -1972,6 +2671,9 @@ export type UserUncheckedUpdateWithoutOwnerSubscriptionsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
@@ -1980,6 +2682,7 @@ export type UserUncheckedUpdateWithoutOwnerSubscriptionsInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
 }
 
 export type UserCreateWithoutRecordedPaymentsInput = {
@@ -2003,6 +2706,7 @@ export type UserCreateWithoutRecordedPaymentsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberCreateNestedOneWithoutUserInput
@@ -2011,6 +2715,9 @@ export type UserCreateWithoutRecordedPaymentsInput = {
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementCreateNestedManyWithoutRecipientInput
+  staff_owner?: Prisma.UserCreateNestedOneWithoutStaff_accountsInput
+  staff_accounts?: Prisma.UserCreateNestedManyWithoutStaff_ownerInput
+  staff_gym?: Prisma.GymCreateNestedOneWithoutStaffInput
 }
 
 export type UserUncheckedCreateWithoutRecordedPaymentsInput = {
@@ -2034,6 +2741,9 @@ export type UserUncheckedCreateWithoutRecordedPaymentsInput = {
   onboarding_completed?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   gyms_owned?: Prisma.GymUncheckedCreateNestedManyWithoutOwnerInput
   member?: Prisma.MemberUncheckedCreateNestedOneWithoutUserInput
@@ -2042,6 +2752,7 @@ export type UserUncheckedCreateWithoutRecordedPaymentsInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutUserInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutRecipientInput
+  staff_accounts?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_ownerInput
 }
 
 export type UserCreateOrConnectWithoutRecordedPaymentsInput = {
@@ -2081,6 +2792,7 @@ export type UserUpdateWithoutRecordedPaymentsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUpdateOneWithoutUserNestedInput
@@ -2089,6 +2801,9 @@ export type UserUpdateWithoutRecordedPaymentsInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRecordedPaymentsInput = {
@@ -2112,6 +2827,9 @@ export type UserUncheckedUpdateWithoutRecordedPaymentsInput = {
   onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
   member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
@@ -2120,6 +2838,247 @@ export type UserUncheckedUpdateWithoutRecordedPaymentsInput = {
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
   targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
+}
+
+export type UserCreateManyStaff_ownerInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  staff_gym_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
+}
+
+export type UserUpdateWithoutStaff_ownerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUpdateOneWithoutUserNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+  staff_gym?: Prisma.GymUpdateOneWithoutStaffNestedInput
+}
+
+export type UserUncheckedUpdateWithoutStaff_ownerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
+}
+
+export type UserUncheckedUpdateManyWithoutStaff_ownerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_gym_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
+}
+
+export type UserCreateManyStaff_gymInput = {
+  id?: string
+  first_name?: string | null
+  last_name?: string | null
+  phone_number?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  date_of_birth?: Date | string | null
+  cnic?: string | null
+  profile_picture?: string | null
+  email?: string | null
+  password?: string | null
+  role?: $Enums.Role
+  is_active?: boolean
+  is_deleted?: boolean
+  onboarding_completed?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  staff_owner_id?: string | null
+  staff_permissions?: Prisma.UserCreatestaff_permissionsInput | string[]
+}
+
+export type UserUpdateWithoutStaff_gymInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUpdateOneWithoutUserNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
+  inviteTokens?: Prisma.InviteTokenUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.InAppNotificationUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUpdateManyWithoutRecipientNestedInput
+  staff_owner?: Prisma.UserUpdateOneWithoutStaff_accountsNestedInput
+  staff_accounts?: Prisma.UserUpdateManyWithoutStaff_ownerNestedInput
+}
+
+export type UserUncheckedUpdateWithoutStaff_gymInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  gyms_owned?: Prisma.GymUncheckedUpdateManyWithoutOwnerNestedInput
+  member?: Prisma.MemberUncheckedUpdateOneWithoutUserNestedInput
+  ownerSubscriptions?: Prisma.OwnerSubscriptionUncheckedUpdateManyWithoutOwnerNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
+  inviteTokens?: Prisma.InviteTokenUncheckedUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.InAppNotificationUncheckedUpdateManyWithoutUserNestedInput
+  targetedAnnouncements?: Prisma.AnnouncementUncheckedUpdateManyWithoutRecipientNestedInput
+  staff_accounts?: Prisma.UserUncheckedUpdateManyWithoutStaff_ownerNestedInput
+}
+
+export type UserUncheckedUpdateManyWithoutStaff_gymInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  first_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  last_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date_of_birth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cnic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profile_picture?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboarding_completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  staff_owner_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  staff_permissions?: Prisma.UserUpdatestaff_permissionsInput | string[]
 }
 
 
@@ -2136,6 +3095,7 @@ export type UserCountOutputType = {
   pushSubscriptions: number
   notifications: number
   targetedAnnouncements: number
+  staff_accounts: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2147,6 +3107,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   pushSubscriptions?: boolean | UserCountOutputTypeCountPushSubscriptionsArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   targetedAnnouncements?: boolean | UserCountOutputTypeCountTargetedAnnouncementsArgs
+  staff_accounts?: boolean | UserCountOutputTypeCountStaff_accountsArgs
 }
 
 /**
@@ -2215,6 +3176,13 @@ export type UserCountOutputTypeCountTargetedAnnouncementsArgs<ExtArgs extends ru
   where?: Prisma.AnnouncementWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountStaff_accountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2237,6 +3205,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   onboarding_completed?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  staff_owner_id?: boolean
+  staff_gym_id?: boolean
+  staff_permissions?: boolean
   todos?: boolean | Prisma.User$todosArgs<ExtArgs>
   gyms_owned?: boolean | Prisma.User$gyms_ownedArgs<ExtArgs>
   member?: boolean | Prisma.User$memberArgs<ExtArgs>
@@ -2246,6 +3217,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   pushSubscriptions?: boolean | Prisma.User$pushSubscriptionsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   targetedAnnouncements?: boolean | Prisma.User$targetedAnnouncementsArgs<ExtArgs>
+  staff_owner?: boolean | Prisma.User$staff_ownerArgs<ExtArgs>
+  staff_accounts?: boolean | Prisma.User$staff_accountsArgs<ExtArgs>
+  staff_gym?: boolean | Prisma.User$staff_gymArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2270,6 +3244,11 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   onboarding_completed?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  staff_owner_id?: boolean
+  staff_gym_id?: boolean
+  staff_permissions?: boolean
+  staff_owner?: boolean | Prisma.User$staff_ownerArgs<ExtArgs>
+  staff_gym?: boolean | Prisma.User$staff_gymArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2293,6 +3272,11 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   onboarding_completed?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  staff_owner_id?: boolean
+  staff_gym_id?: boolean
+  staff_permissions?: boolean
+  staff_owner?: boolean | Prisma.User$staff_ownerArgs<ExtArgs>
+  staff_gym?: boolean | Prisma.User$staff_gymArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -2316,9 +3300,12 @@ export type UserSelectScalar = {
   onboarding_completed?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  staff_owner_id?: boolean
+  staff_gym_id?: boolean
+  staff_permissions?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "first_name" | "last_name" | "phone_number" | "address" | "city" | "state" | "zip_code" | "country" | "date_of_birth" | "cnic" | "profile_picture" | "email" | "password" | "role" | "is_active" | "is_deleted" | "onboarding_completed" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "first_name" | "last_name" | "phone_number" | "address" | "city" | "state" | "zip_code" | "country" | "date_of_birth" | "cnic" | "profile_picture" | "email" | "password" | "role" | "is_active" | "is_deleted" | "onboarding_completed" | "createdAt" | "updatedAt" | "staff_owner_id" | "staff_gym_id" | "staff_permissions", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   todos?: boolean | Prisma.User$todosArgs<ExtArgs>
   gyms_owned?: boolean | Prisma.User$gyms_ownedArgs<ExtArgs>
@@ -2329,10 +3316,19 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   pushSubscriptions?: boolean | Prisma.User$pushSubscriptionsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   targetedAnnouncements?: boolean | Prisma.User$targetedAnnouncementsArgs<ExtArgs>
+  staff_owner?: boolean | Prisma.User$staff_ownerArgs<ExtArgs>
+  staff_accounts?: boolean | Prisma.User$staff_accountsArgs<ExtArgs>
+  staff_gym?: boolean | Prisma.User$staff_gymArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  staff_owner?: boolean | Prisma.User$staff_ownerArgs<ExtArgs>
+  staff_gym?: boolean | Prisma.User$staff_gymArgs<ExtArgs>
+}
+export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  staff_owner?: boolean | Prisma.User$staff_ownerArgs<ExtArgs>
+  staff_gym?: boolean | Prisma.User$staff_gymArgs<ExtArgs>
+}
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
@@ -2346,6 +3342,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     pushSubscriptions: Prisma.$PushSubscriptionPayload<ExtArgs>[]
     notifications: Prisma.$InAppNotificationPayload<ExtArgs>[]
     targetedAnnouncements: Prisma.$AnnouncementPayload<ExtArgs>[]
+    staff_owner: Prisma.$UserPayload<ExtArgs> | null
+    staff_accounts: Prisma.$UserPayload<ExtArgs>[]
+    staff_gym: Prisma.$GymPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2368,6 +3367,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     onboarding_completed: boolean
     createdAt: Date
     updatedAt: Date
+    staff_owner_id: string | null
+    staff_gym_id: string | null
+    staff_permissions: string[]
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -2771,6 +3773,9 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   pushSubscriptions<T extends Prisma.User$pushSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pushSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InAppNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   targetedAnnouncements<T extends Prisma.User$targetedAnnouncementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$targetedAnnouncementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AnnouncementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  staff_owner<T extends Prisma.User$staff_ownerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$staff_ownerArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  staff_accounts<T extends Prisma.User$staff_accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$staff_accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  staff_gym<T extends Prisma.User$staff_gymArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$staff_gymArgs<ExtArgs>>): Prisma.Prisma__GymClient<runtime.Types.Result.GetResult<Prisma.$GymPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2820,6 +3825,9 @@ export interface UserFieldRefs {
   readonly onboarding_completed: Prisma.FieldRef<"User", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly staff_owner_id: Prisma.FieldRef<"User", 'String'>
+  readonly staff_gym_id: Prisma.FieldRef<"User", 'String'>
+  readonly staff_permissions: Prisma.FieldRef<"User", 'String[]'>
 }
     
 
@@ -3069,6 +4077,10 @@ export type UserCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    */
   data: Prisma.UserCreateManyInput | Prisma.UserCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -3139,6 +4151,10 @@ export type UserUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many Users to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -3416,6 +4432,68 @@ export type User$targetedAnnouncementsArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.AnnouncementScalarFieldEnum | Prisma.AnnouncementScalarFieldEnum[]
+}
+
+/**
+ * User.staff_owner
+ */
+export type User$staff_ownerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+}
+
+/**
+ * User.staff_accounts
+ */
+export type User$staff_accountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+  orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
+  cursor?: Prisma.UserWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
+}
+
+/**
+ * User.staff_gym
+ */
+export type User$staff_gymArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Gym
+   */
+  select?: Prisma.GymSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Gym
+   */
+  omit?: Prisma.GymOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GymInclude<ExtArgs> | null
+  where?: Prisma.GymWhereInput
 }
 
 /**

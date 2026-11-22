@@ -10,12 +10,14 @@ import { useDebounce } from "@/hooks/use-debounce";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
 import { usePayments } from "@/hooks/use-payments";
+import { usePermissions } from "@/hooks/usePermissions";
 import { columns } from "./columns";
 
 const Payments = ({ session }: { session: Session }) => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const debouncedFilter = useDebounce(globalFilter, 1000);
+  const { can } = usePermissions();
 
   // Use the hook
   const { data, isLoading, error, refetch } = usePayments({
@@ -28,9 +30,11 @@ const Payments = ({ session }: { session: Session }) => {
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <h1 className="h1">Payments</h1>
-        <Link href={`/payments/manage?action=create`}>
-          <Button>Create Payment</Button>
-        </Link>
+        {(session.user.role === "SUPER_ADMIN" || can("payments.record")) && (
+          <Link href={`/payments/manage?action=create`}>
+            <Button>Create Payment</Button>
+          </Link>
+        )}
       </div>
 
       {isLoading && !data && (

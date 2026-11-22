@@ -44,6 +44,7 @@ import DataFetchError from "@/components/common/DataFetchError"
 import DateRangePicker from "@/components/date-range-picker"
 import RenewMemberModal from "@/components/dashboard/RenewMemberModal"
 import { WhatsAppReminderButton } from "@/components/common/whatsapp-actions"
+import { usePermissions } from "@/hooks/usePermissions"
 import OwnerSubscriptionBanner from "@/components/dashboard/OwnerSubscriptionBanner"
 import { addDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
@@ -56,16 +57,17 @@ type OwnerDashboardOverview = {
     totalEquipment: number
     activeMemberSubscriptions: number
     expiredMemberSubscriptions: number
-    revenueThisMonth: number
-    revenueLastMonth: number
+    /** null for staff without the revenue permission (also the fields below). */
+    revenueThisMonth: number | null
+    revenueLastMonth: number | null
     revenueGrowthPct: number | null
     outstandingAmount?: number
     outstandingMembers?: number
-    expensesThisMonth?: number
-    profitThisMonth?: number
+    expensesThisMonth?: number | null
+    profitThisMonth?: number | null
   }
   charts: {
-    revenueByMonth: Array<{ month: string; revenue: number }>
+    revenueByMonth: Array<{ month: string; revenue: number }> | null
     newMembersByMonth: Array<{ month: string; members: number }>
   }
   tables: {
@@ -291,6 +293,10 @@ const paymentColumns: ColumnDef<PaymentRow>[] = [
 
 const OwnerDashboard = () => {
   const { data: session } = useSession()
+  const { can, isStaff } = usePermissions()
+  const canWhatsApp = can("membersubscriptions.whatsapp")
+  const canRenew = can("membersubscriptions.renew")
+  const canSeePayments = can("payments.view") || can("dashboard.revenue")
   const { format: formatMoney } = useGymCurrency()
   const selectedGymId = session?.user?.selected_gym_id
   const selectedLocationId = session?.user?.selected_location_id
@@ -372,7 +378,7 @@ const OwnerDashboard = () => {
   } | null>(null)
 
   const reminderButton = React.useCallback(
-    (row: SubscriptionRow) => row.frozenSince ? null : (
+    (row: SubscriptionRow) => row.frozenSince || !canWhatsApp ? null : (
       <WhatsAppReminderButton
         memberName={row.memberName}
         phone={row.memberPhone}
@@ -382,7 +388,7 @@ const OwnerDashboard = () => {
         isExpired={row.isExpired}
       />
     ),
-    [selectedGymName]
+    [selectedGymName, canWhatsApp]
   )
 
   const activeSubscriptionColumns = React.useMemo<ColumnDef<SubscriptionRow>[]>(
@@ -406,25 +412,27 @@ const OwnerDashboard = () => {
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-2">
             {reminderButton(row.original)}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                setRenewTarget({
-                  memberId: row.original.memberId,
-                  memberName: row.original.memberName,
-                  price: row.original.price,
-                  billingModel: row.original.billingModel,
-                })
-              }
-            >
-              Renew
-            </Button>
+            {canRenew && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setRenewTarget({
+                    memberId: row.original.memberId,
+                    memberName: row.original.memberName,
+                    price: row.original.price,
+                    billingModel: row.original.billingModel,
+                  })
+                }
+              >
+                Renew
+              </Button>
+            )}
           </div>
         ),
       },
     ],
-    [reminderButton]
+    [reminderButton, canRenew]
   )
 
   if (isLoading && !data) return <OwnerDashboardSkeleton />
@@ -457,13 +465,16 @@ const OwnerDashboard = () => {
       ? "—"
       : formatPct(data.totals.revenueGrowthPct)
 
+  // The API leaves money figures out for staff without the revenue permission.
+  const showRevenue = data.totals.revenueThisMonth !== null && data.charts.revenueByMonth !== null
+
   return (
     <PageContainer>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="h1">Owner Dashboard</h1>
+              <h1 className="h1">{isStaff ? "Dashboard" : "Owner Dashboard"}</h1>
               {isFetching && (
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <RefreshCw className="size-3 animate-spin" />
@@ -472,7 +483,9 @@ const OwnerDashboard = () => {
               )}
             </div>
             <p className="text-muted-foreground text-sm">
-              Overview of your gyms: members, subscriptions, revenue, and equipment.
+              {showRevenue
+                ? "Overview of your gyms: members, subscriptions, revenue, and equipment."
+                : "Overview of your gym: members, subscriptions, and equipment."}
             </p>
           </div>
           <div className="flex gap-2">
@@ -487,7 +500,8 @@ const OwnerDashboard = () => {
           </div>
         </div>
 
-        <OwnerSubscriptionBanner />
+        {/* Plan and billing are the owner's business. */}
+        {!isStaff && <OwnerSubscriptionBanner />}
 
         {!isOnline && (
           <div className="border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
@@ -520,6 +534,7 @@ const OwnerDashboard = () => {
             </CardContent>
           </Card>
 
+          {showRevenue && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
@@ -529,9 +544,10 @@ const OwnerDashboard = () => {
               <CardDescription>This month so far</CardDescription>
             </CardHeader>
             <CardContent className="text-2xl font-semibold">
-              {formatMoney(data.totals.revenueThisMonth)}
+              {formatMoney(data.totals.revenueThisMonth ?? 0)}
             </CardContent>
           </Card>
+          )}
 
           <Card>
             <CardHeader>
@@ -552,6 +568,8 @@ const OwnerDashboard = () => {
             </CardContent>
           </Card>
 
+          {showRevenue && (
+          <>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
@@ -576,7 +594,7 @@ const OwnerDashboard = () => {
             <CardContent
               className={`text-2xl font-semibold ${(data.totals.profitThisMonth ?? 0) < 0 ? "text-destructive" : ""}`}
             >
-              {formatMoney(data.totals.profitThisMonth ?? data.totals.revenueThisMonth)}
+              {formatMoney(data.totals.profitThisMonth ?? data.totals.revenueThisMonth ?? 0)}
             </CardContent>
           </Card>
 
@@ -592,6 +610,8 @@ const OwnerDashboard = () => {
               {growthLabel}
             </CardContent>
           </Card>
+          </>
+          )}
 
           <Card>
             <CardHeader>
@@ -655,6 +675,7 @@ const OwnerDashboard = () => {
             </CardContent>
           </Card>
 
+          {showRevenue && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
@@ -663,12 +684,14 @@ const OwnerDashboard = () => {
               <CardDescription>Last month total</CardDescription>
             </CardHeader>
             <CardContent className="text-2xl font-semibold">
-              {formatMoney(data.totals.revenueLastMonth)}
+              {formatMoney(data.totals.revenueLastMonth ?? 0)}
             </CardContent>
           </Card>
+          )}
         </div>
 
         <div className="grid gap-4 h-full w-full lg:grid-cols-2">
+          {showRevenue && (
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -689,7 +712,7 @@ const OwnerDashboard = () => {
                 config={revenueMonthConfig}
                 className="aspect-auto h-[260px] w-full"
               >
-                <BarChart data={data.charts.revenueByMonth}>
+                <BarChart data={data.charts.revenueByMonth ?? []}>
                   <CartesianGrid vertical={false} />
                   <XAxis
                     dataKey="month"
@@ -712,6 +735,7 @@ const OwnerDashboard = () => {
               </ChartContainer>
             </CardContent>
           </Card>
+          )}
 
           <Card>
             <CardHeader>
@@ -778,6 +802,7 @@ const OwnerDashboard = () => {
           </Card>
         </div>
 
+        {canSeePayments && (
         <Card>
           <CardHeader>
             <CardTitle>Recent payments</CardTitle>
@@ -795,6 +820,7 @@ const OwnerDashboard = () => {
             />
           </CardContent>
         </Card>
+        )}
       </div>
 
       {renewTarget && (

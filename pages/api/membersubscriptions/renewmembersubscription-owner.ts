@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, ownsGym } from "@/lib/access";
 import {
   calculateRemainingDaysFromEndDate,
 } from "@/lib/subscription-helpers";
@@ -13,8 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "membersubscriptions.renew" });
+  if (!access) return;
 
   try {
     const {
@@ -71,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Verify member belongs to owner's gym
-    if (member.gym.owner_id !== session.user.id) {
+    if (!ownsGym(access, { id: member.gym_id, owner_id: member.gym.owner_id })) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "Forbidden – Member does not belong to your gym",
       });
@@ -202,7 +202,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           transaction_id: transactionId,
           payment_date: req.body.payment_date ? new Date(req.body.payment_date) : new Date(),
           notes: req.body.notes || null,
-          recorded_by_id: session.user.id,
+          recorded_by_id: access.userId,
         },
       });
 

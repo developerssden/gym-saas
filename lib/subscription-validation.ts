@@ -7,12 +7,14 @@ export type SubscriptionValidationResult = {
     max_locations: number;
     max_members: number;
     max_equipment: number;
+    max_staff: number;
   };
   currentCounts: {
     gyms: number;
     locations: number;
     members: number;
     equipment: number;
+    staff: number;
   };
   subscription: {
     id: string;
@@ -23,6 +25,7 @@ export type SubscriptionValidationResult = {
       max_locations: number;
       max_members: number;
       max_equipment: number;
+      max_staff: number;
     };
   } | null;
 };
@@ -34,6 +37,21 @@ export type LimitCheckResult = {
   resourceType: string;
   locationId?: string;
 };
+
+/**
+ * Staff accounts that use a seat: active logins and invites not yet accepted.
+ * Deactivated staff free their seat.
+ */
+export function countStaffSeats(ownerId: string): Promise<number> {
+  return prisma.user.count({
+    where: {
+      role: "STAFF",
+      staff_owner_id: ownerId,
+      is_deleted: false,
+      OR: [{ is_active: true }, { onboarding_completed: false }],
+    },
+  });
+}
 
 /**
  * Validate owner subscription and get limits
@@ -78,6 +96,8 @@ export async function validateOwnerSubscription(
     },
   });
 
+  const staffCount = await countStaffSeats(ownerId);
+
   if (!activeSub?.plan) {
     return {
       isActive: false,
@@ -86,12 +106,14 @@ export async function validateOwnerSubscription(
         max_locations: 0,
         max_members: 0,
         max_equipment: 0,
+        max_staff: 0,
       },
       currentCounts: {
         gyms: gymsCount,
         locations: locationsCount,
         members: membersCount,
         equipment: equipmentCount,
+        staff: staffCount,
       },
       subscription: null,
     };
@@ -104,12 +126,14 @@ export async function validateOwnerSubscription(
       max_locations: activeSub.plan.max_locations,
       max_members: activeSub.plan.max_members,
       max_equipment: activeSub.plan.max_equipment,
+      max_staff: activeSub.plan.max_staff,
     },
     currentCounts: {
       gyms: gymsCount,
       locations: locationsCount,
       members: membersCount,
       equipment: equipmentCount,
+      staff: staffCount,
     },
     subscription: {
       id: activeSub.id,
@@ -120,6 +144,7 @@ export async function validateOwnerSubscription(
         max_locations: activeSub.plan.max_locations,
         max_members: activeSub.plan.max_members,
         max_equipment: activeSub.plan.max_equipment,
+        max_staff: activeSub.plan.max_staff,
       },
     },
   };
@@ -132,7 +157,7 @@ export async function validateOwnerSubscription(
  */
 export async function checkLimitExceeded(
   ownerId: string,
-  resourceType: "gym" | "location" | "member" | "equipment",
+  resourceType: "gym" | "location" | "member" | "equipment" | "staff",
   locationId?: string
 ): Promise<LimitCheckResult> {
   const validation = await validateOwnerSubscription(ownerId);
@@ -164,6 +189,18 @@ export async function checkLimitExceeded(
   if (resourceType === "location") {
     const current = validation.currentCounts.locations;
     const max = limits.max_locations;
+    return {
+      exceeded: current >= max,
+      current,
+      max,
+      resourceType,
+    };
+  }
+
+  // Staff seats: total across the owner's gyms
+  if (resourceType === "staff") {
+    const current = validation.currentCounts.staff;
+    const max = limits.max_staff;
     return {
       exceeded: current >= max,
       current,

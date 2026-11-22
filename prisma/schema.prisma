@@ -11,6 +11,7 @@ enum Role {
   SUPER_ADMIN
   GYM_OWNER
   MEMBER
+  STAFF
 }
 
 enum PaymentMethod {
@@ -61,6 +62,15 @@ model User {
   pushSubscriptions  PushSubscription[]
   notifications      InAppNotification[]
   targetedAnnouncements Announcement[] @relation("AnnouncementRecipient")
+
+  // Staff accounts (role STAFF): the owner they work for, the one gym they
+  // can use, and what they may do there (keys from lib/staff-permissions.ts).
+  staff_owner_id    String?
+  staff_owner       User?    @relation("OwnerStaff", fields: [staff_owner_id], references: [id])
+  staff_accounts    User[]   @relation("OwnerStaff")
+  staff_gym_id      String?
+  staff_gym         Gym?     @relation("GymStaff", fields: [staff_gym_id], references: [id])
+  staff_permissions String[] @default([])
 }
 
 model InviteToken {
@@ -142,6 +152,7 @@ model Gym {
   equipment    Equipment[]
   locations    Location[]
   expenses     Expense[]
+  staff        User[]       @relation("GymStaff")
 }
 
 model Location {
@@ -279,6 +290,7 @@ model Plan {
   max_locations       Int                   @default(0)
   max_members         Int
   max_equipment       Int
+  max_staff           Int                   @default(2)
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   is_active           Boolean               @default(true)

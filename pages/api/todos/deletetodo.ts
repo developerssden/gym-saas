@@ -2,14 +2,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess } from "@/lib/access";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "todos.delete" });
+  if (!access) return;
+  // Staff share their owner's to-do list.
+  const ownerId = access.ownerId!;
 
   try {
     const { id } = req.body as { id: string };
@@ -25,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: { id },
     });
 
-    if (!existing || existing.is_deleted || existing.user_id !== session.user.id) {
+    if (!existing || existing.is_deleted || existing.user_id !== ownerId) {
       return res.status(StatusCodes.NOT_FOUND).json({
         error: "Todo not found",
       });

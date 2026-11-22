@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from "next"
 import prisma from "@/lib/prisma"
-import { requireGymOwner } from "@/lib/ownersessioncheck"
+import { requireAccess, ownedGymWhere, can } from "@/lib/access"
 import { StatusCodes } from "http-status-codes"
 import { SubscriptionTypeEnum } from "@/prisma/generated/client"
 import { DASHBOARD } from "@/lib/constants";
@@ -17,20 +17,22 @@ type OwnerOverviewResponse = {
     totalEquipment: number
     activeMemberSubscriptions: number
     expiredMemberSubscriptions: number
-    revenueThisMonth: number
-    revenueLastMonth: number
+    /** null when the viewer may not see revenue (staff without dashboard.revenue). */
+    revenueThisMonth: number | null
+    revenueLastMonth: number | null
     revenueGrowthPct: number | null
     /** Unpaid balance across all member subscriptions (partial payments). */
     outstandingAmount: number
     /** Members with an unpaid balance. */
     outstandingMembers: number
     /** Expenses recorded this month (same window as revenueThisMonth). */
-    expensesThisMonth: number
+    expensesThisMonth: number | null
     /** revenueThisMonth - expensesThisMonth; can be negative. */
-    profitThisMonth: number
+    profitThisMonth: number | null
   }
   charts: {
-    revenueByMonth: Array<{ month: string; revenue: number }>
+    /** null when the viewer may not see revenue. */
+    revenueByMonth: Array<{ month: string; revenue: number }> | null
     newMembersByMonth: Array<{ month: string; members: number }>
   }
   tables: {
@@ -118,11 +120,13 @@ export default async function handler(
       .json({ message: "Method not allowed" })
   }
 
-  const session = await requireGymOwner(req, res)
-  if (!session) return
+  const access = await requireAccess(req, res, { permission: "dashboard.view" })
+  if (!access) return
 
   try {
-    const ownerId = session.user.id
+    // Revenue, expenses and profit are left out for staff without dashboard.revenue.
+    const canSeeRevenue = can(access, "dashboard.revenue")
+    const canSeePayments = canSeeRevenue || can(access, "payments.view")
     const { gym_id, location_id } = req.body as {
       gym_id?: string
       location_id?: string
@@ -130,7 +134,7 @@ export default async function handler(
 
     const memberWhere = {
       gym: {
-        owner_id: ownerId,
+        AND: [ownedGymWhere(access)],
         is_deleted: false,
         ...(gym_id ? { id: gym_id } : {}),
       },
@@ -141,7 +145,7 @@ export default async function handler(
       ...(gym_id ? { gym_id } : {}),
       ...(location_id ? { location_id } : {}),
       gym: {
-        owner_id: ownerId,
+        AND: [ownedGymWhere(access)],
         is_deleted: false,
         ...(gym_id ? { id: gym_id } : {}),
       },
@@ -184,7 +188,7 @@ export default async function handler(
       // Total gyms
       prisma.gym.count({
         where: {
-          owner_id: ownerId,
+          AND: [ownedGymWhere(access)],
           is_deleted: false,
           ...(gym_id ? { id: gym_id } : {}),
         },
@@ -193,7 +197,7 @@ export default async function handler(
       prisma.location.count({
         where: {
           gym: {
-            owner_id: ownerId,
+            AND: [ownedGymWhere(access)],
             is_deleted: false,
             ...(gym_id ? { id: gym_id } : {}),
           },
@@ -205,7 +209,7 @@ export default async function handler(
       prisma.equipment.count({
         where: {
           gym: {
-            owner_id: ownerId,
+            AND: [ownedGymWhere(access)],
             is_deleted: false,
             ...(gym_id ? { id: gym_id } : {}),
           },
@@ -376,7 +380,7 @@ export default async function handler(
         // would hide one added this morning until the afternoon.
         expense_date: { gte: thisMonthStart, lt: addMonths(thisMonthStart, 1) },
         gym: {
-          owner_id: ownerId,
+          AND: [ownedGymWhere(access)],
           is_deleted: false,
           ...(gym_id ? { id: gym_id } : {}),
         },
@@ -481,22 +485,22 @@ export default async function handler(
         totalEquipment,
         activeMemberSubscriptions,
         expiredMemberSubscriptions,
-        revenueThisMonth,
-        revenueLastMonth,
-        revenueGrowthPct,
+        revenueThisMonth: canSeeRevenue ? revenueThisMonth : null,
+        revenueLastMonth: canSeeRevenue ? revenueLastMonth : null,
+        revenueGrowthPct: canSeeRevenue ? revenueGrowthPct : null,
         outstandingAmount,
         outstandingMembers: membersOwing.size,
-        expensesThisMonth,
-        profitThisMonth: profit(revenueThisMonth, expensesThisMonth),
+        expensesThisMonth: canSeeRevenue ? expensesThisMonth : null,
+        profitThisMonth: canSeeRevenue ? profit(revenueThisMonth, expensesThisMonth) : null,
       },
       charts: {
-        revenueByMonth,
+        revenueByMonth: canSeeRevenue ? revenueByMonth : null,
         newMembersByMonth,
       },
       tables: {
         activeSubscriptions: activeSubsRows.map(mapSubRow),
         expiredSubscriptions: expiredSubsRows.map(mapSubRow),
-        recentPayments: recentPaymentsRows.map(mapPaymentRow),
+        recentPayments: canSeePayments ? recentPaymentsRows.map(mapPaymentRow) : [],
       },
     }
 

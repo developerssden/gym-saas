@@ -51,7 +51,7 @@ export default function MemberImportPage() {
     return <FullScreenLoader />;
   }
 
-  if (session?.user?.role !== "GYM_OWNER") {
+  if (session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
     return redirect("/unauthorized");
   }
 

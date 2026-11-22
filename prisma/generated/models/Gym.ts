@@ -251,6 +251,7 @@ export type GymWhereInput = {
   equipment?: Prisma.EquipmentListRelationFilter
   locations?: Prisma.LocationListRelationFilter
   expenses?: Prisma.ExpenseListRelationFilter
+  staff?: Prisma.UserListRelationFilter
 }
 
 export type GymOrderByWithRelationInput = {
@@ -272,6 +273,7 @@ export type GymOrderByWithRelationInput = {
   equipment?: Prisma.EquipmentOrderByRelationAggregateInput
   locations?: Prisma.LocationOrderByRelationAggregateInput
   expenses?: Prisma.ExpenseOrderByRelationAggregateInput
+  staff?: Prisma.UserOrderByRelationAggregateInput
 }
 
 export type GymWhereUniqueInput = Prisma.AtLeast<{
@@ -296,6 +298,7 @@ export type GymWhereUniqueInput = Prisma.AtLeast<{
   equipment?: Prisma.EquipmentListRelationFilter
   locations?: Prisma.LocationListRelationFilter
   expenses?: Prisma.ExpenseListRelationFilter
+  staff?: Prisma.UserListRelationFilter
 }, "id">
 
 export type GymOrderByWithAggregationInput = {
@@ -354,6 +357,7 @@ export type GymCreateInput = {
   equipment?: Prisma.EquipmentCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymUncheckedCreateInput = {
@@ -374,6 +378,7 @@ export type GymUncheckedCreateInput = {
   equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationUncheckedCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymUpdateInput = {
@@ -394,6 +399,7 @@ export type GymUpdateInput = {
   equipment?: Prisma.EquipmentUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymUncheckedUpdateInput = {
@@ -414,6 +420,7 @@ export type GymUncheckedUpdateInput = {
   equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUncheckedUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUncheckedUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymCreateManyInput = {
@@ -467,6 +474,11 @@ export type GymListRelationFilter = {
   every?: Prisma.GymWhereInput
   some?: Prisma.GymWhereInput
   none?: Prisma.GymWhereInput
+}
+
+export type GymNullableScalarRelationFilter = {
+  is?: Prisma.GymWhereInput | null
+  isNot?: Prisma.GymWhereInput | null
 }
 
 export type GymOrderByRelationAggregateInput = {
@@ -533,6 +545,12 @@ export type GymCreateNestedManyWithoutOwnerInput = {
   connect?: Prisma.GymWhereUniqueInput | Prisma.GymWhereUniqueInput[]
 }
 
+export type GymCreateNestedOneWithoutStaffInput = {
+  create?: Prisma.XOR<Prisma.GymCreateWithoutStaffInput, Prisma.GymUncheckedCreateWithoutStaffInput>
+  connectOrCreate?: Prisma.GymCreateOrConnectWithoutStaffInput
+  connect?: Prisma.GymWhereUniqueInput
+}
+
 export type GymUncheckedCreateNestedManyWithoutOwnerInput = {
   create?: Prisma.XOR<Prisma.GymCreateWithoutOwnerInput, Prisma.GymUncheckedCreateWithoutOwnerInput> | Prisma.GymCreateWithoutOwnerInput[] | Prisma.GymUncheckedCreateWithoutOwnerInput[]
   connectOrCreate?: Prisma.GymCreateOrConnectWithoutOwnerInput | Prisma.GymCreateOrConnectWithoutOwnerInput[]
@@ -552,6 +570,16 @@ export type GymUpdateManyWithoutOwnerNestedInput = {
   update?: Prisma.GymUpdateWithWhereUniqueWithoutOwnerInput | Prisma.GymUpdateWithWhereUniqueWithoutOwnerInput[]
   updateMany?: Prisma.GymUpdateManyWithWhereWithoutOwnerInput | Prisma.GymUpdateManyWithWhereWithoutOwnerInput[]
   deleteMany?: Prisma.GymScalarWhereInput | Prisma.GymScalarWhereInput[]
+}
+
+export type GymUpdateOneWithoutStaffNestedInput = {
+  create?: Prisma.XOR<Prisma.GymCreateWithoutStaffInput, Prisma.GymUncheckedCreateWithoutStaffInput>
+  connectOrCreate?: Prisma.GymCreateOrConnectWithoutStaffInput
+  upsert?: Prisma.GymUpsertWithoutStaffInput
+  disconnect?: Prisma.GymWhereInput | boolean
+  delete?: Prisma.GymWhereInput | boolean
+  connect?: Prisma.GymWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.GymUpdateToOneWithWhereWithoutStaffInput, Prisma.GymUpdateWithoutStaffInput>, Prisma.GymUncheckedUpdateWithoutStaffInput>
 }
 
 export type GymUncheckedUpdateManyWithoutOwnerNestedInput = {
@@ -641,6 +669,7 @@ export type GymCreateWithoutOwnerInput = {
   equipment?: Prisma.EquipmentCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymUncheckedCreateWithoutOwnerInput = {
@@ -660,6 +689,7 @@ export type GymUncheckedCreateWithoutOwnerInput = {
   equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationUncheckedCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymCreateOrConnectWithoutOwnerInput = {
@@ -670,6 +700,51 @@ export type GymCreateOrConnectWithoutOwnerInput = {
 export type GymCreateManyOwnerInputEnvelope = {
   data: Prisma.GymCreateManyOwnerInput | Prisma.GymCreateManyOwnerInput[]
   skipDuplicates?: boolean
+}
+
+export type GymCreateWithoutStaffInput = {
+  id?: string
+  name: string
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  phone_number?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  is_active?: boolean
+  is_deleted?: boolean
+  owner: Prisma.UserCreateNestedOneWithoutGyms_ownedInput
+  members?: Prisma.MemberCreateNestedManyWithoutGymInput
+  equipment?: Prisma.EquipmentCreateNestedManyWithoutGymInput
+  locations?: Prisma.LocationCreateNestedManyWithoutGymInput
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutGymInput
+}
+
+export type GymUncheckedCreateWithoutStaffInput = {
+  id?: string
+  name: string
+  owner_id: string
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  zip_code?: string | null
+  country?: string | null
+  phone_number?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  is_active?: boolean
+  is_deleted?: boolean
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutGymInput
+  equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutGymInput
+  locations?: Prisma.LocationUncheckedCreateNestedManyWithoutGymInput
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutGymInput
+}
+
+export type GymCreateOrConnectWithoutStaffInput = {
+  where: Prisma.GymWhereUniqueInput
+  create: Prisma.XOR<Prisma.GymCreateWithoutStaffInput, Prisma.GymUncheckedCreateWithoutStaffInput>
 }
 
 export type GymUpsertWithWhereUniqueWithoutOwnerInput = {
@@ -707,6 +782,57 @@ export type GymScalarWhereInput = {
   is_deleted?: Prisma.BoolFilter<"Gym"> | boolean
 }
 
+export type GymUpsertWithoutStaffInput = {
+  update: Prisma.XOR<Prisma.GymUpdateWithoutStaffInput, Prisma.GymUncheckedUpdateWithoutStaffInput>
+  create: Prisma.XOR<Prisma.GymCreateWithoutStaffInput, Prisma.GymUncheckedCreateWithoutStaffInput>
+  where?: Prisma.GymWhereInput
+}
+
+export type GymUpdateToOneWithWhereWithoutStaffInput = {
+  where?: Prisma.GymWhereInput
+  data: Prisma.XOR<Prisma.GymUpdateWithoutStaffInput, Prisma.GymUncheckedUpdateWithoutStaffInput>
+}
+
+export type GymUpdateWithoutStaffInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  owner?: Prisma.UserUpdateOneRequiredWithoutGyms_ownedNestedInput
+  members?: Prisma.MemberUpdateManyWithoutGymNestedInput
+  equipment?: Prisma.EquipmentUpdateManyWithoutGymNestedInput
+  locations?: Prisma.LocationUpdateManyWithoutGymNestedInput
+  expenses?: Prisma.ExpenseUpdateManyWithoutGymNestedInput
+}
+
+export type GymUncheckedUpdateWithoutStaffInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  owner_id?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zip_code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  members?: Prisma.MemberUncheckedUpdateManyWithoutGymNestedInput
+  equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutGymNestedInput
+  locations?: Prisma.LocationUncheckedUpdateManyWithoutGymNestedInput
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutGymNestedInput
+}
+
 export type GymCreateWithoutLocationsInput = {
   id?: string
   name: string
@@ -724,6 +850,7 @@ export type GymCreateWithoutLocationsInput = {
   members?: Prisma.MemberCreateNestedManyWithoutGymInput
   equipment?: Prisma.EquipmentCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymUncheckedCreateWithoutLocationsInput = {
@@ -743,6 +870,7 @@ export type GymUncheckedCreateWithoutLocationsInput = {
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutGymInput
   equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymCreateOrConnectWithoutLocationsInput = {
@@ -778,6 +906,7 @@ export type GymUpdateWithoutLocationsInput = {
   members?: Prisma.MemberUpdateManyWithoutGymNestedInput
   equipment?: Prisma.EquipmentUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymUncheckedUpdateWithoutLocationsInput = {
@@ -797,6 +926,7 @@ export type GymUncheckedUpdateWithoutLocationsInput = {
   members?: Prisma.MemberUncheckedUpdateManyWithoutGymNestedInput
   equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUncheckedUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymCreateWithoutExpensesInput = {
@@ -816,6 +946,7 @@ export type GymCreateWithoutExpensesInput = {
   members?: Prisma.MemberCreateNestedManyWithoutGymInput
   equipment?: Prisma.EquipmentCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymUncheckedCreateWithoutExpensesInput = {
@@ -835,6 +966,7 @@ export type GymUncheckedCreateWithoutExpensesInput = {
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutGymInput
   equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationUncheckedCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymCreateOrConnectWithoutExpensesInput = {
@@ -870,6 +1002,7 @@ export type GymUpdateWithoutExpensesInput = {
   members?: Prisma.MemberUpdateManyWithoutGymNestedInput
   equipment?: Prisma.EquipmentUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymUncheckedUpdateWithoutExpensesInput = {
@@ -889,6 +1022,7 @@ export type GymUncheckedUpdateWithoutExpensesInput = {
   members?: Prisma.MemberUncheckedUpdateManyWithoutGymNestedInput
   equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUncheckedUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUncheckedUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymCreateWithoutMembersInput = {
@@ -908,6 +1042,7 @@ export type GymCreateWithoutMembersInput = {
   equipment?: Prisma.EquipmentCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymUncheckedCreateWithoutMembersInput = {
@@ -927,6 +1062,7 @@ export type GymUncheckedCreateWithoutMembersInput = {
   equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationUncheckedCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymCreateOrConnectWithoutMembersInput = {
@@ -962,6 +1098,7 @@ export type GymUpdateWithoutMembersInput = {
   equipment?: Prisma.EquipmentUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymUncheckedUpdateWithoutMembersInput = {
@@ -981,6 +1118,7 @@ export type GymUncheckedUpdateWithoutMembersInput = {
   equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUncheckedUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUncheckedUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymCreateWithoutEquipmentInput = {
@@ -1000,6 +1138,7 @@ export type GymCreateWithoutEquipmentInput = {
   members?: Prisma.MemberCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymUncheckedCreateWithoutEquipmentInput = {
@@ -1019,6 +1158,7 @@ export type GymUncheckedCreateWithoutEquipmentInput = {
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutGymInput
   locations?: Prisma.LocationUncheckedCreateNestedManyWithoutGymInput
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutGymInput
+  staff?: Prisma.UserUncheckedCreateNestedManyWithoutStaff_gymInput
 }
 
 export type GymCreateOrConnectWithoutEquipmentInput = {
@@ -1054,6 +1194,7 @@ export type GymUpdateWithoutEquipmentInput = {
   members?: Prisma.MemberUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymUncheckedUpdateWithoutEquipmentInput = {
@@ -1073,6 +1214,7 @@ export type GymUncheckedUpdateWithoutEquipmentInput = {
   members?: Prisma.MemberUncheckedUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUncheckedUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUncheckedUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymCreateManyOwnerInput = {
@@ -1107,6 +1249,7 @@ export type GymUpdateWithoutOwnerInput = {
   equipment?: Prisma.EquipmentUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymUncheckedUpdateWithoutOwnerInput = {
@@ -1126,6 +1269,7 @@ export type GymUncheckedUpdateWithoutOwnerInput = {
   equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutGymNestedInput
   locations?: Prisma.LocationUncheckedUpdateManyWithoutGymNestedInput
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutGymNestedInput
+  staff?: Prisma.UserUncheckedUpdateManyWithoutStaff_gymNestedInput
 }
 
 export type GymUncheckedUpdateManyWithoutOwnerInput = {
@@ -1153,6 +1297,7 @@ export type GymCountOutputType = {
   equipment: number
   locations: number
   expenses: number
+  staff: number
 }
 
 export type GymCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1160,6 +1305,7 @@ export type GymCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.In
   equipment?: boolean | GymCountOutputTypeCountEquipmentArgs
   locations?: boolean | GymCountOutputTypeCountLocationsArgs
   expenses?: boolean | GymCountOutputTypeCountExpensesArgs
+  staff?: boolean | GymCountOutputTypeCountStaffArgs
 }
 
 /**
@@ -1200,6 +1346,13 @@ export type GymCountOutputTypeCountExpensesArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.ExpenseWhereInput
 }
 
+/**
+ * GymCountOutputType without action
+ */
+export type GymCountOutputTypeCountStaffArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserWhereInput
+}
+
 
 export type GymSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1220,6 +1373,7 @@ export type GymSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   equipment?: boolean | Prisma.Gym$equipmentArgs<ExtArgs>
   locations?: boolean | Prisma.Gym$locationsArgs<ExtArgs>
   expenses?: boolean | Prisma.Gym$expensesArgs<ExtArgs>
+  staff?: boolean | Prisma.Gym$staffArgs<ExtArgs>
   _count?: boolean | Prisma.GymCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["gym"]>
 
@@ -1280,6 +1434,7 @@ export type GymInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   equipment?: boolean | Prisma.Gym$equipmentArgs<ExtArgs>
   locations?: boolean | Prisma.Gym$locationsArgs<ExtArgs>
   expenses?: boolean | Prisma.Gym$expensesArgs<ExtArgs>
+  staff?: boolean | Prisma.Gym$staffArgs<ExtArgs>
   _count?: boolean | Prisma.GymCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type GymIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1297,6 +1452,7 @@ export type $GymPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     equipment: Prisma.$EquipmentPayload<ExtArgs>[]
     locations: Prisma.$LocationPayload<ExtArgs>[]
     expenses: Prisma.$ExpensePayload<ExtArgs>[]
+    staff: Prisma.$UserPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1711,6 +1867,7 @@ export interface Prisma__GymClient<T, Null = never, ExtArgs extends runtime.Type
   equipment<T extends Prisma.Gym$equipmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Gym$equipmentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EquipmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   locations<T extends Prisma.Gym$locationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Gym$locationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   expenses<T extends Prisma.Gym$expensesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Gym$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  staff<T extends Prisma.Gym$staffArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Gym$staffArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2242,6 +2399,30 @@ export type Gym$expensesArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.ExpenseScalarFieldEnum | Prisma.ExpenseScalarFieldEnum[]
+}
+
+/**
+ * Gym.staff
+ */
+export type Gym$staffArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+  orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
+  cursor?: Prisma.UserWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
 }
 
 /**

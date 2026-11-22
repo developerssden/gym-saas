@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
 import prisma from "@/lib/prisma";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, ownedGymWhere } from "@/lib/access";
 import { Prisma } from "@/prisma/generated/client";
 import { EXPENSE_CATEGORIES, isExpenseCategory } from "@/lib/expenses";
 
@@ -11,8 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "expenses.view" });
+  if (!access) return;
 
   try {
     const { page, limit, gym_id, location_id, search, category } = (req.body ?? {}) as {
@@ -40,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const where: Prisma.ExpenseWhereInput = {
       is_deleted: false,
-      gym: { owner_id: session.user.id, is_deleted: false },
+      gym: { AND: [ownedGymWhere(access)], is_deleted: false },
       ...(gym_id ? { gym_id } : {}),
       ...(location_id ? { location_id } : {}),
       ...(isExpenseCategory(category) ? { category } : {}),

@@ -1,5 +1,6 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
+import { firstAllowedPath, permissionsForPath } from '@/lib/staff-permissions';
 
 const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboarding', '/checkout-success'];
 
@@ -11,33 +12,46 @@ const PWA_PUBLIC_PATHS = [
   '/offline',
 ];
 
-type Role = 'SUPER_ADMIN' | 'GYM_OWNER' | 'MEMBER';
+type Role = 'SUPER_ADMIN' | 'GYM_OWNER' | 'MEMBER' | 'STAFF';
 
 type RouteGate = {
   routes: string[];
   roles: Role[];
 };
 
+// STAFF are additionally checked against their permissions (see below).
 const ROUTE_GATES: RouteGate[] = [
   {
     routes: ['/dashboard'],
-    roles: ['SUPER_ADMIN', 'GYM_OWNER'],
+    roles: ['SUPER_ADMIN', 'GYM_OWNER', 'STAFF'],
   },
   {
     routes: ['/clients', '/subscriptions', '/plans', '/registrations'],
     roles: ['SUPER_ADMIN'],
   },
   {
-    routes: ['/gyms', '/locations', '/payments', '/announcements'],
+    routes: ['/gyms', '/locations', '/announcements'],
     roles: ['SUPER_ADMIN', 'GYM_OWNER'],
   },
   {
-    routes: ['/members', '/membersubscriptions', '/equipment', '/todos', '/profile', '/expenses'],
+    routes: ['/payments'],
+    roles: ['SUPER_ADMIN', 'GYM_OWNER', 'STAFF'],
+  },
+  {
+    routes: ['/staff'],
     roles: ['GYM_OWNER'],
   },
   {
+    routes: ['/members', '/membersubscriptions', '/equipment', '/todos', '/expenses'],
+    roles: ['GYM_OWNER', 'STAFF'],
+  },
+  {
+    routes: ['/profile'],
+    roles: ['GYM_OWNER', 'STAFF'],
+  },
+  {
     routes: ['/notifications'],
-    roles: ['SUPER_ADMIN', 'GYM_OWNER', 'MEMBER'],
+    roles: ['SUPER_ADMIN', 'GYM_OWNER', 'MEMBER', 'STAFF'],
   },
 ];
 
@@ -87,6 +101,19 @@ export default withAuth(
       const url = req.nextUrl.clone();
       url.pathname = '/unauthorized';
       return NextResponse.redirect(url);
+    }
+
+    // Staff: the page must be one their owner gave them.
+    if (token.role === 'STAFF') {
+      const needed = permissionsForPath(pathname, req.nextUrl.searchParams.get('action'));
+      const granted = token.staff_permissions ?? [];
+      if (needed && !needed.some(p => granted.includes(p))) {
+        const url = req.nextUrl.clone();
+        // Landing on a dashboard they can't see after sign-in: send them to
+        // their first allowed page instead of an error.
+        url.pathname = pathname === '/dashboard' ? firstAllowedPath(granted) : '/unauthorized';
+        return NextResponse.redirect(url);
+      }
     }
 
     return NextResponse.next();

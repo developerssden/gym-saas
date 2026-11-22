@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { requireAccess, ownsGym } from "@/lib/access";
 import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
 import {
   normalizeOptionalString,
@@ -14,10 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireAdminOrOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "members.edit", allowAdmin: true });
+  if (!access) return;
 
-  const isGymOwner = session.user.role === "GYM_OWNER";
+  const isGymOwner = !access.isAdmin;
 
   try {
     const { id, ...data } = req.body as Record<string, any>;
@@ -38,8 +38,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(StatusCodes.NOT_FOUND).json({ error: "Member not found" });
     }
 
-    // For GYM_OWNER: verify they own the gym this member belongs to
-    if (isGymOwner && existing.gym.owner_id !== session.user.id) {
+    // Owners and staff: the member must be in one of their gyms
+    if (!ownsGym(access, existing.gym)) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "UNAUTHORIZED_GYM",
         message: "Member does not belong to your gym",
@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Verify new location belongs to same gym (or owner's gym for GYM_OWNER)
-      if (isGymOwner && newLocation.gym.owner_id !== session.user.id) {
+      if (!ownsGym(access, newLocation.gym)) {
         return res.status(StatusCodes.FORBIDDEN).json({
           error: "Location does not belong to your gym",
         });

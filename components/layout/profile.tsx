@@ -70,7 +70,7 @@ export default function ProfileDropdown() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {user?.role === "GYM_OWNER" && (
+        {(user?.role === "GYM_OWNER" || user?.role === "STAFF") && (
           <DropdownMenuItem asChild>
             <Link href="/profile" className="cursor-pointer">
               <User className="mr-2 h-4 w-4" />

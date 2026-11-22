@@ -14,6 +14,7 @@ import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { usePermissions } from "@/hooks/usePermissions";
 
 type Member = {
   id: string;
@@ -75,51 +76,62 @@ export const columns: ColumnDef<Member>[] = [
     id: "actions",
     header: "Actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const member = row.original;
-      const queryClient = useQueryClient();
-
-      const deleteMutation = useMutation({
-        mutationFn: async () => {
-          await axios.post("/api/members/deletemember", { id: member.id });
-        },
-        onSuccess: () => {
-          toast.success("Member deleted successfully");
-          queryClient.invalidateQueries({ queryKey: ["members"] });
-        },
-        onError: (err: unknown) => toast.error(getErrorMessage(err)),
-      });
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/members/manage?action=edit&id=${member.id}`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                if (confirm("Are you sure you want to delete this member?")) {
-                  deleteMutation.mutate();
-                }
-              }}
-              className="text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    cell: ({ row }) => <MemberActionsCell member={row.original} />,
   },
 ];
 
+
+// Separate component so the actions cell can use hooks
+function MemberActionsCell({ member }: { member: Member }) {
+  const queryClient = useQueryClient();
+  const { can } = usePermissions();
+  const canEdit = can("members.edit");
+  const canDelete = can("members.delete");
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      await axios.post("/api/members/deletemember", { id: member.id });
+    },
+    onSuccess: () => {
+      toast.success("Member deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+    },
+    onError: (err: unknown) => toast.error(getErrorMessage(err)),
+  });
+
+  if (!canEdit && !canDelete) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {canEdit && (
+          <DropdownMenuItem asChild>
+            <Link href={`/members/manage?action=edit&id=${member.id}`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {canDelete && (
+          <DropdownMenuItem
+            onClick={() => {
+              if (confirm("Are you sure you want to delete this member?")) {
+                deleteMutation.mutate();
+              }
+            }}
+            className="text-destructive"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

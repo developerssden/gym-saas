@@ -18,6 +18,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export type Equipment = {
   id: string;
@@ -40,6 +41,7 @@ export type Equipment = {
 // Separate component for actions cell to use hooks
 function EquipmentActionsCell({ equipment }: { equipment: Equipment }) {
   const queryClient = useQueryClient();
+  const { can } = usePermissions();
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -61,28 +63,34 @@ function EquipmentActionsCell({ equipment }: { equipment: Equipment }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link href={`/equipment/manage?action=edit&id=${equipment.id}`}>
-            Edit equipment
-          </Link>
-        </DropdownMenuItem>
+        {can("equipment.edit") && (
+          <DropdownMenuItem asChild>
+            <Link href={`/equipment/manage?action=edit&id=${equipment.id}`}>
+              Edit equipment
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href={`/equipment/manage?action=view&id=${equipment.id}`}>
             View details
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            if (confirm("Are you sure you want to delete this equipment?")) {
-              deleteMutation.mutate();
-            }
-          }}
-          className="text-destructive"
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete
-        </DropdownMenuItem>
+        {can("equipment.delete") && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                if (confirm("Are you sure you want to delete this equipment?")) {
+                  deleteMutation.mutate();
+                }
+              }}
+              className="text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

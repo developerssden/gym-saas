@@ -3,7 +3,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
 import prisma from "@/lib/prisma";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, ownsGym } from "@/lib/access";
 import { parseCalendarDay, validateFreezeStart } from "@/lib/subscription-freeze";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -11,8 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "membersubscriptions.freeze" });
+  if (!access) return;
 
   try {
     const { id, start_date, reason } = (req.body ?? {}) as {
@@ -41,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!subscription || subscription.is_deleted) {
       return res.status(StatusCodes.NOT_FOUND).json({ error: "Member subscription not found" });
     }
-    if (subscription.member.gym.owner_id !== session.user.id) {
+    if (!ownsGym(access, { id: subscription.member.gym_id, owner_id: subscription.member.gym.owner_id })) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "Forbidden – Member subscription does not belong to your gym",
       });
@@ -58,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           member_subscription_id: subscription.id,
           start_date: freezeStart,
           reason: typeof reason === "string" ? reason.trim() || null : null,
-          frozen_by_id: session.user.id,
+          frozen_by_id: access.userId,
         },
       });
       return tx.memberSubscription.update({

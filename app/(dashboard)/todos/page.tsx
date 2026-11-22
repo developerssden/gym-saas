@@ -3,6 +3,7 @@
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { usePermissions } from "@/hooks/usePermissions";
 import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -23,6 +24,7 @@ import {
 
 const TodosPage = () => {
   const { data: session, status } = useSession({ required: true });
+  const { can } = usePermissions();
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "pending">("all");
@@ -38,13 +40,13 @@ const TodosPage = () => {
       });
       return res.data;
     },
-    enabled: status === "authenticated" && session?.user?.role === "GYM_OWNER",
+    enabled: status === "authenticated" && (session?.user?.role === "GYM_OWNER" || session?.user?.role === "STAFF"),
   });
 
   if (status === "loading") {
     return <FullScreenLoader />;
   }
-  if (session?.user?.role !== "GYM_OWNER") {
+  if (session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
     return redirect("/unauthorized");
   }
 
@@ -52,9 +54,11 @@ const TodosPage = () => {
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <h1 className="h1">Todos</h1>
-        <Link href={`/todos/manage?action=create`}>
-          <Button>Create Todo</Button>
-        </Link>
+        {can("todos.create") && (
+          <Link href={`/todos/manage?action=create`}>
+            <Button>Create Todo</Button>
+          </Link>
+        )}
       </div>
 
       <div className="flex gap-4 mb-4">

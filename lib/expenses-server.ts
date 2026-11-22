@@ -1,17 +1,19 @@
 import prisma from "@/lib/prisma";
+import { ownedGymWhere, type Access } from "@/lib/access";
 
 /**
- * Checks that a gym (and optional location) belongs to the owner.
- * Returns an error message, or null when it's theirs.
+ * Checks that a gym (and optional location) belongs to this owner, and for
+ * staff that it's their assigned gym. Returns an error message, or null when
+ * it's theirs.
  */
 export async function verifyGymAndLocation(
-  ownerId: string,
+  access: Access,
   gymId: unknown,
   locationId: unknown
 ): Promise<string | null> {
   if (typeof gymId !== "string" || !gymId) return "Select a gym first";
   const gym = await prisma.gym.findFirst({
-    where: { id: gymId, owner_id: ownerId, is_deleted: false },
+    where: { id: gymId, is_deleted: false, AND: [ownedGymWhere(access)] },
     select: { id: true },
   });
   if (!gym) return "Gym not found or does not belong to you";
@@ -27,9 +29,9 @@ export async function verifyGymAndLocation(
   return null;
 }
 
-/** Loads an expense only if it belongs to one of the owner's gyms. */
-export function findOwnedExpense(ownerId: string, id: string) {
+/** Loads an expense only if it belongs to one of this access's gyms. */
+export function findOwnedExpense(access: Access, id: string) {
   return prisma.expense.findFirst({
-    where: { id, is_deleted: false, gym: { owner_id: ownerId, is_deleted: false } },
+    where: { id, is_deleted: false, gym: { AND: [ownedGymWhere(access)], is_deleted: false } },
   });
 }

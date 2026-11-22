@@ -13,6 +13,7 @@ import DataFetchError from "@/components/common/DataFetchError";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
+import { usePermissions } from "@/hooks/usePermissions";
 import { columns } from "@/components/members/columns";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 
@@ -23,6 +24,7 @@ const MembersPage = () => {
   const debouncedFilter = useDebounce(globalFilter, 1000);
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const { can } = usePermissions();
 
   const selectedGymId = session?.user?.selected_gym_id;
   const selectedLocationId = session?.user?.selected_location_id;
@@ -46,13 +48,13 @@ const MembersPage = () => {
       });
       return res.data;
     },
-    enabled: status === "authenticated" && session?.user?.role === "GYM_OWNER" && !!selectedGymId,
+    enabled: status === "authenticated" && (session?.user?.role === "GYM_OWNER" || session?.user?.role === "STAFF") && !!selectedGymId,
   });
 
   if (status === "loading") {
     return <FullScreenLoader />;
   }
-  if (session?.user?.role !== "GYM_OWNER") {
+  if (session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
     return redirect("/unauthorized");
   }
 
@@ -60,18 +62,22 @@ const MembersPage = () => {
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <h1 className="h1">Members</h1>
-        {!isSubscriptionActive || subscriptionExpired ? (
+        {!can("members.create") && !can("members.import") ? null : !isSubscriptionActive || subscriptionExpired ? (
           <Button onClick={() => setShowExpiredModal(true)}>
             Create Member
           </Button>
         ) : (
           <div className="flex gap-2">
-            <Link href="/members/import">
-              <Button variant="outline">Bulk import</Button>
-            </Link>
-            <Link href={`/members/manage?action=create`}>
-              <Button>Create Member</Button>
-            </Link>
+            {can("members.import") && (
+              <Link href="/members/import">
+                <Button variant="outline">Bulk import</Button>
+              </Link>
+            )}
+            {can("members.create") && (
+              <Link href={`/members/manage?action=create`}>
+                <Button>Create Member</Button>
+              </Link>
+            )}
           </div>
         )}
       </div>

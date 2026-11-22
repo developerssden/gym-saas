@@ -11,9 +11,10 @@ import {
   Package,
   Inbox,
   Receipt,
+  UserCog,
 } from "lucide-react";
 
-type Role = "SUPER_ADMIN" | "GYM_OWNER" | "MEMBER";
+type Role = "SUPER_ADMIN" | "GYM_OWNER" | "MEMBER" | "STAFF";
 
 export type RouteItem = {
   title: string;
@@ -27,7 +28,7 @@ export const routeItems: RouteItem[] = [
     title: "Dashboard",
     href: "/dashboard",
     icon: Home,
-    permissions: ["SUPER_ADMIN", "GYM_OWNER"],
+    permissions: ["SUPER_ADMIN", "GYM_OWNER", "STAFF"],
   },
   {
     title: "Clients",
@@ -57,25 +58,25 @@ export const routeItems: RouteItem[] = [
     title: "Members",
     href: "/members",
     icon: Users,
-    permissions: ["GYM_OWNER"],
+    permissions: ["GYM_OWNER", "STAFF"],
   },
   {
     title: "Member Subscriptions",
     href: "/membersubscriptions",
     icon: CreditCard,
-    permissions: ["GYM_OWNER"],
+    permissions: ["GYM_OWNER", "STAFF"],
   },
   {
     title: "Payments",
     href: "/payments",
     icon: CreditCard,
-    permissions: ["SUPER_ADMIN","GYM_OWNER"	],
+    permissions: ["SUPER_ADMIN", "GYM_OWNER", "STAFF"],
   },
   {
     title: "Expenses",
     href: "/expenses",
     icon: Receipt,
-    permissions: ["GYM_OWNER"],
+    permissions: ["GYM_OWNER", "STAFF"],
   },
   {
     title: "Plans",
@@ -99,12 +100,18 @@ export const routeItems: RouteItem[] = [
     title: "Todos",
     href: "/todos",
     icon: CheckSquare,
-    permissions: ["GYM_OWNER"],
+    permissions: ["GYM_OWNER", "STAFF"],
   },
   {
     title: "Equipment",
     href: "/equipment",
     icon: Package,
+    permissions: ["GYM_OWNER", "STAFF"],
+  },
+  {
+    title: "Staff",
+    href: "/staff",
+    icon: UserCog,
     permissions: ["GYM_OWNER"],
   },
 ];

@@ -2,16 +2,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { requireAccess, ownsGym } from "@/lib/access";
+import { ALL_PERMISSIONS } from "@/lib/staff-permissions";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
 
-  const session = await requireAdminOrOwner(req, res);
-  if (!session) return;
+  // Staff may read their own gym and its locations (forms and filters need them).
+  const access = await requireAccess(req, res, { permission: ALL_PERMISSIONS, allowAdmin: true });
+  if (!access) return;
 
-  const isGymOwner = session.user.role === "GYM_OWNER";
 
   try {
     const { id } = req.body as { id?: string };
@@ -35,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // For GYM_OWNER: verify they own this gym
-    if (isGymOwner && gym.owner_id !== session.user.id) {
+    if (!ownsGym(access, gym)) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "Forbidden – You can only access your own gyms",
       });

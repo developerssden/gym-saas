@@ -2,7 +2,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireAdminOrOwner } from "@/lib/sessioncheck";
+import { requireAccess, ownedGymWhere } from "@/lib/access";
+import { ALL_PERMISSIONS } from "@/lib/staff-permissions";
 import { Prisma } from "@/prisma/generated/client";
 
 export default async function handler(
@@ -15,10 +16,11 @@ export default async function handler(
       .json({ message: "Method not allowed" });
   }
 
-  const session = await requireAdminOrOwner(req, res);
-  if (!session) return;
+  // Staff may read their own gym and its locations (forms and filters need them).
+  const access = await requireAccess(req, res, { permission: ALL_PERMISSIONS, allowAdmin: true });
+  if (!access) return;
 
-  const isGymOwner = session.user.role === "GYM_OWNER";
+  const isGymOwner = !access.isAdmin;
 
   try {
     const {
@@ -61,7 +63,7 @@ export default async function handler(
       ...(isGymOwner
         ? {
             gym: {
-              owner_id: session.user.id,
+              AND: [ownedGymWhere(access)],
               is_deleted: false,
             },
           }

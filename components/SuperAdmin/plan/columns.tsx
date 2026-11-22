@@ -85,6 +85,12 @@ export const columns: ColumnDef<Plan>[] = [
     ),
   },
   {
+    accessorKey: "max_staff",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Max Staff" />
+    ),
+  },
+  {
     accessorKey: "is_active",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Active" />

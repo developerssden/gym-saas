@@ -3,7 +3,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
 import prisma from "@/lib/prisma";
-import { requireGymOwner } from "@/lib/ownersessioncheck";
+import { requireAccess, ownedGymWhere } from "@/lib/access";
 import { SubscriptionTypeEnum } from "@/prisma/generated/client";
 import { calendarDayRange, formatCalendarDate } from "@/lib/date-utils";
 import { profit } from "@/lib/expenses";
@@ -13,8 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" });
   }
 
-  const session = await requireGymOwner(req, res);
-  if (!session) return;
+  const access = await requireAccess(req, res, { permission: "expenses.cashbook" });
+  if (!access) return;
 
   try {
     const { day, gym_id, location_id } = (req.body ?? {}) as {
@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!range) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid date" });
 
     const gymFilter = {
-      owner_id: session.user.id,
+      AND: [ownedGymWhere(access)],
       is_deleted: false,
       ...(gym_id ? { id: gym_id } : {}),
     };

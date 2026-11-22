@@ -34,7 +34,14 @@ declare module 'next-auth' {
         max_locations: number;
         max_members: number;
         max_equipment: number;
+        max_staff: number;
       };
+      /** STAFF only: the owner they work for (null if that owner is gone). */
+      staff_owner_id?: string | null;
+      /** STAFF only: the one gym they can use. */
+      staff_gym_id?: string | null;
+      /** STAFF only: permission keys from lib/staff-permissions.ts. */
+      staff_permissions?: string[];
       gyms?: Array<{
         id: string;
         name: string;
@@ -91,5 +98,6 @@ declare module 'next-auth/jwt' {
     selected_location_id?: string | null;
     selected_gym_id?: string | null;
     remember?: boolean;
+    staff_permissions?: string[];
   }
 }
