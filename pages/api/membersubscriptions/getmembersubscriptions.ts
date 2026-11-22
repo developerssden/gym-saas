@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { summarizeBalance } from "@/lib/member-balance";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
+import { memberIdsMatchingPhone, phoneSearchDigits } from "@/lib/members/phone-search";
 import { requireAccess } from "@/lib/access";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -41,6 +42,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Owners and staff: only subscriptions for their members (staff: their gym only)
     if (isGymOwner) {
       const gymId = access.staffGymId ?? gym_id;
+      const phoneDigits = search?.trim() ? phoneSearchDigits(search) : null;
+      const phoneMatches = phoneDigits ? await memberIdsMatchingPhone(phoneDigits, access.ownerId) : [];
       where.member = {
         gym: {
           owner_id: access.ownerId,
@@ -50,13 +53,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ...(location_id ? { location_id } : {}),
         ...(search?.trim()
           ? {
-              user: {
-                OR: [
-                  { first_name: { contains: search.trim(), mode: "insensitive" } },
-                  { last_name: { contains: search.trim(), mode: "insensitive" } },
-                  { email: { contains: search.trim(), mode: "insensitive" } },
-                ],
-              },
+              OR: [
+                {
+                  user: {
+                    OR: [
+                      { first_name: { contains: search.trim(), mode: "insensitive" } },
+                      { last_name: { contains: search.trim(), mode: "insensitive" } },
+                      { email: { contains: search.trim(), mode: "insensitive" } },
+                      { phone_number: { contains: search.trim(), mode: "insensitive" } },
+                    ],
+                  },
+                },
+                // Phone numbers in any format: "0301 84" finds "+92301 84…".
+                ...(phoneMatches.length ? [{ id: { in: phoneMatches } }] : []),
+              ],
             }
           : {}),
       };

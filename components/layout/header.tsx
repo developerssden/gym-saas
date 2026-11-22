@@ -4,6 +4,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import BreadCrumbs from "./breadcrumbs"
 import ProfileDropdown from "./profile"
 import { NotificationBell } from "@/components/notifications/notification-bell"
+import { QuickPaymentButton } from "@/components/payments/QuickPaymentButton"
 
 export function SiteHeader() {
   return (
@@ -16,6 +17,7 @@ export function SiteHeader() {
         />
         <BreadCrumbs />
         <div className="ml-auto flex items-center gap-2">
+          <QuickPaymentButton />
           <NotificationBell />
           <ProfileDropdown />
         </div>
