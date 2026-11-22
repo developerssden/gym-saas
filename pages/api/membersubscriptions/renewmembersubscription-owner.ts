@@ -184,7 +184,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           discount: fee.discount,
           discount_note: discountNote,
           admission_fee: fee.admission_fee,
-          billing_model: "MONTHLY", // Default
+          // Keep a yearly member yearly; anything else stays monthly as before.
+          billing_model: req.body.billing_model === "YEARLY" ? "YEARLY" : "MONTHLY",
           start_date: finalStartDate,
           end_date: finalEndDate,
           is_expired: false,

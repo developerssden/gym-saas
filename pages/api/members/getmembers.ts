@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess, gymScope } from "@/lib/access";
 import { Prisma } from "@/prisma/generated/client";
+import { memberIdsMatchingPhone, phoneSearchDigits } from "@/lib/members/phone-search";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -47,6 +48,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ],
         },
       });
+      // Phone numbers in any format: "0301 84" finds "+92301 84…".
+      const digits = phoneSearchDigits(search);
+      if (digits) {
+        const ids = await memberIdsMatchingPhone(digits, access.ownerId);
+        if (ids.length) or.push({ id: { in: ids } });
+      }
     }
 
     const whereClause: Prisma.MemberWhereInput = {

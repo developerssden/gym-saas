@@ -3,7 +3,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Banknote, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { usePermissions } from "@/hooks/usePermissions";
+import QuickPaymentDialog from "@/components/payments/QuickPaymentDialog";
 
 type Member = {
   id: string;
@@ -87,6 +89,8 @@ function MemberActionsCell({ member }: { member: Member }) {
   const { can } = usePermissions();
   const canEdit = can("members.edit");
   const canDelete = can("members.delete");
+  const canTakeFee = can("payments.record") || can("membersubscriptions.renew");
+  const [paying, setPaying] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -99,9 +103,10 @@ function MemberActionsCell({ member }: { member: Member }) {
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
-  if (!canEdit && !canDelete) return null;
+  if (!canEdit && !canDelete && !canTakeFee) return null;
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -110,6 +115,12 @@ function MemberActionsCell({ member }: { member: Member }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {canTakeFee && (
+          <DropdownMenuItem onClick={() => setPaying(true)}>
+            <Banknote className="mr-2 h-4 w-4" />
+            Record payment
+          </DropdownMenuItem>
+        )}
         {canEdit && (
           <DropdownMenuItem asChild>
             <Link href={`/members/manage?action=edit&id=${member.id}`}>
@@ -133,5 +144,11 @@ function MemberActionsCell({ member }: { member: Member }) {
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+    <QuickPaymentDialog
+      open={paying}
+      onClose={() => setPaying(false)}
+      member={{ id: member.id, name: `${member.user.first_name} ${member.user.last_name}`.trim() }}
+    />
+    </>
   );
 }
