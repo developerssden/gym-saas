@@ -37,7 +37,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(StatusCodes.OK).json({
       data: staff.map(s => ({ ...s, status: staffStatus(s) })),
-      seats: { used: validation.currentCounts.staff, max: validation.limits.max_staff },
+      // planActive: without an active plan every limit is 0; the page explains why instead of "0 of 0".
+      seats: { used: validation.currentCounts.staff, max: validation.limits.max_staff, planActive: validation.isActive },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

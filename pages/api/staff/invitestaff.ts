@@ -48,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!validation.isActive) {
       return res.status(StatusCodes.FORBIDDEN).json({
         error: "SUBSCRIPTION_EXPIRED",
-        message: "Subscription is expired or inactive",
+        message: "Your plan isn't active, so you can't invite staff. Contact support to renew.",
       });
     }
 
