@@ -13,7 +13,7 @@ test("owners see the daily, business and settings sections in order", () => {
   );
   assert.deepEqual(hrefs(groups[0].items), ["/dashboard", "/members", "/membersubscriptions", "/payments", "/expenses"]);
   assert.deepEqual(hrefs(groups[1].items), ["/reports", "/equipment", "/todos"]);
-  assert.deepEqual(hrefs(groups[2].items), ["/gyms", "/locations", "/staff", "/profile"]);
+  assert.deepEqual(hrefs(groups[2].items), ["/my-gym", "/staff", "/profile"]);
 });
 
 test("staff only see pages they were given, plus Profile", () => {
@@ -81,4 +81,12 @@ test("breadcrumbs name the record instead of showing its id", () => {
     { label: "Members", href: "/members" },
     { label: "Add" },
   ]);
+});
+
+test("owners manage their gym on My gym; Gyms and Locations are for admins", () => {
+  const owner = hrefs(visibleNavItems("GYM_OWNER"));
+  assert.ok(owner.includes("/my-gym"));
+  assert.ok(!owner.includes("/gyms") && !owner.includes("/locations"));
+  const admin = hrefs(visibleNavItems("SUPER_ADMIN"));
+  assert.ok(admin.includes("/gyms") && admin.includes("/locations") && !admin.includes("/my-gym"));
 });

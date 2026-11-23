@@ -10,7 +10,9 @@ const GymsPage = () => {
   if (status === "loading") {
     return <FullScreenLoader />;
   }
-  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER") {
+  // Owners manage their gym and branches on My gym.
+  if (session?.user?.role === "GYM_OWNER") return redirect("/my-gym");
+  if (session?.user?.role !== "SUPER_ADMIN") {
     return redirect("/unauthorized");
   }
   return <Gyms session={session} />;

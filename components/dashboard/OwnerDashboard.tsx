@@ -417,8 +417,8 @@ function YourGym({
 }) {
   const items = [
     canSeeMembers && { label: "Members", value: data.totals.totalMembers, href: "/members" },
-    !isStaff && { label: "Gyms", value: data.totals.gyms, href: "/gyms" },
-    !isStaff && { label: "Branches", value: data.totals.locations, href: "/locations" },
+    !isStaff && { label: "Gyms", value: data.totals.gyms, href: "/my-gym" },
+    !isStaff && { label: "Branches", value: data.totals.locations, href: "/my-gym" },
     canSeeEquipment && { label: "Equipment", value: data.totals.equipment, href: "/equipment" },
   ].filter(Boolean) as Array<{ label: string; value: number; href: string }>
   if (items.length === 0) return null

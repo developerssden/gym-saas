@@ -25,7 +25,7 @@ export type SetupStep = {
 export function buildSetupSteps(progress: SetupProgress, installed: boolean): SetupStep[] {
   return [
     { id: "gym", title: "Add your gym", description: "Name, address and country (sets your currency).", done: progress.gym },
-    { id: "location", title: "Add a location", description: "Each branch of your gym is a location.", done: progress.location },
+    { id: "location", title: "Add a branch", description: "The place where members train. Members and equipment belong to a branch.", done: progress.location },
     { id: "members", title: "Add your members", description: "Import them all from Excel, or add them one by one.", done: progress.members },
     { id: "payment", title: "Record your first payment", description: "Take a member's fee and share the receipt.", done: progress.payment },
     { id: "notifications", title: "Turn on notifications", description: "Get reminded when members' fees are due.", done: progress.notifications },
