@@ -4,6 +4,8 @@ import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
+import { FileSpreadsheet, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import Link from "next/link";
@@ -60,29 +62,34 @@ const MembersPage = () => {
 
   const memberActions = !can("members.create") && !can("members.import") ? null : !isSubscriptionActive || subscriptionExpired ? (
           <Button onClick={() => setShowExpiredModal(true)}>
-            Create Member
+            <Plus aria-hidden /> Add member
           </Button>
         ) : (
-          <div className="flex gap-2">
+          <>
             {can("members.import") && (
-              <Link href="/members/import">
-                <Button variant="outline">Import from Excel</Button>
-              </Link>
+              <Button variant="outline" asChild>
+                <Link href="/members/import">
+                  <FileSpreadsheet aria-hidden /> Import from Excel
+                </Link>
+              </Button>
             )}
             {can("members.create") && (
-              <Link href={`/members/manage?action=create`}>
-                <Button>Create Member</Button>
-              </Link>
+              <Button asChild>
+                <Link href={`/members/manage?action=create`}>
+                  <Plus aria-hidden /> Add member
+                </Link>
+              </Button>
             )}
-          </div>
+          </>
         );
 
   return (
     <PageContainer>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Members</h1>
-        {memberActions}
-      </div>
+      <PageHeader
+        title="Members"
+        description="Everyone who trains at this branch."
+        actions={memberActions}
+      />
 
       {!selectedGymId && (
         <div className="mb-4 p-4 bg-muted rounded-md">

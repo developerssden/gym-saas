@@ -1,6 +1,8 @@
 "use client";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import type { Session } from "next-auth";
@@ -26,12 +28,17 @@ const Announcements = ({ session }: { session: Session }) => {
 
   return (
     <PageContainer>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Announcements</h1>
-        <Link href={`/announcements/manage?action=create`}>
-          <Button>Create Announcement</Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Announcements"
+        description="Messages shown to gym owners and members."
+        actions={
+          <Button asChild>
+            <Link href={`/announcements/manage?action=create`}>
+              <Plus aria-hidden /> Add announcement
+            </Link>
+          </Button>
+        }
+      />
 
       {isLoading && !data && (
         <div className="flex justify-center items-center h-64">

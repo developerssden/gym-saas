@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import {
   NotificationItem,
@@ -74,16 +75,18 @@ const NotificationsPage = () => {
 
   return (
     <PageContainer>
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="h1">Notifications</h1>
-        <Button
-          variant="outline"
-          disabled={unreadCount === 0 || markReadMutation.isPending}
-          onClick={() => markReadMutation.mutate({ all: true })}
-        >
-          Mark all as read
-        </Button>
-      </div>
+      <PageHeader
+        title="Notifications"
+        actions={
+          <Button
+            variant="outline"
+            disabled={unreadCount === 0 || markReadMutation.isPending}
+            onClick={() => markReadMutation.mutate({ all: true })}
+          >
+            Mark all as read
+          </Button>
+        }
+      />
 
       {isLoading && !data && (
         <div className="flex h-64 items-center justify-center">

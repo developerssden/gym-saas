@@ -384,8 +384,9 @@
   mix-blend-mode: normal;
 }
 
+/* Page titles: same look as Gyms / Locations, smaller on phones. */
 .h1 {
-  @apply scroll-m-20 text-4xl font-extrabold tracking-tight text-balance;
+  @apply scroll-m-20 font-display text-2xl font-bold tracking-tight text-balance text-foreground sm:text-3xl;
 }
 .h2 {
   @apply scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0;

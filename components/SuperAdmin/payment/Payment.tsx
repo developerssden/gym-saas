@@ -1,6 +1,8 @@
 "use client";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Session } from "next-auth";
@@ -44,14 +46,19 @@ const Payments = ({ session }: { session: Session }) => {
 
   return (
     <PageContainer>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Payments</h1>
-        {(session.user.role === "SUPER_ADMIN" || can("payments.record")) && (
-          <Link href={`/payments/manage?action=create`}>
-            <Button>Create Payment</Button>
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="Payments"
+        description={isGymUser ? "Every fee paid by your members, with receipts." : "Payments from gym owners for their plans."}
+        actions={
+          session.user.role === "SUPER_ADMIN" || can("payments.record") ? (
+            <Button asChild>
+              <Link href={`/payments/manage?action=create`}>
+                <Plus aria-hidden /> Add payment
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
 
       {outbox.length > 0 && (
         <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">

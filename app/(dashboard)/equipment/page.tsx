@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import Link from "next/link";
@@ -68,20 +70,27 @@ const EquipmentPage = () => {
 
   const createAction = !can("equipment.create") ? null : !isSubscriptionActive || subscriptionExpired ? (
     <Button onClick={() => setShowExpiredModal(true)}>
-      Create Equipment
+      <Plus aria-hidden /> Add equipment
+    </Button>
+  ) : !selectedGymId ? (
+    <Button disabled>
+      <Plus aria-hidden /> Add equipment
     </Button>
   ) : (
-    <Link href={`/equipment/manage?action=create`}>
-      <Button disabled={!selectedGymId}>Create Equipment</Button>
-    </Link>
+    <Button asChild>
+      <Link href={`/equipment/manage?action=create`}>
+        <Plus aria-hidden /> Add equipment
+      </Link>
+    </Button>
   );
 
   return (
     <PageContainer>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Equipment / Inventory</h1>
-        {createAction}
-      </div>
+      <PageHeader
+        title="Equipment"
+        description="Machines and gear at this branch, and when they're due for maintenance."
+        actions={createAction}
+      />
 
       {!selectedGymId && (
         <div className="mb-4 p-4 bg-muted rounded-md">

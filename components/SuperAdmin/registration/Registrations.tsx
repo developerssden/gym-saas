@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
@@ -22,12 +23,10 @@ const Registrations = () => {
 
   return (
     <PageContainer>
-      <div className="mb-6 flex flex-col gap-1">
-        <h1 className="h1">Registrations</h1>
-        <p className="text-sm text-muted-foreground">
-          Gym owners who filled in the &quot;Register your gym&quot; form on the landing page.
-        </p>
-      </div>
+      <PageHeader
+        title="Registrations"
+        description={<>Gym owners who filled in the &quot;Register your gym&quot; form on the landing page.</>}
+      />
 
       {isLoading && !data && (
         <div className="flex h-64 items-center justify-center">

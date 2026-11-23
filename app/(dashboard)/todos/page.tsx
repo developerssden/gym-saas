@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import Link from "next/link";
@@ -52,22 +54,27 @@ const TodosPage = () => {
 
   return (
     <PageContainer>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Todos</h1>
-        {can("todos.create") && (
-          <Link href={`/todos/manage?action=create`}>
-            <Button>Create Todo</Button>
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="To-dos"
+        description="Jobs to remember for the gym."
+        actions={
+          can("todos.create") ? (
+            <Button asChild>
+              <Link href={`/todos/manage?action=create`}>
+                <Plus aria-hidden /> Add to-do
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
 
       <div className="flex gap-4 mb-4">
         <Select value={statusFilter} onValueChange={(value: "all" | "completed" | "pending") => setStatusFilter(value)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="h-11 w-full sm:w-[180px] md:h-9" aria-label="Filter by status">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Todos</SelectItem>
+            <SelectItem value="all">All to-dos</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
           </SelectContent>

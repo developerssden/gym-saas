@@ -2,6 +2,7 @@
 "use client";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -24,7 +25,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatDate } from "@/lib/date-helper-functions";
-import { CalendarIcon } from "lucide-react";
+import { Bell, CalendarIcon, KeyRound, UserRound } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { CountryDropdown } from "@/components/ui/country-dropdown";
 import { cn } from "@/lib/utils";
@@ -161,14 +162,26 @@ const ProfilePage = () => {
     <PageContainer>
       {saving && <FullScreenLoader label="Saving profile..." />}
       {changingPassword && <FullScreenLoader label="Updating password..." />}
-      <div className="w-full space-y-12">
-        <h1 className="h1 text-center">Profile Settings</h1>
+      <div className="mx-auto w-full max-w-2xl">
+        <PageHeader title="Profile" description="Your details, password and notifications." />
 
-        <Tabs defaultValue="profile" className="max-w-2xl mx-auto">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile">Profile Information</TabsTrigger>
-            <TabsTrigger value="password">Change Password</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+        <Tabs defaultValue="profile">
+          {/* Short labels on phones so all three tabs fit on one line. */}
+          <TabsList className="mb-6 grid h-auto w-full grid-cols-3">
+            <TabsTrigger value="profile" className="min-h-10 px-2">
+              <UserRound aria-hidden className="hidden sm:block" />
+              <span className="sm:hidden">Details</span>
+              <span className="hidden sm:inline">Your details</span>
+            </TabsTrigger>
+            <TabsTrigger value="password" className="min-h-10 px-2">
+              <KeyRound aria-hidden className="hidden sm:block" />
+              Password
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="min-h-10 px-2">
+              <Bell aria-hidden className="hidden sm:block" />
+              <span className="sm:hidden">Alerts</span>
+              <span className="hidden sm:inline">Notifications</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-6">

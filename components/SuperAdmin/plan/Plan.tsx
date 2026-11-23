@@ -1,6 +1,8 @@
 "use client";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Session } from "next-auth";
@@ -27,12 +29,17 @@ const Plans = ({ session }: { session: Session }) => {
 
   return (
     <PageContainer>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Plans</h1>
-        <Link href={`/plans/manage?action=create`}>
-          <Button>Create Plan</Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Plans"
+        description="What gym owners can subscribe to."
+        actions={
+          <Button asChild>
+            <Link href={`/plans/manage?action=create`}>
+              <Plus aria-hidden /> Add plan
+            </Link>
+          </Button>
+        }
+      />
 
       {isLoading && !data && (
         <div className="flex justify-center items-center h-64">
