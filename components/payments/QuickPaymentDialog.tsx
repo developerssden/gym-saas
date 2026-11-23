@@ -1,6 +1,7 @@
 "use client";
 
-// Record a fee in three taps: open (1), pick the member (2), Save (3).
+// Record a fee in three taps: open (1), pick the member (2), Save (3), then
+// (online) send the receipt on WhatsApp.
 // The amount and method are pre-filled from what the member owes, or from
 // their last subscription when it has ended (renew and pay in one step).
 //
@@ -11,7 +12,7 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Search, WifiOff } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, Search, WifiOff } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ import { submitPayment } from "@/lib/offline/submit";
 import type { FeeAction } from "@/lib/quick-payment";
 import { PAYMENT_QUERY_KEYS } from "@/lib/payment-queries";
 import { formatDate } from "@/lib/format";
+import { ReceiptDownloadButton, ShareReceiptButton } from "@/components/common/whatsapp-actions";
 
 export type QuickPaymentMember = { id: string; name: string };
 
@@ -215,18 +217,28 @@ function FeeForm({ member, onBack, onDone }: { member: QuickPaymentMember; onBac
           {fallback && (
             <OfflineNote>Offline: using the fee saved on this device{directory.data ? ` (${shortDate(directory.data.savedAt)})` : ""}.</OfflineNote>
           )}
-          <FeeAmountForm member={member} action={action} onDone={onDone} />
+          <FeeAmountForm member={member} phone={phone} action={action} onDone={onDone} />
         </>
       )}
     </>
   );
 }
 
-function FeeAmountForm({ member, action: serverAction, onDone }: { member: QuickPaymentMember; action: FeeAction; onDone: () => void }) {
+function FeeAmountForm({
+  member,
+  phone,
+  action: serverAction,
+  onDone,
+}: {
+  member: QuickPaymentMember;
+  phone: string | null | undefined;
+  action: FeeAction;
+  onDone: () => void;
+}) {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
   const { can } = usePermissions();
-  const { currencyCode, format } = useGymCurrency();
+  const { currencyCode, countryCode, format } = useGymCurrency();
   const outbox = useOutbox();
   // Payments for this member still waiting on this device count as paid.
   const { action, pendingAmount, blockedReason } = applyPendingPayments(
@@ -237,6 +249,7 @@ function FeeAmountForm({ member, action: serverAction, onDone }: { member: Quick
   const [amount, setAmount] = useState(String(due));
   const [method, setMethod] = useState<"CASH" | "BANK_TRANSFER">("CASH");
   const [transactionId, setTransactionId] = useState("");
+  const [saved, setSaved] = useState<{ paymentId: string; amount: number; message: string } | null>(null);
 
   const mutation = useMutation({
     // submitPayment handles being offline itself (queues the payment).
@@ -279,24 +292,57 @@ function FeeAmountForm({ member, action: serverAction, onDone }: { member: Quick
     },
     onSuccess: result => {
       const value = Number(amount);
-      if (result === "queued") {
+      if (result.status === "queued") {
         toast.success(`Saved on this device: ${format(value)} from ${member.name}. It will sync when you're back online.`);
-      } else {
-        const left = due - value;
-        toast.success(
-          action.kind === "renew"
-            ? `Renewed and ${format(value)} recorded for ${member.name}.`
-            : left > 0
-              ? `Payment recorded. ${member.name} still owes ${format(left)}.`
-              : `Payment recorded. ${member.name} has paid in full.`
-        );
-        for (const key of PAYMENT_QUERY_KEYS) queryClient.invalidateQueries({ queryKey: [key] });
+        onDone();
+        return;
       }
-      onDone();
+      const left = due - value;
+      const message =
+        action.kind === "renew"
+          ? `Renewed and ${format(value)} recorded for ${member.name}.`
+          : left > 0
+            ? `Payment recorded. ${member.name} still owes ${format(left)}.`
+            : `Payment recorded. ${member.name} has paid in full.`;
+      for (const key of PAYMENT_QUERY_KEYS) queryClient.invalidateQueries({ queryKey: [key] });
+      // Next step: send the receipt on WhatsApp (when there's a receipt and they may share it).
+      if (result.paymentId && can("membersubscriptions.whatsapp")) {
+        setSaved({ paymentId: result.paymentId, amount: value, message });
+      } else {
+        toast.success(message);
+        onDone();
+      }
     },
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
+  if (saved) {
+    const gym = session?.user?.gyms?.find(g => g.id === session?.user?.selected_gym_id);
+    return (
+      <div className="grid gap-4">
+        <p className="flex items-start gap-2 rounded-md bg-primary/10 p-3 text-sm" role="status">
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+          <span>{saved.message}</span>
+        </p>
+        <ShareReceiptButton
+          className="h-12 text-base"
+          paymentId={saved.paymentId}
+          memberName={member.name}
+          phone={phone}
+          gymName={gym?.name}
+          gymCountry={countryCode}
+          amount={saved.amount}
+          paymentDate={new Date()}
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <ReceiptDownloadButton paymentId={saved.paymentId} size="default" className="h-11" label="Download receipt" />
+          <Button type="button" variant="outline" className="h-11" onClick={onDone}>
+            Done
+          </Button>
+        </div>
+      </div>
+    );
+  }
   if (blockedReason) return <p className="py-4 text-sm text-muted-foreground">{blockedReason}</p>;
   if (action.kind === "none") {
     return <p className="py-4 text-sm text-muted-foreground">{member.name} has no subscription yet. Add one from Memberships.</p>;

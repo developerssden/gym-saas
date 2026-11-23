@@ -41,3 +41,29 @@ export function ownerPaymentSearchWhere(search: unknown): Prisma.PaymentWhereInp
     ],
   };
 }
+
+const toDate = (value: unknown): Date | undefined => {
+  if (typeof value !== "string" || !value) return undefined;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? undefined : d;
+};
+
+/**
+ * Where fragment for the payments list filters: payment date from (included)
+ * and to (excluded), as ISO strings, and the method (CASH / BANK_TRANSFER).
+ * Anything missing or invalid is ignored. Null when there's nothing to filter.
+ */
+export function paymentFilterWhere(filters: {
+  date_from?: unknown;
+  date_to?: unknown;
+  payment_method?: unknown;
+}): Prisma.PaymentWhereInput | null {
+  const from = toDate(filters.date_from);
+  const to = toDate(filters.date_to);
+  const method =
+    filters.payment_method === "CASH" || filters.payment_method === "BANK_TRANSFER" ? filters.payment_method : undefined;
+  const where: Prisma.PaymentWhereInput = {};
+  if (from || to) where.payment_date = { ...(from ? { gte: from } : {}), ...(to ? { lt: to } : {}) };
+  if (method) where.payment_method = method;
+  return Object.keys(where).length ? where : null;
+}

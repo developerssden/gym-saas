@@ -190,7 +190,11 @@ const ManagePaymentContent = () => {
   });
 
   if (status === "loading") return <FullScreenLoader />;
-  if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
+  // Owners and staff record fees with the quick payment dialog on the Payments page.
+  if (session?.user?.role === "GYM_OWNER" || session?.user?.role === "STAFF") {
+    return redirect("/payments");
+  }
+  if (session?.user?.role !== "SUPER_ADMIN") {
     return redirect("/unauthorized");
   }
 
