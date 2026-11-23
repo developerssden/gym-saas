@@ -42,6 +42,7 @@ const EMPTY: Record<Exclude<Filter, "all">, string> = {
   active: "No members with an active membership.",
   expiring: "No memberships end in the next 7 days.",
   expired: "No expired members. Everyone has renewed.",
+  frozen: "No frozen memberships.",
   owing: "No one owes you money.",
 };
 

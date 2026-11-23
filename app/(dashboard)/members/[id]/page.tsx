@@ -6,7 +6,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Banknote, FileText, Mail, MessageCircle, Pencil, Phone, RotateCcw, Trash2 } from "lucide-react";
+import { Banknote, FileText, Mail, MessageCircle, Pencil, Phone, Plus, RotateCcw, Trash2 } from "lucide-react";
 
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
@@ -105,7 +105,8 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
   const phone = member.user.phone_number;
   const whatsapp = toWhatsAppNumber(phone, country);
   const canRecord = can("payments.record") || can("membersubscriptions.renew");
-  const canRenew = can("membersubscriptions.renew") && !!current;
+  // Renewal opens in the last 7 days or once it has ended (same rule as the API).
+  const canRenew = can("membersubscriptions.renew") && !!current && (status.state === "expiring" || status.state === "expired");
   const canRemind =
     can("membersubscriptions.whatsapp") && !!current && (status.state === "expiring" || status.state === "expired");
 
@@ -148,6 +149,13 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
             {canRecord && (
               <Button onClick={() => setPaying(true)}>
                 <Banknote aria-hidden /> Record payment
+              </Button>
+            )}
+            {!current && can("membersubscriptions.create") && (
+              <Button variant="outline" asChild>
+                <Link href={`/membersubscriptions/manage?action=create&member=${member.id}`}>
+                  <Plus aria-hidden /> Add membership
+                </Link>
               </Button>
             )}
             {canRenew && (

@@ -19,7 +19,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { LabeledField } from "@/components/forms/labeled-field";
 import { StickyFormFooter } from "@/components/forms/sticky-form-footer";
 import { ShareReceiptButton } from "@/components/common/whatsapp-actions";
-import { NewMemberMembership, type MembershipSaved } from "@/components/members/new-member-membership";
+import { MembershipForm, type MembershipSaved } from "@/components/membersubscriptions/MembershipForm";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
@@ -277,12 +277,14 @@ const ManageMemberContent = () => {
         <div className="mx-auto max-w-xl">
           <PageHeader title={`Membership for ${created.name}`} description="Step 2 of 2 · You can skip this and add it later." />
         </div>
-        <NewMemberMembership
+        <MembershipForm
+          mode="new"
           memberId={created.id}
           gymId={selectedGymId}
           canTakeFee={can("payments.record") || can("membersubscriptions.renew")}
           onSaved={setSaved}
-          onSkip={() => router.push(`/members/${created.id}`)}
+          onCancel={() => router.push(`/members/${created.id}`)}
+          cancelLabel="Skip for now"
         />
       </PageContainer>
     );

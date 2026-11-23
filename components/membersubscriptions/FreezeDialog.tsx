@@ -110,6 +110,8 @@ function FreezeForm({
       queryClient.invalidateQueries({ queryKey: ["membersubscriptions"] });
       queryClient.invalidateQueries({ queryKey: ["membersubscription-history"] });
       queryClient.invalidateQueries({ queryKey: ["ownerDashboardOverview"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["member-profile"] });
       onClose();
     },
     onError: (err: unknown) => toast.error(getErrorMessage(err)),

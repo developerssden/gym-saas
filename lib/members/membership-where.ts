@@ -36,9 +36,19 @@ export function membershipFilters(now = new Date()) {
     end_date: { gte: todayStart, lt: soonEnd },
   };
 
+  const frozen: Prisma.MemberSubscriptionWhereInput = { is_deleted: false, frozen_since: { not: null } };
+
   /** Member filter for a status (not "owing", which needs balances: see owingMembers). */
   const memberStatusWhere = (status: Exclude<MemberStatusFilter, "owing">): Prisma.MemberWhereInput => {
-    if (status === "active") return { memberSubscriptions: { some: lasting } };
+    // Frozen members show as Frozen, not Active (memberStatus checks frozen first).
+    if (status === "active")
+      return {
+        memberSubscriptions: {
+          some: { is_deleted: false, is_expired: false, frozen_since: null, end_date: { gte: soonEnd } },
+          none: frozen,
+        },
+      };
+    if (status === "frozen") return { memberSubscriptions: { some: frozen } };
     // Expiring, unless they've already renewed past it.
     if (status === "expiring") return { memberSubscriptions: { some: expiring, none: lasting } };
     return { memberSubscriptions: { some: { is_deleted: false }, none: current } };
