@@ -43,3 +43,11 @@ export function validateExpenseInput(input: {
 export function profit(collected: number, expenses: number): number {
   return collected - expenses;
 }
+
+/** Where an expense belongs: its branch, or the whole gym when it has none. */
+export function expenseBranchLabel(location: { name: string } | null | undefined): string {
+  return location?.name ?? "All branches";
+}
+
+/** Shown under "All branches" so owners know what it means. */
+export const WHOLE_GYM_HINT = "For the whole gym, not one branch";

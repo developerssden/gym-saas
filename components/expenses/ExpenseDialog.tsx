@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { FormDialog } from "@/components/forms/form-dialog";
@@ -14,6 +15,8 @@ import { cn } from "@/lib/utils";
 import {
   EXPENSE_CATEGORIES,
   MAX_EXPENSE_NOTE,
+  WHOLE_GYM_HINT,
+  expenseBranchLabel,
   expenseCategoryLabel,
   isExpenseCategory,
   validateExpenseInput,
@@ -47,8 +50,13 @@ export function invalidateExpenseQueries(queryClient: ReturnType<typeof useQuery
 /** Add or edit an expense: dialog on larger screens, bottom sheet on phones. */
 export default function ExpenseDialog({ open, onClose, expense, gymId, locationId }: ExpenseDialogProps) {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
   const { currencyCode, format: formatMoney } = useGymCurrency();
   const isEdit = !!expense;
+  // Where it goes: the expense's own branch when editing, else the branch picked at the top.
+  const branch = isEdit
+    ? expense?.location ?? null
+    : (session?.user?.locations?.find((l) => l.id === locationId) ?? null);
   const today = format(new Date(), "yyyy-MM-dd");
 
   const [amount, setAmount] = useState("");
@@ -123,6 +131,12 @@ export default function ExpenseDialog({ open, onClose, expense, gymId, locationI
       submitLabel={isEdit ? "Save changes" : "Add expense"}
       pending={mutation.isPending}
     >
+      <p className="rounded-md bg-muted px-3 py-2 text-sm">
+        <span className="text-muted-foreground">Branch: </span>
+        <span className="font-medium">{expenseBranchLabel(branch)}</span>
+        {!branch && <span className="text-muted-foreground"> ({WHOLE_GYM_HINT.toLowerCase()})</span>}
+      </p>
+
       <LabeledField label={`Amount (${currencyCode})`} error={show(amountError)} required>
         {(p) => (
           <Input

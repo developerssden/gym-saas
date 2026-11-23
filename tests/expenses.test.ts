@@ -3,6 +3,7 @@ import test from "node:test";
 import { calendarDayRange, parseCalendarDay } from "@/lib/date-utils";
 import {
   EXPENSE_CATEGORIES,
+  expenseBranchLabel,
   expenseCategoryLabel,
   isExpenseCategory,
   profit,
@@ -62,4 +63,10 @@ test("categories and labels", () => {
 test("profit is collected minus expenses and can be negative", () => {
   assert.equal(profit(120000, 75000), 45000);
   assert.equal(profit(20000, 50000), -30000);
+});
+
+test("an expense without a branch is for all branches", () => {
+  assert.equal(expenseBranchLabel({ name: "Gulberg" }), "Gulberg");
+  assert.equal(expenseBranchLabel(null), "All branches");
+  assert.equal(expenseBranchLabel(undefined), "All branches");
 });

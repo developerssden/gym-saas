@@ -11,7 +11,7 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { ListCard } from "@/components/common/list-card";
 import { RowActions } from "@/components/common/row-actions";
 import ExpenseDialog, { invalidateExpenseQueries, type ExpenseRow } from "@/components/expenses/ExpenseDialog";
-import { expenseCategoryLabel } from "@/lib/expenses";
+import { WHOLE_GYM_HINT, expenseBranchLabel, expenseCategoryLabel } from "@/lib/expenses";
 import { formatDate } from "@/lib/format";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -34,8 +34,16 @@ export const columns: ColumnDef<ExpenseRow>[] = [
   },
   {
     id: "location",
-    header: "Location",
-    cell: ({ row }) => row.original.location?.name ?? <span className="text-muted-foreground">All</span>,
+    header: "Branch",
+    cell: ({ row }) =>
+      row.original.location ? (
+        row.original.location.name
+      ) : (
+        <div className="flex flex-col">
+          <span>{expenseBranchLabel(null)}</span>
+          <span className="text-xs text-muted-foreground">{WHOLE_GYM_HINT}</span>
+        </div>
+      ),
   },
   {
     accessorKey: "note",
@@ -62,7 +70,7 @@ export function ExpenseCard({ expense }: { expense: ExpenseRow }) {
       title={expenseCategoryLabel(expense.category)}
       subtitle={formatDate(expense.expense_date)}
       value={<CurrencyAmount amount={expense.amount} />}
-      meta={[expense.location?.name, expense.note].filter(Boolean).join(" · ") || undefined}
+      meta={[expense.location ? expense.location.name : `All branches (whole gym)`, expense.note].filter(Boolean).join(" · ")}
       actions={<ExpenseActions expense={expense} className="justify-start" />}
     />
   );

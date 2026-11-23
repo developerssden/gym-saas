@@ -42,7 +42,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       is_deleted: false,
       gym: { AND: [ownedGymWhere(access)], is_deleted: false },
       ...(gym_id ? { gym_id } : {}),
-      ...(location_id ? { location_id } : {}),
+      // A branch's list also shows whole-gym expenses (no branch), labelled
+      // "All branches", so they can still be seen, edited and deleted.
+      ...(location_id ? { AND: [{ OR: [{ location_id }, { location_id: null }] }] } : {}),
       ...(isExpenseCategory(category) ? { category } : {}),
       ...(or.length ? { OR: or } : {}),
     };
