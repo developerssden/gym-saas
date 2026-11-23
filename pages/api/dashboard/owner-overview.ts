@@ -1,506 +1,375 @@
 // pages/api/dashboard/owner-overview.ts
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// Owner/staff dashboard: who to chase today, the month's money and trends.
 import type { NextApiRequest, NextApiResponse } from "next"
 import prisma from "@/lib/prisma"
 import { requireAccess, ownedGymWhere, can } from "@/lib/access"
 import { StatusCodes } from "http-status-codes"
-import { SubscriptionTypeEnum } from "@/prisma/generated/client"
-import { DASHBOARD } from "@/lib/constants";
-import { summarizeBalance } from "@/lib/member-balance";
-import { profit } from "@/lib/expenses";
-import { calendarMonthRange, formatCalendarMonth, previousCalendarMonth } from "@/lib/date-utils";
+import { Prisma, SubscriptionTypeEnum } from "@/prisma/generated/client"
+import { profit } from "@/lib/expenses"
+import {
+  calendarDayRange,
+  calendarMonthRange,
+  formatCalendarDate,
+  formatCalendarMonth,
+  MS_PER_DAY,
+  previousCalendarMonth,
+} from "@/lib/date-utils"
+import {
+  ATTENTION_ROW_LIMIT,
+  EXPIRING_SOON_DAYS,
+  RECENT_PAYMENTS_LIMIT,
+  chartMonths,
+  growthPct,
+  longMonthName,
+  monthLabel,
+  owingByMember,
+  parseChartRange,
+  type ChartRange,
+} from "@/lib/dashboard"
 
-type OwnerOverviewResponse = {
+export type AttentionRow = {
+  subscriptionId: string
+  memberId: string
+  memberName: string
+  phone: string | null
+  billingModel: string
+  /** Pre-fills Renew. Only displayed when canSeeRowAmounts. */
+  price: number
+  endDate: string
+}
+
+export type OwingRow = AttentionRow & {
+  /** Total unpaid across the member's subscriptions; null when the viewer may not see money. */
+  balance: number | null
+}
+
+export type OwnerOverviewResponse = {
+  context: { currentMonth: string; monthName: string; lastMonthName: string }
+  /** Whether money figures are included (owners, staff with dashboard.revenue). */
+  canSeeMoney: boolean
+  /** Whether row prices and balances may be shown (money or payments.view). */
+  canSeeRowAmounts: boolean
   totals: {
     totalMembers: number
-    totalGyms: number
-    totalLocations: number
-    totalEquipment: number
-    activeMemberSubscriptions: number
-    expiredMemberSubscriptions: number
-    /** null when the viewer may not see revenue (staff without dashboard.revenue). */
-    revenueThisMonth: number | null
-    revenueLastMonth: number | null
-    revenueGrowthPct: number | null
-    /** Unpaid balance across all member subscriptions (partial payments). */
-    outstandingAmount: number
-    /** Members with an unpaid balance. */
-    outstandingMembers: number
-    /** Expenses recorded this month (same window as revenueThisMonth). */
+    /** Members with a current (or frozen) membership. */
+    activeMembers: number
+    newMembersThisMonth: number
+    gyms: number
+    locations: number
+    equipment: number
+    collectedThisMonth: number | null
+    collectedLastMonth: number | null
+    growthPct: number | null
     expensesThisMonth: number | null
-    /** revenueThisMonth - expensesThisMonth; can be negative. */
     profitThisMonth: number | null
+    outstandingAmount: number | null
+    owingMembers: number
+    expiringSoonCount: number
+    /** Sum of the expiring memberships' prices: money coming up for renewal. */
+    expiringSoonAmount: number | null
+    expiredCount: number
+  }
+  /** Up to ATTENTION_ROW_LIMIT rows each; the counts above say how many there are in all. */
+  attention: {
+    expiringSoon: AttentionRow[]
+    expired: AttentionRow[]
+    owing: OwingRow[]
   }
   charts: {
-    /** null when the viewer may not see revenue. */
-    revenueByMonth: Array<{ month: string; revenue: number }> | null
-    newMembersByMonth: Array<{ month: string; members: number }>
+    range: ChartRange
+    months: Array<{ month: string; label: string; revenue: number | null; members: number }>
   }
-  tables: {
-    activeSubscriptions: Array<{
-      id: string
-      memberId: string
-      memberName: string
-      memberEmail: string
-      memberPhone: string | null
-      price: number
-      billingModel: string
-      startDate: string
-      endDate: string
-      isActive: boolean
-      isExpired: boolean
-      frozenSince: string | null
-      lastPaymentAmount: number | null
-      lastPaymentDate: string | null
-    }>
-    expiredSubscriptions: Array<{
-      id: string
-      memberId: string
-      memberName: string
-      memberEmail: string
-      memberPhone: string | null
-      price: number
-      billingModel: string
-      startDate: string
-      endDate: string
-      isActive: boolean
-      isExpired: boolean
-      frozenSince: string | null
-      lastPaymentAmount: number | null
-      lastPaymentDate: string | null
-    }>
-    recentPayments: Array<{
-      id: string
-      memberName: string
-      amount: number
-      paymentMethod: string
-      paymentDate: string
-      subscriptionType: string
-    }>
-  }
+  /** Empty when the viewer may not see payments. */
+  recentPayments: Array<{
+    id: string
+    memberName: string
+    amount: number
+    paymentMethod: string
+    paymentDate: string
+  }>
 }
 
-function startOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0)
-}
+const memberName = (user?: { first_name: string | null; last_name: string | null } | null) =>
+  `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() || "Member"
 
-function addMonths(d: Date, months: number) {
-  return new Date(d.getFullYear(), d.getMonth() + months, 1, 0, 0, 0, 0)
-}
-
-function formatMonthLabel(d: Date) {
-  return d.toLocaleDateString(undefined, { month: "short", year: "numeric" })
-}
-
-function parseDate(value: unknown): Date | null {
-  if (!value || typeof value !== "string") return null
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
-}
-
-function startOfDay(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
-}
-
-function safeIso(d: unknown) {
-  const date = d instanceof Date ? d : new Date(d as any)
-  return Number.isNaN(date.getTime()) ? "" : date.toISOString()
-}
+const iso = (d: Date) => d.toISOString()
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<OwnerOverviewResponse | { message: string; error?: string }>
 ) {
   if (req.method !== "POST") {
-    return res
-      .status(StatusCodes.METHOD_NOT_ALLOWED)
-      .json({ message: "Method not allowed" })
+    return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({ message: "Method not allowed" })
   }
 
   const access = await requireAccess(req, res, { permission: "dashboard.view" })
   if (!access) return
 
   try {
-    // Revenue, expenses and profit are left out for staff without dashboard.revenue.
-    const canSeeRevenue = can(access, "dashboard.revenue")
-    const canSeePayments = canSeeRevenue || can(access, "payments.view")
-    const { gym_id, location_id } = req.body as {
-      gym_id?: string
-      location_id?: string
-    }
+    // Totals, profit and charts need dashboard.revenue. Amounts on member rows
+    // also show for staff who can see payments (they see them on Payments anyway).
+    const canSeeMoney = can(access, "dashboard.revenue")
+    const canSeePayments = canSeeMoney || can(access, "payments.view")
+    const rowMoney = canSeePayments
+    const { gym_id, location_id } = req.body as { gym_id?: string; location_id?: string }
+    const range = parseChartRange(req.body?.range)
 
-    const memberWhere = {
-      gym: {
-        AND: [ownedGymWhere(access)],
-        is_deleted: false,
-        ...(gym_id ? { id: gym_id } : {}),
-      },
-      ...(location_id ? { location_id } : {}),
+    const gymWhere: Prisma.GymWhereInput = {
+      AND: [ownedGymWhere(access)],
+      is_deleted: false,
+      ...(gym_id ? { id: gym_id } : {}),
     }
-
-    const memberNested = {
-      ...(gym_id ? { gym_id } : {}),
+    const memberWhere: Prisma.MemberWhereInput = {
+      gym: gymWhere,
       ...(location_id ? { location_id } : {}),
-      gym: {
-        AND: [ownedGymWhere(access)],
-        is_deleted: false,
-        ...(gym_id ? { id: gym_id } : {}),
-      },
     }
 
     const now = new Date()
-    // Months in the business time zone, the same windows as the monthly report.
     const currentMonth = formatCalendarMonth(now)
+    const lastMonthKey = previousCalendarMonth(currentMonth)
     const thisMonth = calendarMonthRange(currentMonth)!
-    const lastMonth = calendarMonthRange(previousCalendarMonth(currentMonth))!
-    const thisMonthStart = thisMonth.start
+    const lastMonth = calendarMonthRange(lastMonthKey)!
+    const todayStart = calendarDayRange(formatCalendarDate(now))!.start
+    const soonEnd = calendarDayRange(formatCalendarDate(new Date(now.getTime() + (EXPIRING_SOON_DAYS + 1) * MS_PER_DAY)))!.start
 
-    // Optional chart range override
-    const requestedFrom = parseDate(req.body?.from)
-    const requestedTo = parseDate(req.body?.to)
-    let chartFrom = requestedFrom ? startOfDay(requestedFrom) : thisMonthStart
-    let chartTo = requestedTo ? requestedTo : now
-    if (chartTo.getTime() > now.getTime()) chartTo = now
-    if (chartFrom.getTime() > chartTo.getTime()) {
-      ;[chartFrom, chartTo] = [startOfDay(chartTo), chartFrom]
+    // A membership that still counts: not expired and not past its end, or frozen.
+    const currentSub: Prisma.MemberSubscriptionWhereInput = {
+      is_deleted: false,
+      OR: [{ is_expired: false, end_date: { gte: todayStart } }, { frozen_since: { not: null } }],
     }
+    const expiringWhere: Prisma.MemberSubscriptionWhereInput = {
+      is_deleted: false,
+      is_active: true,
+      is_expired: false,
+      frozen_since: null,
+      end_date: { gte: todayStart, lt: soonEnd },
+      member: memberWhere,
+    }
+    // Members whose last membership ran out and who haven't renewed or told us why they left.
+    const expiredMemberWhere: Prisma.MemberWhereInput = {
+      ...memberWhere,
+      memberSubscriptions: {
+        some: { is_deleted: false, churn_reason: null, OR: [{ is_expired: true }, { end_date: { lt: todayStart } }] },
+        none: currentSub,
+      },
+    }
+    const memberPayments: Prisma.PaymentWhereInput = {
+      subscription_type: SubscriptionTypeEnum.MEMBER,
+      memberSubscription: { member: memberWhere },
+    }
+    const months = chartMonths(range, currentMonth)
+    const monthRanges = months.map((m) => calendarMonthRange(m)!)
+
+    const rowSelect = {
+      id: true,
+      member_id: true,
+      price: true,
+      billing_model: true,
+      end_date: true,
+      member: { select: { user: { select: { first_name: true, last_name: true, phone_number: true } } } },
+    } satisfies Prisma.MemberSubscriptionSelect
 
     const [
       totalMembers,
-      totalGyms,
-      totalLocations,
-      totalEquipment,
-      activeMemberSubscriptions,
-      expiredMemberSubscriptions,
-      paymentsThisMonth,
-      paymentsLastMonth,
-      paymentsForCharts,
-      membersCreatedForCharts,
-      activeSubsRows,
-      expiredSubsRows,
-      recentPaymentsRows,
+      activeMembers,
+      newMembersThisMonth,
+      gyms,
+      locations,
+      equipment,
+      collectedThisMonth,
+      collectedLastMonth,
+      expenses,
+      expiringSoonCount,
+      expiringSoonSum,
+      expiringRows,
+      expiredCount,
+      expiredRows,
+      feeRows,
+      paidRows,
+      revenueByMonth,
+      membersByMonth,
+      recentPayments,
     ] = await Promise.all([
-      // Total members
-      prisma.member.count({
-        where: memberWhere,
-      }),
-      // Total gyms
-      prisma.gym.count({
-        where: {
-          AND: [ownedGymWhere(access)],
-          is_deleted: false,
-          ...(gym_id ? { id: gym_id } : {}),
-        },
-      }),
-      // Total locations
-      prisma.location.count({
-        where: {
-          gym: {
-            AND: [ownedGymWhere(access)],
-            is_deleted: false,
-            ...(gym_id ? { id: gym_id } : {}),
-          },
-          is_deleted: false,
-          ...(location_id ? { id: location_id } : {}),
-        },
-      }),
-      // Total equipment
-      prisma.equipment.count({
-        where: {
-          gym: {
-            AND: [ownedGymWhere(access)],
-            is_deleted: false,
-            ...(gym_id ? { id: gym_id } : {}),
-          },
-          is_deleted: false,
-          ...(gym_id ? { gym_id } : {}),
-          ...(location_id ? { location_id } : {}),
-        },
-      }),
-      // Active member subscriptions
-      prisma.memberSubscription.count({
-        where: {
-          is_deleted: false,
-          is_active: true,
-          is_expired: false,
-          member: memberNested,
-        },
-      }),
-      // Expired member subscriptions
-      prisma.memberSubscription.count({
-        where: {
-          is_deleted: false,
-          is_expired: true,
-          member: memberNested,
-        },
-      }),
-      // Payments this month
-      prisma.payment.findMany({
-        where: {
-          subscription_type: SubscriptionTypeEnum.MEMBER,
-          payment_date: { gte: thisMonthStart, lte: now },
-          memberSubscription: {
-            member: memberNested,
-          },
-        },
-        select: { amount: true, payment_date: true },
-      }),
-      // Payments last month
-      prisma.payment.findMany({
-        where: {
-          subscription_type: SubscriptionTypeEnum.MEMBER,
-          payment_date: { gte: lastMonth.start, lt: lastMonth.end },
-          memberSubscription: {
-            member: memberNested,
-          },
-        },
-        select: { amount: true, payment_date: true },
-      }),
-      // Payments for charts
-      prisma.payment.findMany({
-        where: {
-          subscription_type: SubscriptionTypeEnum.MEMBER,
-          payment_date: { gte: chartFrom, lte: chartTo },
-          memberSubscription: {
-            member: memberNested,
-          },
-        },
-        select: { amount: true, payment_date: true },
-        orderBy: { payment_date: "asc" },
-      }),
-      // Members created for charts
-      prisma.member.findMany({
-        where: {
-          ...memberWhere,
-          joinedAt: { gte: chartFrom, lte: chartTo },
-        },
-        select: { joinedAt: true },
-      }),
-      // Active subscriptions
-      prisma.memberSubscription.findMany({
-        where: {
-          is_deleted: false,
-          is_active: true,
-          is_expired: false,
-          member: memberNested,
-        },
-        include: {
-          member: {
-            include: {
-              user: true,
+      prisma.member.count({ where: memberWhere }),
+      prisma.member.count({ where: { ...memberWhere, memberSubscriptions: { some: currentSub } } }),
+      prisma.member.count({ where: { ...memberWhere, joinedAt: { gte: thisMonth.start, lt: thisMonth.end } } }),
+      prisma.gym.count({ where: gymWhere }),
+      prisma.location.count({ where: { gym: gymWhere, is_deleted: false, ...(location_id ? { id: location_id } : {}) } }),
+      prisma.equipment.count({ where: { gym: gymWhere, is_deleted: false, ...(location_id ? { location_id } : {}) } }),
+      canSeeMoney
+        ? prisma.payment.aggregate({
+            where: { ...memberPayments, payment_date: { gte: thisMonth.start, lt: thisMonth.end } },
+            _sum: { amount: true },
+          })
+        : null,
+      canSeeMoney
+        ? prisma.payment.aggregate({
+            where: { ...memberPayments, payment_date: { gte: lastMonth.start, lt: lastMonth.end } },
+            _sum: { amount: true },
+          })
+        : null,
+      canSeeMoney
+        ? prisma.expense.aggregate({
+            where: {
+              is_deleted: false,
+              expense_date: { gte: thisMonth.start, lt: thisMonth.end },
+              gym: gymWhere,
+              ...(location_id ? { location_id } : {}),
             },
-          },
-          payments: {
-            orderBy: { payment_date: "desc" },
-            take: 1,
-            select: { amount: true, payment_date: true },
-          },
-        },
+            _sum: { amount: true },
+          })
+        : null,
+      prisma.memberSubscription.count({ where: expiringWhere }),
+      canSeeMoney ? prisma.memberSubscription.aggregate({ where: expiringWhere, _sum: { price: true } }) : null,
+      prisma.memberSubscription.findMany({
+        where: expiringWhere,
+        select: rowSelect,
         orderBy: { end_date: "asc" },
-        take: DASHBOARD.SUBSCRIPTION_TABLE_LIMIT,
+        take: ATTENTION_ROW_LIMIT,
       }),
-      // Expired subscriptions
+      prisma.member.count({ where: expiredMemberWhere }),
+      // Latest expired membership of members who haven't renewed; deduplicated below.
       prisma.memberSubscription.findMany({
         where: {
           is_deleted: false,
-          is_expired: true,
-          member: memberNested,
+          churn_reason: null,
+          OR: [{ is_expired: true }, { end_date: { lt: todayStart } }],
+          member: { memberSubscriptions: { none: currentSub }, ...memberWhere },
         },
-        include: {
-          member: {
-            include: {
-              user: true,
-            },
-          },
-          payments: {
-            orderBy: { payment_date: "desc" },
-            take: 1,
-            select: { amount: true, payment_date: true },
-          },
-        },
+        select: rowSelect,
         orderBy: { end_date: "desc" },
-        take: DASHBOARD.SUBSCRIPTION_TABLE_LIMIT,
+        take: ATTENTION_ROW_LIMIT * 6,
       }),
-      // Recent payments
-      prisma.payment.findMany({
-        where: {
-          subscription_type: SubscriptionTypeEnum.MEMBER,
-          memberSubscription: {
-            member: memberNested,
-          },
-        },
-        include: {
-          memberSubscription: {
-            include: {
-              member: {
-                include: {
-                  user: true,
-                },
+      // Owing: fees per subscription and payments summed per subscription, no payment rows loaded.
+      prisma.memberSubscription.findMany({
+        where: { is_deleted: false, member: memberWhere },
+        select: { id: true, member_id: true, price: true, discount: true, admission_fee: true },
+      }),
+      prisma.payment.groupBy({
+        by: ["member_subscription_id"],
+        where: { ...memberPayments, member_subscription_id: { not: null } },
+        _sum: { amount: true },
+      }),
+      canSeeMoney
+        ? Promise.all(
+            monthRanges.map((r) =>
+              prisma.payment.aggregate({
+                where: { ...memberPayments, payment_date: { gte: r.start, lt: r.end } },
+                _sum: { amount: true },
+              })
+            )
+          )
+        : null,
+      Promise.all(
+        monthRanges.map((r) => prisma.member.count({ where: { ...memberWhere, joinedAt: { gte: r.start, lt: r.end } } }))
+      ),
+      canSeePayments
+        ? prisma.payment.findMany({
+            where: memberPayments,
+            select: {
+              id: true,
+              amount: true,
+              payment_method: true,
+              payment_date: true,
+              memberSubscription: {
+                select: { member: { select: { user: { select: { first_name: true, last_name: true } } } } },
               },
             },
-          },
-        },
-        orderBy: { payment_date: "desc" },
-        take: DASHBOARD.SUBSCRIPTION_TABLE_LIMIT,
-      }),
+            orderBy: [{ payment_date: "desc" }, { createdAt: "desc" }],
+            take: RECENT_PAYMENTS_LIMIT,
+          })
+        : [],
     ])
 
-    // Outstanding: every non-deleted subscription with an unpaid balance,
-    // including older (renewed or expired) ones — that money is still owed.
-    const balanceRows = await prisma.memberSubscription.findMany({
-      where: { is_deleted: false, member: memberNested },
-      select: {
-        member_id: true,
-        price: true,
-        discount: true,
-        admission_fee: true,
-        payments: { select: { amount: true } },
-      },
+    const paid = new Map<string, number>()
+    for (const row of paidRows) {
+      if (row.member_subscription_id) paid.set(row.member_subscription_id, row._sum.amount ?? 0)
+    }
+    const owing = owingByMember(feeRows, paid)
+    const outstandingAmount = owing.reduce((sum, o) => sum + o.balance, 0)
+
+    // Names, phones and plans for the members shown on the Owing tab.
+    const owingTop = owing.slice(0, ATTENTION_ROW_LIMIT)
+    const owingSubs = owingTop.length
+      ? await prisma.memberSubscription.findMany({
+          where: { id: { in: owingTop.map((o) => o.subscriptionId) } },
+          select: rowSelect,
+        })
+      : []
+    const owingSubById = new Map(owingSubs.map((s) => [s.id, s]))
+
+    type SubRow = (typeof expiringRows)[number]
+    const toRow = (s: SubRow): AttentionRow => ({
+      subscriptionId: s.id,
+      memberId: s.member_id,
+      memberName: memberName(s.member.user),
+      phone: s.member.user.phone_number ?? null,
+      billingModel: s.billing_model,
+      price: s.price,
+      endDate: iso(s.end_date),
     })
-    let outstandingAmount = 0
-    const membersOwing = new Set<string>()
-    for (const row of balanceRows) {
-      const { balance } = summarizeBalance(row, row.payments)
-      if (balance > 0) {
-        outstandingAmount += balance
-        membersOwing.add(row.member_id)
-      }
-    }
 
-    const revenueThisMonth = paymentsThisMonth.reduce(
-      (sum, p) => sum + (p.amount ?? 0),
-      0
-    )
+    const seen = new Set<string>()
+    const expired = expiredRows
+      .filter((s) => (seen.has(s.member_id) ? false : (seen.add(s.member_id), true)))
+      .slice(0, ATTENTION_ROW_LIMIT)
+      .map(toRow)
 
-    const expensesAggregate = await prisma.expense.aggregate({
-      where: {
-        is_deleted: false,
-        // Whole month: expenses are stored at 12:00 UTC on their day, so "until now"
-        // would hide one added this morning until the afternoon.
-        expense_date: { gte: thisMonth.start, lt: thisMonth.end },
-        gym: {
-          AND: [ownedGymWhere(access)],
-          is_deleted: false,
-          ...(gym_id ? { id: gym_id } : {}),
-        },
-        ...(location_id ? { location_id } : {}),
-      },
-      _sum: { amount: true },
-    })
-    const expensesThisMonth = expensesAggregate._sum.amount ?? 0
-    const revenueLastMonth = paymentsLastMonth.reduce(
-      (sum, p) => sum + (p.amount ?? 0),
-      0
-    )
-    const revenueGrowthPct =
-      revenueLastMonth > 0
-        ? ((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100
-        : null
-
-    // Revenue by month (selected chart range, capped to 12 months)
-    const monthKeys: Date[] = []
-    {
-      let m = startOfMonth(chartFrom)
-      const end = startOfMonth(chartTo)
-      while (m.getTime() <= end.getTime()) {
-        monthKeys.push(new Date(m))
-        m = addMonths(m, 1)
-      }
-      if (monthKeys.length > DASHBOARD.CHART_MONTHS) {
-        monthKeys.splice(0, monthKeys.length - DASHBOARD.CHART_MONTHS)
-      }
-    }
-    const monthTotals = new Map<string, number>()
-    for (const p of paymentsForCharts) {
-      const d = p.payment_date instanceof Date ? p.payment_date : new Date(p.payment_date as any)
-      if (Number.isNaN(d.getTime())) continue
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
-      monthTotals.set(key, (monthTotals.get(key) ?? 0) + (p.amount ?? 0))
-    }
-    const revenueByMonth: OwnerOverviewResponse["charts"]["revenueByMonth"] = monthKeys.map(
-      (m) => {
-        const key = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}`
-        return { month: formatMonthLabel(m), revenue: monthTotals.get(key) ?? 0 }
-      }
-    )
-
-    // New members by month
-    const membersByMonthTotals = new Map<string, number>()
-    for (const m of membersCreatedForCharts) {
-      const d = m.joinedAt instanceof Date ? m.joinedAt : new Date(m.joinedAt as any)
-      if (Number.isNaN(d.getTime())) continue
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
-      membersByMonthTotals.set(key, (membersByMonthTotals.get(key) ?? 0) + 1)
-    }
-    const newMembersByMonth: OwnerOverviewResponse["charts"]["newMembersByMonth"] = monthKeys.map(
-      (m) => {
-        const key = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}`
-        return { month: formatMonthLabel(m), members: membersByMonthTotals.get(key) ?? 0 }
-      }
-    )
-
-    const mapSubRow = (s: any) => {
-      const memberName = `${s.member?.user?.first_name ?? ""} ${s.member?.user?.last_name ?? ""}`.trim() || "-"
-      const memberEmail = s.member?.user?.email ?? "-"
-      const memberPhone: string | null = s.member?.user?.phone_number ?? null
-      const lastPayment = Array.isArray(s.payments) && s.payments.length ? s.payments[0] : null
-
-      return {
-        id: s.id,
-        memberId: s.member_id,
-        memberName,
-        memberEmail,
-        memberPhone,
-        price: s.price ?? 0,
-        billingModel: String(s.billing_model ?? "-"),
-        startDate: safeIso(s.start_date),
-        endDate: safeIso(s.end_date),
-        isActive: Boolean(s.is_active),
-        isExpired: Boolean(s.is_expired),
-        frozenSince: s.frozen_since ? safeIso(s.frozen_since) : null,
-        lastPaymentAmount: lastPayment?.amount ?? null,
-        lastPaymentDate: lastPayment?.payment_date ? safeIso(lastPayment.payment_date) : null,
-      }
-    }
-
-    const mapPaymentRow = (p: any) => {
-      const memberName = `${p.memberSubscription?.member?.user?.first_name ?? ""} ${p.memberSubscription?.member?.user?.last_name ?? ""}`.trim() || "-"
-
-      return {
-        id: p.id,
-        memberName,
-        amount: p.amount ?? 0,
-        paymentMethod: String(p.payment_method ?? "-"),
-        paymentDate: safeIso(p.payment_date),
-        subscriptionType: String(p.subscription_type ?? "-"),
-      }
-    }
+    const collected = collectedThisMonth?._sum.amount ?? 0
+    const collectedBefore = collectedLastMonth?._sum.amount ?? 0
+    const spent = expenses?._sum.amount ?? 0
+    const multiYear = months[0].slice(0, 4) !== months[months.length - 1].slice(0, 4)
 
     const response: OwnerOverviewResponse = {
+      context: {
+        currentMonth,
+        monthName: longMonthName(currentMonth),
+        lastMonthName: longMonthName(lastMonthKey),
+      },
+      canSeeMoney,
+      canSeeRowAmounts: rowMoney,
       totals: {
         totalMembers,
-        totalGyms,
-        totalLocations,
-        totalEquipment,
-        activeMemberSubscriptions,
-        expiredMemberSubscriptions,
-        revenueThisMonth: canSeeRevenue ? revenueThisMonth : null,
-        revenueLastMonth: canSeeRevenue ? revenueLastMonth : null,
-        revenueGrowthPct: canSeeRevenue ? revenueGrowthPct : null,
-        outstandingAmount,
-        outstandingMembers: membersOwing.size,
-        expensesThisMonth: canSeeRevenue ? expensesThisMonth : null,
-        profitThisMonth: canSeeRevenue ? profit(revenueThisMonth, expensesThisMonth) : null,
+        activeMembers,
+        newMembersThisMonth,
+        gyms,
+        locations,
+        equipment,
+        collectedThisMonth: canSeeMoney ? collected : null,
+        collectedLastMonth: canSeeMoney ? collectedBefore : null,
+        growthPct: canSeeMoney ? growthPct(collected, collectedBefore) : null,
+        expensesThisMonth: canSeeMoney ? spent : null,
+        profitThisMonth: canSeeMoney ? profit(collected, spent) : null,
+        outstandingAmount: canSeeMoney ? outstandingAmount : null,
+        owingMembers: owing.length,
+        expiringSoonCount,
+        expiringSoonAmount: canSeeMoney ? expiringSoonSum?._sum.price ?? 0 : null,
+        expiredCount,
+      },
+      attention: {
+        expiringSoon: expiringRows.map(toRow),
+        expired,
+        owing: owingTop.flatMap((o) => {
+          const sub = owingSubById.get(o.subscriptionId)
+          return sub ? [{ ...toRow(sub), balance: rowMoney ? o.balance : null }] : []
+        }),
       },
       charts: {
-        revenueByMonth: canSeeRevenue ? revenueByMonth : null,
-        newMembersByMonth,
+        range,
+        months: months.map((m, i) => ({
+          month: m,
+          label: monthLabel(m, multiYear),
+          revenue: revenueByMonth ? revenueByMonth[i]._sum.amount ?? 0 : null,
+          members: membersByMonth[i],
+        })),
       },
-      tables: {
-        activeSubscriptions: activeSubsRows.map(mapSubRow),
-        expiredSubscriptions: expiredSubsRows.map(mapSubRow),
-        recentPayments: canSeePayments ? recentPaymentsRows.map(mapPaymentRow) : [],
-      },
+      recentPayments: recentPayments.map((p) => ({
+        id: p.id,
+        memberName: memberName(p.memberSubscription?.member.user),
+        amount: p.amount,
+        paymentMethod: p.payment_method,
+        paymentDate: iso(p.payment_date),
+      })),
     }
 
     return res.status(StatusCodes.OK).json(response)
@@ -511,4 +380,3 @@ export default async function handler(
       .json({ message: "Failed to load dashboard overview", error: message })
   }
 }
-

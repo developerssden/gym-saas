@@ -28,6 +28,8 @@ type FeeReminderProps = {
   price: number;
   endDate: Date | string;
   isExpired: boolean;
+  /** Extra classes for the button (e.g. a taller tap target). */
+  className?: string;
 };
 
 function useFeeReminderUrl(props: FeeReminderProps): string | null {
@@ -82,7 +84,7 @@ export function WhatsAppReminderButton(props: FeeReminderProps) {
 
   if (!url) {
     return (
-      <Button size="sm" variant="outline" disabled title="No phone number saved for this member">
+      <Button size="sm" variant="outline" disabled title="No phone number saved for this member" className={props.className}>
         <WhatsAppIcon className="size-4 text-muted-foreground" />
         <span className="sr-only sm:not-sr-only">Remind</span>
       </Button>
@@ -90,7 +92,7 @@ export function WhatsAppReminderButton(props: FeeReminderProps) {
   }
 
   return (
-    <Button asChild size="sm" variant="outline" title={label}>
+    <Button asChild size="sm" variant="outline" title={label} className={props.className}>
       <a href={url} target="_blank" rel="noopener noreferrer" aria-label={label}>
         <WhatsAppIcon className="size-4" />
         <span className="sr-only sm:not-sr-only">Remind</span>

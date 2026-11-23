@@ -2,309 +2,105 @@
 
 import * as React from "react"
 import axios from "axios"
+import Link from "next/link"
+import { format as formatDateFns } from "date-fns"
 import { useSession } from "next-auth/react"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import type { ColumnDef } from "@tanstack/react-table"
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-} from "recharts"
-import {
-  Building2,
-  DollarSign,
-  MapPin,
-  RefreshCw,
-  TrendingUp,
-  Users,
-  Dumbbell,
-  Wallet,
-  Receipt,
-  PiggyBank,
-} from "lucide-react"
+import { ArrowDown, ArrowRight, ArrowUp, Plus, RefreshCw } from "lucide-react"
 
 import { PageContainer } from "@/components/layout/page-container"
+import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { DataTable } from "@/components/ui/data-table"
-import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
-import { CurrencyAmount } from "@/components/common/CurrencyAmount"
-import { useGymCurrency } from "@/hooks/useGymCurrency"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart"
 import DataFetchError from "@/components/common/DataFetchError"
-import DateRangePicker from "@/components/date-range-picker"
 import RenewMemberModal from "@/components/dashboard/RenewMemberModal"
-import { WhatsAppReminderButton } from "@/components/common/whatsapp-actions"
-import { usePermissions } from "@/hooks/usePermissions"
+import QuickPaymentDialog from "@/components/payments/QuickPaymentDialog"
 import OwnerSubscriptionBanner from "@/components/dashboard/OwnerSubscriptionBanner"
 import SetupChecklist from "@/components/dashboard/SetupChecklist"
-import { addDays } from "date-fns"
-import type { DateRange } from "react-day-picker"
-import { formatDate as formatDisplayDate, formatDateTime } from "@/lib/format"
-
-type OwnerDashboardOverview = {
-  totals: {
-    totalMembers: number
-    totalGyms: number
-    totalLocations: number
-    totalEquipment: number
-    activeMemberSubscriptions: number
-    expiredMemberSubscriptions: number
-    /** null for staff without the revenue permission (also the fields below). */
-    revenueThisMonth: number | null
-    revenueLastMonth: number | null
-    revenueGrowthPct: number | null
-    outstandingAmount?: number
-    outstandingMembers?: number
-    expensesThisMonth?: number | null
-    profitThisMonth?: number | null
-  }
-  charts: {
-    revenueByMonth: Array<{ month: string; revenue: number }> | null
-    newMembersByMonth: Array<{ month: string; members: number }>
-  }
-  tables: {
-    activeSubscriptions: SubscriptionRow[]
-    expiredSubscriptions: SubscriptionRow[]
-    recentPayments: PaymentRow[]
-  }
-}
-
-type SubscriptionRow = {
-  id: string
-  memberId: string
-  memberName: string
-  memberEmail: string
-  memberPhone?: string | null
-  price: number
-  billingModel: string
-  startDate: string
-  endDate: string
-  isActive: boolean
-  isExpired: boolean
-  frozenSince?: string | null
-  lastPaymentAmount: number | null
-  lastPaymentDate: string | null
-}
-
-type PaymentRow = {
-  id: string
-  memberName: string
-  amount: number
-  paymentMethod: string
-  paymentDate: string
-  subscriptionType: string
-}
-
-function formatPct(pct: number) {
-  const sign = pct > 0 ? "+" : ""
-  return `${sign}${pct.toFixed(1)}%`
-}
-
-const formatDate = (value?: string | null) => formatDisplayDate(value, "-")
-
-const revenueMonthConfig = {
-  revenue: { label: "Revenue", color: "var(--color-chart-2)" },
-} satisfies ChartConfig
-
-const newMembersConfig = {
-  members: { label: "New members", color: "var(--color-chart-3)" },
-} satisfies ChartConfig
+import { NeedsAttention, type AttentionTab } from "@/components/dashboard/NeedsAttention"
+import { DashboardTrends } from "@/components/dashboard/DashboardTrends"
+import { useGymCurrency } from "@/hooks/useGymCurrency"
+import { usePermissions } from "@/hooks/usePermissions"
+import { formatDate, formatDateTime, paymentMethodLabel } from "@/lib/format"
+import { initials, type ChartRange } from "@/lib/dashboard"
+import { cn } from "@/lib/utils"
+import type { AttentionRow, OwingRow, OwnerOverviewResponse } from "@/pages/api/dashboard/owner-overview"
 
 function OwnerDashboardSkeleton() {
   return (
     <PageContainer>
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-60" />
-            <Skeleton className="h-4 w-[420px] max-w-full" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-9 w-28" />
-            <Skeleton className="h-9 w-28" />
-          </div>
+      <div className="flex flex-col gap-6" aria-busy="true" aria-label="Loading dashboard">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-80 max-w-full" />
         </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-[132px] rounded-xl border bg-card" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-[120px] rounded-xl border bg-card" />
           ))}
         </div>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Skeleton className="h-[360px] rounded-xl border bg-card" />
-          <Skeleton className="h-[360px] rounded-xl border bg-card" />
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
           <Skeleton className="h-[420px] rounded-xl border bg-card" />
-          <Skeleton className="h-[420px] rounded-xl border bg-card" />
+          <Skeleton className="h-[260px] rounded-xl border bg-card" />
         </div>
       </div>
     </PageContainer>
   )
 }
 
-const subscriptionColumns: ColumnDef<SubscriptionRow>[] = [
-  {
-    id: "member",
-    accessorFn: (row) => `${row.memberName} ${row.memberEmail}`.trim(),
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Member" />
-    ),
-    cell: ({ row }) => (
-      <div className="flex flex-col min-w-[220px]">
-        <span className="font-medium">{row.original.memberName}</span>
-        <span className="text-xs text-muted-foreground">
-          {row.original.memberEmail}
-        </span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "price",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Price" />
-    ),
-    cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
-        <CurrencyAmount amount={row.original.price} />
-      </span>
-    ),
-  },
-  {
-    accessorKey: "billingModel",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Billing" />
-    ),
-  },
-  {
-    id: "term",
-    accessorFn: (row) => `${row.startDate} ${row.endDate}`,
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Term" />
-    ),
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span>{formatDate(row.original.startDate)}</span>
-        <span className="text-xs text-muted-foreground">
-          → {formatDate(row.original.endDate)}
-        </span>
-      </div>
-    ),
-  },
-  {
-    id: "status",
-    accessorFn: (row) =>
-      row.frozenSince ? "Frozen" : row.isExpired ? "Expired" : row.isActive ? "Active" : "Inactive",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    cell: ({ row }) => {
-      if (row.original.frozenSince) {
-        return <Badge variant="outline">Frozen</Badge>
-      }
-      if (row.original.isExpired) {
-        return <Badge variant="destructive">Expired</Badge>
-      }
-      if (row.original.isActive) {
-        return <Badge variant="secondary">Active</Badge>
-      }
-      return <Badge variant="outline">Inactive</Badge>
-    },
-  },
-  {
-    id: "lastPayment",
-    accessorFn: (row) => row.lastPaymentAmount ?? 0,
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Last payment" />
-    ),
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-mono tabular-nums">
-          {row.original.lastPaymentAmount === null
-            ? "-"
-            : <CurrencyAmount amount={row.original.lastPaymentAmount} />}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {formatDate(row.original.lastPaymentDate)}
-        </span>
-      </div>
-    ),
-  },
-]
+/** One headline number with a line of context under it. */
+function KpiCard({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string
+  value: React.ReactNode
+  sub?: React.ReactNode
+  tone?: "due" | "bad" | "good"
+}) {
+  return (
+    <Card className="gap-1 px-4 py-4 sm:px-5">
+      <p className="text-sm font-medium text-muted-foreground">{label}</p>
+      <p
+        className={cn(
+          "font-heading text-2xl font-extrabold tabular-nums tracking-tight break-words sm:text-[2rem] sm:leading-tight",
+          tone === "due" && "text-amber-700 dark:text-amber-400",
+          tone === "bad" && "text-destructive",
+          tone === "good" && "text-primary-dim"
+        )}
+      >
+        {value}
+      </p>
+      {sub && <div className="text-[13px] text-muted-foreground">{sub}</div>}
+    </Card>
+  )
+}
 
-const paymentColumns: ColumnDef<PaymentRow>[] = [
-  {
-    accessorKey: "memberName",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Member" />
-    ),
-    cell: ({ row }) => (
-      <span className="font-medium">{row.original.memberName}</span>
-    ),
-  },
-  {
-    accessorKey: "amount",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Amount" />
-    ),
-    cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
-        <CurrencyAmount amount={row.original.amount} />
-      </span>
-    ),
-  },
-  {
-    accessorKey: "paymentMethod",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Method" />
-    ),
-  },
-  {
-    accessorKey: "paymentDate",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Date" />
-    ),
-    cell: ({ row }) => formatDate(row.original.paymentDate),
-  },
-  {
-    accessorKey: "subscriptionType",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Type" />
-    ),
-    cell: ({ row }) => (
-      <Badge variant="outline">{row.original.subscriptionType}</Badge>
-    ),
-  },
-]
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`
 
 const OwnerDashboard = () => {
   const { data: session } = useSession()
   const { can, isStaff } = usePermissions()
-  const canWhatsApp = can("membersubscriptions.whatsapp")
-  const canRenew = can("membersubscriptions.renew")
-  const canSeePayments = can("payments.view") || can("dashboard.revenue")
-  const { format: formatMoney } = useGymCurrency()
+  const { format: money } = useGymCurrency()
   const selectedGymId = session?.user?.selected_gym_id
   const selectedLocationId = session?.user?.selected_location_id
-  const selectedGymName = session?.user?.gyms?.find((g) => g.id === selectedGymId)?.name ?? null
+  const gymName = session?.user?.gyms?.find((g) => g.id === selectedGymId)?.name ?? null
+  const locationName = session?.user?.locations?.find((l) => l.id === selectedLocationId)?.name ?? null
+  const firstName = session?.user?.first_name || session?.user?.name?.split(" ")[0] || ""
 
-  const [chartRange, setChartRange] = React.useState<DateRange | undefined>({
-    from: addDays(new Date(), -30),
-    to: new Date(),
-  })
+  const canRemind = can("membersubscriptions.whatsapp")
+  const canRenew = can("membersubscriptions.renew")
+  const canRecordPayment = can("payments.record") || canRenew
+  const canAddMember = can("members.create")
 
+  const [range, setRange] = React.useState<ChartRange>("6m")
+  const [tab, setTab] = React.useState<AttentionTab>("expiring")
+  const [tabChosen, setTabChosen] = React.useState(false)
+  const [renewTarget, setRenewTarget] = React.useState<AttentionRow | null>(null)
+  const [payTarget, setPayTarget] = React.useState<OwingRow | null>(null)
   const [isOnline, setIsOnline] = React.useState(true)
 
   React.useEffect(() => {
@@ -318,120 +114,38 @@ const OwnerDashboard = () => {
     }
   }, [])
 
-  const { data, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery<
-    OwnerDashboardOverview,
-    Error
-  >({
-    queryKey: [
-      "ownerDashboardOverview",
-      chartRange?.from?.toISOString() ?? null,
-      chartRange?.to?.toISOString() ?? null,
-      selectedGymId,
-      selectedLocationId,
-    ],
-    queryFn: async () => {
-      const res = await axios.post<OwnerDashboardOverview>("/api/dashboard/owner-overview", {
-        from: chartRange?.from?.toISOString(),
-        to: chartRange?.to?.toISOString(),
-        gym_id: selectedGymId || undefined,
-        location_id: selectedLocationId || undefined,
-      })
-      return res.data
-    },
+  const { data, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery<OwnerOverviewResponse, Error>({
+    queryKey: ["ownerDashboardOverview", range, selectedGymId, selectedLocationId],
+    queryFn: async () =>
+      (
+        await axios.post<OwnerOverviewResponse>("/api/dashboard/owner-overview", {
+          range,
+          gym_id: selectedGymId || undefined,
+          location_id: selectedLocationId || undefined,
+        })
+      ).data,
     placeholderData: keepPreviousData,
     refetchOnWindowFocus: false,
     networkMode: "offlineFirst",
   })
 
-  const revenueTicks = React.useMemo(() => {
-    const step = 5000
-    const series = data?.charts?.revenueByMonth ?? []
-    const max = Math.max(0, ...series.map((d) => d.revenue ?? 0))
-    const top = Math.max(step, Math.ceil(max / step) * step)
-    const ticks: number[] = []
-    for (let v = 0; v <= top; v += step) ticks.push(v)
-    return ticks
-  }, [data])
+  // Open the first tab that has someone in it, until the owner picks one.
+  React.useEffect(() => {
+    if (!data || tabChosen) return
+    const first: AttentionTab =
+      data.totals.expiringSoonCount > 0 ? "expiring" : data.totals.expiredCount > 0 ? "expired" : data.totals.owingMembers > 0 ? "owing" : "expiring"
+    setTab(first)
+  }, [data, tabChosen])
 
-  const [activePagination, setActivePagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
-  const [expiredPagination, setExpiredPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
-  const [paymentsPagination, setPaymentsPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
-  const [activeSearch, setActiveSearch] = React.useState("")
-  const [expiredSearch, setExpiredSearch] = React.useState("")
-  const [paymentsSearch, setPaymentsSearch] = React.useState("")
-  const [renewTarget, setRenewTarget] = React.useState<{
-    memberId: string
-    memberName: string
-    price: number
-    billingModel: string
-  } | null>(null)
+  const chooseTab = (next: AttentionTab) => {
+    setTabChosen(true)
+    setTab(next)
+  }
 
-  const reminderButton = React.useCallback(
-    (row: SubscriptionRow) => row.frozenSince || !canWhatsApp ? null : (
-      <WhatsAppReminderButton
-        memberName={row.memberName}
-        phone={row.memberPhone}
-        gymName={selectedGymName}
-        price={row.price}
-        endDate={row.endDate}
-        isExpired={row.isExpired}
-      />
-    ),
-    [selectedGymName, canWhatsApp]
-  )
-
-  const activeSubscriptionColumns = React.useMemo<ColumnDef<SubscriptionRow>[]>(
-    () => [
-      ...subscriptionColumns,
-      {
-        id: "actions",
-        header: "",
-        cell: ({ row }) => reminderButton(row.original),
-      },
-    ],
-    [reminderButton]
-  )
-
-  const expiredSubscriptionColumns = React.useMemo<ColumnDef<SubscriptionRow>[]>(
-    () => [
-      ...subscriptionColumns,
-      {
-        id: "actions",
-        header: "",
-        cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-2">
-            {reminderButton(row.original)}
-            {canRenew && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  setRenewTarget({
-                    memberId: row.original.memberId,
-                    memberName: row.original.memberName,
-                    price: row.original.price,
-                    billingModel: row.original.billingModel,
-                  })
-                }
-              >
-                Renew
-              </Button>
-            )}
-          </div>
-        ),
-      },
-    ],
-    [reminderButton, canRenew]
-  )
+  const showOwing = () => {
+    chooseTab("owing")
+    document.getElementById("needs-attention")?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
 
   if (isLoading && !data) return <OwnerDashboardSkeleton />
 
@@ -441,11 +155,7 @@ const OwnerDashboard = () => {
         <DataFetchError
           error={error}
           onRetry={() => refetch()}
-          message={
-            !isOnline
-              ? "No cached dashboard data for this gym/location selection while offline"
-              : "Error loading dashboard"
-          }
+          message={!isOnline ? "No saved dashboard for this gym and branch while offline" : "Couldn't load the dashboard"}
         />
       </PageContainer>
     )
@@ -453,379 +163,177 @@ const OwnerDashboard = () => {
 
   if (!data) return null
 
-  const cachedAtLabel =
-    dataUpdatedAt > 0
-      ? formatDateTime(dataUpdatedAt)
-      : "an earlier session"
-
-  const growthLabel =
-    data.totals.revenueGrowthPct === null
-      ? "—"
-      : formatPct(data.totals.revenueGrowthPct)
-
-  // The API leaves money figures out for staff without the revenue permission.
-  const showRevenue = data.totals.revenueThisMonth !== null && data.charts.revenueByMonth !== null
+  const { totals, canSeeMoney } = data
+  const place = [gymName, locationName].filter(Boolean).join(", ")
+  const today = formatDateFns(new Date(), "EEEE, d MMMM")
+  const growth = totals.growthPct
 
   return (
     <PageContainer>
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="h1">Dashboard</h1>
-              {isFetching && (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <RefreshCw className="size-3 animate-spin" />
-                  Updating
-                </span>
+        <PageHeader
+          className="mb-0"
+          title="Dashboard"
+          titleAddon={
+            isFetching && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground" role="status">
+                <RefreshCw className="size-3 animate-spin" aria-hidden />
+                Updating
+              </span>
+            )
+          }
+          description={
+            <>
+              {firstName ? `Assalam-o-Alaikum, ${firstName}` : "Assalam-o-Alaikum"}
+              <span className="block sm:inline">
+                <span className="hidden sm:inline"> · </span>
+                {today}
+                {place && ` · ${place}`}
+              </span>
+            </>
+          }
+          actions={
+            <>
+              <Button
+                variant="outline"
+                onClick={() => refetch()}
+                disabled={isFetching}
+                aria-label="Refresh dashboard"
+                className="!min-w-0 !flex-none px-3"
+              >
+                <RefreshCw className={cn("size-4", isFetching && "animate-spin")} aria-hidden />
+              </Button>
+              {canAddMember && (
+                <Button asChild>
+                  <Link href="/members/manage?action=create">
+                    <Plus aria-hidden /> Add member
+                  </Link>
+                </Button>
               )}
-            </div>
-            <p className="text-muted-foreground text-sm">
-              {showRevenue
-                ? "Overview of your gyms: members, subscriptions, revenue, and equipment."
-                : "Overview of your gym: members, subscriptions, and equipment."}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => refetch()}
-              disabled={isFetching}
-            >
-              <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {/* Plan and billing are the owner's business. */}
         {!isStaff && <OwnerSubscriptionBanner />}
-
         {!isStaff && <SetupChecklist />}
 
         {!isOnline && (
-          <div className="border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-100 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
-            <span>
-              Showing cached data from {cachedAtLabel} — reconnect to refresh.
-            </span>
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
+            Showing saved data from {dataUpdatedAt > 0 ? formatDateTime(dataUpdatedAt) : "an earlier visit"}. Reconnect to refresh.
           </div>
         )}
 
         {error && (
-          <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
-            <span>Couldn&apos;t refresh dashboard data. Showing last results.</span>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+            <span>Couldn&apos;t refresh the dashboard. Showing the last results.</span>
+            <Button variant="outline" size="sm" className="h-11 md:h-8" onClick={() => refetch()}>
               Retry
             </Button>
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <Users className="size-4 text-muted-foreground" />
-                Total members
-              </CardTitle>
-              <CardDescription>All gym members</CardDescription>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold">
-              {data.totals.totalMembers.toLocaleString()}
-            </CardContent>
-          </Card>
-
-          {showRevenue && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <DollarSign className="size-4 text-muted-foreground" />
-                Revenue (MTD)
-              </CardTitle>
-              <CardDescription>This month so far</CardDescription>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold">
-              {formatMoney(data.totals.revenueThisMonth ?? 0)}
-            </CardContent>
-          </Card>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <Wallet className="size-4 text-muted-foreground" />
-                Outstanding
-              </CardTitle>
-              <CardDescription>
-                {(data.totals.outstandingMembers ?? 0) > 0
-                  ? `Owed by ${data.totals.outstandingMembers} member${data.totals.outstandingMembers === 1 ? "" : "s"}`
-                  : "Unpaid member fees"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent
-              className={`text-2xl font-semibold ${(data.totals.outstandingAmount ?? 0) > 0 ? "text-destructive" : ""}`}
-            >
-              {formatMoney(data.totals.outstandingAmount ?? 0)}
-            </CardContent>
-          </Card>
-
-          {showRevenue && (
-          <>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <Receipt className="size-4 text-muted-foreground" />
-                Expenses (MTD)
-              </CardTitle>
-              <CardDescription>Rent, bills, salaries this month</CardDescription>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold">
-              {formatMoney(data.totals.expensesThisMonth ?? 0)}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <PiggyBank className="size-4 text-muted-foreground" />
-                Profit (MTD)
-              </CardTitle>
-              <CardDescription>Collected minus expenses</CardDescription>
-            </CardHeader>
-            <CardContent
-              className={`text-2xl font-semibold ${(data.totals.profitThisMonth ?? 0) < 0 ? "text-destructive" : ""}`}
-            >
-              {formatMoney(data.totals.profitThisMonth ?? data.totals.revenueThisMonth ?? 0)}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <TrendingUp className="size-4 text-muted-foreground" />
-                Monthly growth
-              </CardTitle>
-              <CardDescription>Revenue vs last month</CardDescription>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold">
-              {growthLabel}
-            </CardContent>
-          </Card>
-          </>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <Building2 className="size-4 text-muted-foreground" />
-                Total gyms
-              </CardTitle>
-              <CardDescription>Your gyms</CardDescription>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold">
-              {data.totals.totalGyms.toLocaleString()}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <MapPin className="size-4 text-muted-foreground" />
-                Total locations
-              </CardTitle>
-              <CardDescription>All gym locations</CardDescription>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold">
-              {data.totals.totalLocations.toLocaleString()}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <Dumbbell className="size-4 text-muted-foreground" />
-                Total equipment
-              </CardTitle>
-              <CardDescription>All equipment items</CardDescription>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold">
-              {data.totals.totalEquipment.toLocaleString()}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                Subscriptions
-              </CardTitle>
-              <CardDescription>Active vs expired</CardDescription>
-            </CardHeader>
-            <CardContent className="text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Active</span>
-                <span className="font-semibold">
-                  {data.totals.activeMemberSubscriptions.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Expired</span>
-                <span className="font-semibold">
-                  {data.totals.expiredMemberSubscriptions.toLocaleString()}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {showRevenue && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                Revenue (LMT)
-              </CardTitle>
-              <CardDescription>Last month total</CardDescription>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold">
-              {formatMoney(data.totals.revenueLastMonth ?? 0)}
-            </CardContent>
-          </Card>
-          )}
-        </div>
-
-        <div className="grid gap-4 h-full w-full lg:grid-cols-2">
-          {showRevenue && (
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <CardTitle>Monthly revenue</CardTitle>
-                  <CardDescription>Selected date range</CardDescription>
-                </div>
-                <DateRangePicker
-                  className="sm:justify-self-end"
-                  buttonClassName="w-full sm:w-[260px]"
-                  value={chartRange}
-                  onRangeChange={setChartRange}
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={revenueMonthConfig}
-                className="aspect-auto h-[260px] w-full"
-              >
-                <BarChart data={data.charts.revenueByMonth ?? []}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    width={86}
-                    allowDecimals={false}
-                    ticks={revenueTicks}
-                    domain={[0, revenueTicks[revenueTicks.length - 1] ?? 5000]}
-                    tickFormatter={(v) => formatMoney(Number(v))}
-                  />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                  <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>New members</CardTitle>
-              <CardDescription>New member signups per month (same range)</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={newMembersConfig}
-                className="aspect-auto h-[260px] w-full"
-              >
-                <BarChart data={data.charts.newMembersByMonth}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
-                  <YAxis tickLine={false} axisLine={false} width={56} />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                  <Bar dataKey="members" fill="var(--color-members)" radius={4} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-4 grid-cols-1 h-full w-full lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active member subscriptions</CardTitle>
-              <CardDescription>Currently active member subscriptions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                columns={activeSubscriptionColumns}
-                data={data.tables.activeSubscriptions}
-                searchableColumns={["member", "billingModel"]}
-                pagination={activePagination}
-                onPaginationChange={setActivePagination}
-                searchValue={activeSearch}
-                onSearchChange={setActiveSearch}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Expired subscriptions</CardTitle>
-              <CardDescription>Expired member subscriptions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                columns={expiredSubscriptionColumns}
-                data={data.tables.expiredSubscriptions}
-                searchableColumns={["member", "billingModel"]}
-                pagination={expiredPagination}
-                onPaginationChange={setExpiredPagination}
-                searchValue={expiredSearch}
-                onSearchChange={setExpiredSearch}
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {canSeePayments && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent payments</CardTitle>
-            <CardDescription>Latest member subscription payments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              columns={paymentColumns}
-              data={data.tables.recentPayments}
-              searchableColumns={["memberName", "paymentMethod"]}
-              pagination={paymentsPagination}
-              onPaginationChange={setPaymentsPagination}
-              searchValue={paymentsSearch}
-              onSearchChange={setPaymentsSearch}
+        {/* Four key numbers. Staff without the revenue permission get counts instead of money. */}
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+          <KpiCard
+            label="Active members"
+            value={totals.activeMembers.toLocaleString()}
+            sub={totals.newMembersThisMonth > 0 ? `+${totals.newMembersThisMonth} joined this month` : `${totals.totalMembers.toLocaleString()} members in all`}
+          />
+          {canSeeMoney ? (
+            <KpiCard
+              label="Collected this month"
+              value={money(totals.collectedThisMonth ?? 0)}
+              sub={
+                growth === null ? (
+                  `Nothing collected in ${data.context.lastMonthName}`
+                ) : (
+                  <span className="inline-flex flex-wrap items-center gap-x-1">
+                    <span className={cn("inline-flex items-center font-medium", growth >= 0 ? "text-primary-dim" : "text-destructive")}>
+                      {growth >= 0 ? <ArrowUp className="size-3" aria-hidden /> : <ArrowDown className="size-3" aria-hidden />}
+                      {Math.abs(growth).toFixed(0)}%
+                    </span>
+                    <span>
+                      vs {data.context.lastMonthName} ({money(totals.collectedLastMonth ?? 0)})
+                    </span>
+                  </span>
+                )
+              }
             />
-          </CardContent>
-        </Card>
-        )}
+          ) : (
+            <KpiCard
+              label="Expired, not renewed"
+              value={totals.expiredCount.toLocaleString()}
+              tone={totals.expiredCount > 0 ? "bad" : undefined}
+              sub="Members to win back"
+            />
+          )}
+          <KpiCard
+            label={canSeeMoney ? "Outstanding fees" : "Members owing"}
+            value={canSeeMoney ? money(totals.outstandingAmount ?? 0) : totals.owingMembers.toLocaleString()}
+            tone={totals.owingMembers > 0 ? "bad" : undefined}
+            sub={
+              totals.owingMembers > 0 ? (
+                <>
+                  {canSeeMoney && `Owed by ${plural(totals.owingMembers, "member")} · `}
+                  <button type="button" onClick={showOwing} className="font-medium text-foreground underline underline-offset-2">
+                    See who
+                  </button>
+                </>
+              ) : (
+                "Everyone is paid up"
+              )
+            }
+          />
+          <KpiCard
+            label="Expiring in 7 days"
+            value={totals.expiringSoonCount.toLocaleString()}
+            tone={totals.expiringSoonCount > 0 ? "due" : undefined}
+            sub={
+              totals.expiringSoonCount === 0
+                ? "No renewals due this week"
+                : canSeeMoney
+                  ? `${money(totals.expiringSoonAmount ?? 0)} coming up for renewal`
+                  : "Members to remind"
+            }
+          />
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[2fr_1fr] lg:items-start">
+          <NeedsAttention
+            tab={tab}
+            onTabChange={chooseTab}
+            rows={{ expiring: data.attention.expiringSoon, expired: data.attention.expired, owing: data.attention.owing }}
+            counts={{ expiring: totals.expiringSoonCount, expired: totals.expiredCount, owing: totals.owingMembers }}
+            showAmounts={data.canSeeRowAmounts}
+            gymName={gymName}
+            canRemind={canRemind}
+            canRenew={canRenew}
+            canRecordPayment={canRecordPayment}
+            onRenew={setRenewTarget}
+            onRecordPayment={setPayTarget}
+          />
+
+          <div className="flex flex-col gap-4">
+            {canSeeMoney && <MonthSoFar data={data} />}
+            <YourGym data={data} isStaff={isStaff} canSeeEquipment={can("equipment.view")} canSeeMembers={can("members.view")} />
+          </div>
+        </div>
+
+        <DashboardTrends
+          months={data.charts.months}
+          range={range}
+          onRangeChange={setRange}
+          showRevenue={canSeeMoney}
+          monthName={data.context.monthName}
+        />
+
+        {data.recentPayments.length > 0 && <RecentPayments payments={data.recentPayments} />}
       </div>
 
       {renewTarget && (
         <RenewMemberModal
-          open={!!renewTarget}
+          open
           onClose={() => setRenewTarget(null)}
           memberId={renewTarget.memberId}
           memberName={renewTarget.memberName}
@@ -833,7 +341,150 @@ const OwnerDashboard = () => {
           defaultBillingModel={renewTarget.billingModel}
         />
       )}
+      <QuickPaymentDialog
+        open={!!payTarget}
+        onClose={() => setPayTarget(null)}
+        member={payTarget ? { id: payTarget.memberId, name: payTarget.memberName } : null}
+      />
     </PageContainer>
+  )
+}
+
+/** This month's money in, out and what's left. */
+function MonthSoFar({ data }: { data: OwnerOverviewResponse }) {
+  const { format: money } = useGymCurrency()
+  const collected = data.totals.collectedThisMonth ?? 0
+  const spent = data.totals.expensesThisMonth ?? 0
+  const profit = data.totals.profitThisMonth ?? 0
+  const spentPct = collected > 0 ? Math.min(100, (spent / collected) * 100) : spent > 0 ? 100 : 0
+
+  return (
+    <Card className="gap-4">
+      <CardHeader>
+        <CardTitle className="font-heading text-base">{data.context.monthName} so far</CardTitle>
+        <CardDescription>Fees collected minus expenses.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <dl className="grid gap-1.5 text-sm">
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Collected</dt>
+            <dd className="font-medium tabular-nums">{money(collected)}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Expenses</dt>
+            <dd className="font-medium tabular-nums">− {money(spent)}</dd>
+          </div>
+        </dl>
+        <div
+          className="flex h-2 overflow-hidden rounded-full bg-primary"
+          role="img"
+          aria-label={`Expenses are ${Math.round(spentPct)}% of fees collected`}
+        >
+          <div className="h-full bg-muted-foreground/40" style={{ width: `${spentPct}%` }} />
+        </div>
+        <div className="flex items-end justify-between gap-3">
+          <span className="text-sm text-muted-foreground">Profit</span>
+          <span
+            className={cn(
+              "font-heading text-2xl font-extrabold tabular-nums",
+              profit < 0 ? "text-destructive" : "text-primary-dim"
+            )}
+          >
+            {money(profit)}
+          </span>
+        </div>
+        <Button asChild variant="ghost" size="sm" className="h-11 justify-start px-0 md:h-8">
+          <Link href="/expenses">
+            Expenses <ArrowRight aria-hidden />
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
+
+/** Counts that used to be separate cards, as links to their pages. */
+function YourGym({
+  data,
+  isStaff,
+  canSeeEquipment,
+  canSeeMembers,
+}: {
+  data: OwnerOverviewResponse
+  isStaff: boolean
+  canSeeEquipment: boolean
+  canSeeMembers: boolean
+}) {
+  const items = [
+    canSeeMembers && { label: "Members", value: data.totals.totalMembers, href: "/members" },
+    !isStaff && { label: "Gyms", value: data.totals.gyms, href: "/gyms" },
+    !isStaff && { label: "Branches", value: data.totals.locations, href: "/locations" },
+    canSeeEquipment && { label: "Equipment", value: data.totals.equipment, href: "/equipment" },
+  ].filter(Boolean) as Array<{ label: string; value: number; href: string }>
+  if (items.length === 0) return null
+
+  return (
+    <Card className="gap-2 py-4">
+      <CardHeader className="px-4 sm:px-6">
+        <CardTitle className="font-heading text-base">Your gym</CardTitle>
+      </CardHeader>
+      <CardContent className="px-2 sm:px-4">
+        <ul>
+          {items.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className="flex min-h-11 items-center justify-between gap-3 rounded-md px-2 text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                <span className="text-muted-foreground">{item.label}</span>
+                <span className="flex items-center gap-2 font-semibold tabular-nums">
+                  {item.value.toLocaleString()}
+                  <ArrowRight className="size-4 text-muted-foreground" aria-hidden />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  )
+}
+
+function RecentPayments({ payments }: { payments: OwnerOverviewResponse["recentPayments"] }) {
+  const { format: money } = useGymCurrency()
+  return (
+    <Card className="gap-0 py-0">
+      <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-border py-4 [.border-b]:pb-4">
+        <CardTitle className="font-heading text-base">Recent payments</CardTitle>
+        <Button asChild variant="ghost" size="sm" className="h-11 md:h-8">
+          <Link href="/payments">
+            All payments <ArrowRight aria-hidden />
+          </Link>
+        </Button>
+      </CardHeader>
+      <CardContent className="px-0">
+        <ul className="divide-y divide-border">
+          {payments.map((p) => (
+            <li key={p.id} className="flex items-center gap-3 px-4 py-3 sm:px-6">
+              <span
+                aria-hidden
+                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground"
+              >
+                {initials(p.memberName)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">{p.memberName}</p>
+                <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+                  <span className="rounded-full border border-border px-2 text-xs">{paymentMethodLabel(p.paymentMethod)}</span>
+                  {formatDate(p.paymentDate)}
+                </p>
+              </div>
+              <span className="shrink-0 font-semibold tabular-nums">{money(p.amount)}</span>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   )
 }
 
