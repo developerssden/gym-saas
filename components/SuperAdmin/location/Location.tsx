@@ -1,6 +1,7 @@
 "use client";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import type { Session } from "next-auth";
@@ -53,24 +54,21 @@ const Locations = ({ session }: { session: Session }) => {
 
   return (
     <PageContainer>
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-            {isGymOwner ? "Your locations" : "Locations"}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {isGymOwner
-              ? "Manage the locations across your gyms."
-              : "Every location on the platform, across all gyms and owners."}
-          </p>
-        </div>
-        <Link href="/locations/manage?action=create">
-          <Button className="w-full sm:w-auto">
-            <Plus className="size-4" />
-            Create location
+      <PageHeader
+        title={isGymOwner ? "Your locations" : "Locations"}
+        description={
+          isGymOwner
+            ? "Manage the locations across your gyms."
+            : "Every location on the platform, across all gyms and owners."
+        }
+        actions={
+          <Button asChild>
+            <Link href="/locations/manage?action=create">
+              <Plus aria-hidden /> Add location
+            </Link>
           </Button>
-        </Link>
-      </div>
+        }
+      />
 
       {isGymOwner && !isSubscriptionActive && (
         <section

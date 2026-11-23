@@ -3,6 +3,7 @@
 
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -305,20 +306,16 @@ const ManageEquipmentContent = () => {
   return (
     <PageContainer>
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="h1">
-            {action === "create"
-              ? "Add Inventory Item"
-              : action === "edit"
-                ? "Update Inventory Item"
-                : "View Inventory Item"}
-          </h1>
-          {!isViewMode && (
-            <Button type="button" variant="outline" onClick={resetForm}>
-              Reset Form
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          title={action === "create" ? "Add equipment" : action === "edit" ? "Edit equipment" : "Equipment details"}
+          actions={
+            !isViewMode ? (
+              <Button type="button" variant="outline" onClick={resetForm}>
+                Reset form
+              </Button>
+            ) : undefined
+          }
+        />
 
         {action === "create" && !selectedGymIdFromSession && (
           <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">

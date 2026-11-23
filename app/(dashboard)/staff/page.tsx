@@ -12,6 +12,7 @@ import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
 import { useConfirm } from "@/components/common/confirm-dialog";
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -175,32 +176,32 @@ const StaffPage = () => {
 
   return (
     <PageContainer>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="h1">Staff</h1>
-          <p className="text-sm text-muted-foreground">
+      <PageHeader
+        title="Staff"
+        description={
+          <>
             Give front-desk staff their own login and choose exactly what they can see and do.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {seats?.planActive && seats.max > 0 && (
-            <span className="text-sm text-muted-foreground">
-              {seats.used} of {seats.max} seats used
-            </span>
-          )}
-          {blockedReason ? (
+            {seats?.planActive && seats.max > 0 && (
+              <span className="mt-1 block">
+                {seats.used} of {seats.max} seats used
+              </span>
+            )}
+          </>
+        }
+        actions={
+          blockedReason ? (
             <Button disabled>
-              <Plus className="size-4" /> Invite staff
+              <Plus aria-hidden /> Invite staff
             </Button>
           ) : (
-            <Link href="/staff/manage">
-              <Button>
-                <Plus className="size-4" /> Invite staff
-              </Button>
-            </Link>
-          )}
-        </div>
-      </div>
+            <Button asChild>
+              <Link href="/staff/manage">
+                <Plus aria-hidden /> Invite staff
+              </Link>
+            </Button>
+          )
+        }
+      />
 
       {blockedReason === "no-plan" && (
         <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">

@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import Link from "next/link";
@@ -73,20 +75,23 @@ const MemberSubscriptionsPage = () => {
 
   const createAction = !can("membersubscriptions.create") ? null : !isSubscriptionActive || subscriptionExpired ? (
     <Button onClick={() => setShowExpiredModal(true)}>
-      Create Subscription
+      <Plus aria-hidden /> Add subscription
     </Button>
   ) : (
-    <Link href={`/membersubscriptions/manage?action=create`}>
-      <Button>Create Subscription</Button>
-    </Link>
+    <Button asChild>
+      <Link href={`/membersubscriptions/manage?action=create`}>
+        <Plus aria-hidden /> Add subscription
+      </Link>
+    </Button>
   );
 
   return (
     <PageContainer>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Member Subscriptions</h1>
-        {createAction}
-      </div>
+      <PageHeader
+        title="Member subscriptions"
+        description="Who has paid, who is due soon and who has expired."
+        actions={createAction}
+      />
 
       {!selectedGymId && (
         <div className="mb-4 p-4 bg-muted rounded-md">

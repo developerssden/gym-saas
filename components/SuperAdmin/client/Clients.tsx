@@ -1,6 +1,7 @@
 "use client";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import {
@@ -22,7 +23,7 @@ import { useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Plus } from "lucide-react";
 
 const Subscription = ({ session }: { session: Session }) => {
   const queryClient = useQueryClient();
@@ -88,17 +89,22 @@ const Subscription = ({ session }: { session: Session }) => {
 
   return (
     <PageContainer>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="h1">Clients</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setInviteOpen(true)}>
-            Invite Client
-          </Button>
-          <Link href={`/clients/manage?action=create`}>
-            <Button>Create Client</Button>
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Clients"
+        description="Gym owners on the platform."
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setInviteOpen(true)}>
+              <Mail aria-hidden /> Invite client
+            </Button>
+            <Button asChild>
+              <Link href={`/clients/manage?action=create`}>
+                <Plus aria-hidden /> Add client
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       <Dialog open={inviteOpen} onOpenChange={handleInviteOpenChange}>
         <DialogContent>
