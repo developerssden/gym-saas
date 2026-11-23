@@ -6,23 +6,15 @@ import { requireAccess, ownedGymWhere, can } from "@/lib/access"
 import { StatusCodes } from "http-status-codes"
 import { Prisma, SubscriptionTypeEnum } from "@/prisma/generated/client"
 import { profit } from "@/lib/expenses"
-import {
-  calendarDayRange,
-  calendarMonthRange,
-  formatCalendarDate,
-  formatCalendarMonth,
-  MS_PER_DAY,
-  previousCalendarMonth,
-} from "@/lib/date-utils"
+import { calendarMonthRange, formatCalendarMonth, previousCalendarMonth } from "@/lib/date-utils"
+import { membershipFilters, owingMembers } from "@/lib/members/membership-where"
 import {
   ATTENTION_ROW_LIMIT,
-  EXPIRING_SOON_DAYS,
   RECENT_PAYMENTS_LIMIT,
   chartMonths,
   growthPct,
   longMonthName,
   monthLabel,
-  owingByMember,
   parseChartRange,
   type ChartRange,
 } from "@/lib/dashboard"
@@ -129,21 +121,13 @@ export default async function handler(
     const lastMonthKey = previousCalendarMonth(currentMonth)
     const thisMonth = calendarMonthRange(currentMonth)!
     const lastMonth = calendarMonthRange(lastMonthKey)!
-    const todayStart = calendarDayRange(formatCalendarDate(now))!.start
-    const soonEnd = calendarDayRange(formatCalendarDate(new Date(now.getTime() + (EXPIRING_SOON_DAYS + 1) * MS_PER_DAY)))!.start
-
-    // A membership that still counts: not expired and not past its end, or frozen.
-    const currentSub: Prisma.MemberSubscriptionWhereInput = {
-      is_deleted: false,
-      OR: [{ is_expired: false, end_date: { gte: todayStart } }, { frozen_since: { not: null } }],
-    }
+    // Same rules as the members list badges and filters.
+    const { todayStart, current: currentSub, lasting, expiring } = membershipFilters(now)
+    // Ending within 7 days, unless the member has already renewed past it.
     const expiringWhere: Prisma.MemberSubscriptionWhereInput = {
-      is_deleted: false,
+      ...expiring,
       is_active: true,
-      is_expired: false,
-      frozen_since: null,
-      end_date: { gte: todayStart, lt: soonEnd },
-      member: memberWhere,
+      member: { ...memberWhere, memberSubscriptions: { none: lasting } },
     }
     // Members whose last membership ran out and who haven't renewed or told us why they left.
     const expiredMemberWhere: Prisma.MemberWhereInput = {
@@ -184,8 +168,7 @@ export default async function handler(
       expiringRows,
       expiredCount,
       expiredRows,
-      feeRows,
-      paidRows,
+      owing,
       revenueByMonth,
       membersByMonth,
       recentPayments,
@@ -240,16 +223,8 @@ export default async function handler(
         orderBy: { end_date: "desc" },
         take: ATTENTION_ROW_LIMIT * 6,
       }),
-      // Owing: fees per subscription and payments summed per subscription, no payment rows loaded.
-      prisma.memberSubscription.findMany({
-        where: { is_deleted: false, member: memberWhere },
-        select: { id: true, member_id: true, price: true, discount: true, admission_fee: true },
-      }),
-      prisma.payment.groupBy({
-        by: ["member_subscription_id"],
-        where: { ...memberPayments, member_subscription_id: { not: null } },
-        _sum: { amount: true },
-      }),
+      // Owing: fee fields and payment sums per subscription, no payment rows loaded.
+      owingMembers(memberWhere),
       canSeeMoney
         ? Promise.all(
             monthRanges.map((r) =>
@@ -281,11 +256,6 @@ export default async function handler(
         : [],
     ])
 
-    const paid = new Map<string, number>()
-    for (const row of paidRows) {
-      if (row.member_subscription_id) paid.set(row.member_subscription_id, row._sum.amount ?? 0)
-    }
-    const owing = owingByMember(feeRows, paid)
     const outstandingAmount = owing.reduce((sum, o) => sum + o.balance, 0)
 
     // Names, phones and plans for the members shown on the Owing tab.

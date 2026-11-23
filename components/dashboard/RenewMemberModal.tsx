@@ -113,6 +113,8 @@ export default function RenewMemberModal({
 
       queryClient.invalidateQueries({ queryKey: ["ownerDashboardOverview"] });
       queryClient.invalidateQueries({ queryKey: ["membersubscriptions"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["member-profile"] });
 
       handleClose();
     } catch (err: unknown) {

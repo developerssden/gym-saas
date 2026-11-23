@@ -3,6 +3,7 @@ export const PAYMENT_QUERY_KEYS = [
   "membersubscriptions",
   "payments",
   "members",
+  "member-profile",
   "ownerDashboardOverview",
   "monthly-report",
   "member-fee",
