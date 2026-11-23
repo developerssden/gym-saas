@@ -29,6 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       gym_id,
       location_id,
       with_status,
+      has_membership,
     }: {
       page?: number;
       limit?: number;
@@ -37,6 +38,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       location_id?: string;
       /** Members page: add each member's membership status and balance, filter counts, and allow `status`. */
       with_status?: boolean;
+      /** Memberships page: only members who have (or had) a membership. */
+      has_membership?: boolean;
     } = req.body;
     const status = with_status ? parseMemberStatusFilter(req.body?.status) : null;
 
@@ -93,13 +96,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Balances show to those who see payments; others just see that a member owes.
       const showAmounts = can(access, "payments.view") || can(access, "dashboard.revenue");
       const { memberStatusWhere } = membershipFilters();
-      const owing = await owingMembers(whereClause);
+      const base: Prisma.MemberWhereInput = has_membership
+        ? { AND: [whereClause, { memberSubscriptions: { some: { is_deleted: false } } }] }
+        : whereClause;
+      const owing = await owingMembers(base);
       const owingIds = owing.map((o) => o.memberId);
       const filtered: Prisma.MemberWhereInput = !status
-        ? whereClause
-        : { AND: [whereClause, status === "owing" ? { id: { in: owingIds } } : memberStatusWhere(status)] };
+        ? base
+        : { AND: [base, status === "owing" ? { id: { in: owingIds } } : memberStatusWhere(status)] };
 
-      const [members, totalCount, all, active, expiring, expired] = await Promise.all([
+      const [members, totalCount, all, active, expiring, expired, frozen] = await Promise.all([
         prisma.member.findMany({
           where: filtered,
           select: memberListSelect,
@@ -108,10 +114,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           take: pageLimit,
         }),
         prisma.member.count({ where: filtered }),
-        prisma.member.count({ where: whereClause }),
-        prisma.member.count({ where: { AND: [whereClause, memberStatusWhere("active")] } }),
-        prisma.member.count({ where: { AND: [whereClause, memberStatusWhere("expiring")] } }),
-        prisma.member.count({ where: { AND: [whereClause, memberStatusWhere("expired")] } }),
+        prisma.member.count({ where: base }),
+        prisma.member.count({ where: { AND: [base, memberStatusWhere("active")] } }),
+        prisma.member.count({ where: { AND: [base, memberStatusWhere("expiring")] } }),
+        prisma.member.count({ where: { AND: [base, memberStatusWhere("expired")] } }),
+        prisma.member.count({ where: { AND: [base, memberStatusWhere("frozen")] } }),
       ]);
       const statuses = await statusesForMembers(members.map((m) => m.id));
 
@@ -128,6 +135,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               subscriptionId: st.subscription?.id ?? null,
               price: st.subscription?.price ?? null,
               billingModel: st.subscription?.billing_model ?? null,
+              startDate: st.subscription ? new Date(st.subscription.start_date).toISOString() : null,
+              frozenSince: st.subscription?.frozen_since ? new Date(st.subscription.frozen_since).toISOString() : null,
+              isExpiredFlag: st.subscription?.is_expired ?? false,
               owes: st.balance > 0,
               balance: showAmounts ? st.balance : null,
             },
@@ -135,7 +145,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }),
         totalCount,
         pageCount: Math.ceil(totalCount / pageLimit),
-        counts: { all, active, expiring, expired, owing: owing.length },
+        counts: { all, active, expiring, expired, frozen, owing: owing.length },
       });
     }
 

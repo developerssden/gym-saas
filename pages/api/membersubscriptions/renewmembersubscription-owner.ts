@@ -10,6 +10,8 @@ import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
 import { amountDue, parseMoney, validateFeeInput } from "@/lib/member-balance";
 import { parseClientId, parseRecordedAt } from "@/lib/offline/request-fields";
 import { answerIfReplayed, isClientIdConflict } from "@/lib/offline/payment-replay";
+import { getDaysUntilExpiration } from "@/lib/date-utils";
+import { EXPIRING_SOON_DAYS } from "@/lib/dashboard";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -98,10 +100,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       orderBy: { createdAt: "desc" },
     });
 
-    if (existingSubscription?.is_active && !existingSubscription.is_expired) {
+    // Renew in the last EXPIRING_SOON_DAYS (7) days or once it has ended; days left are carried over below.
+    if (existingSubscription?.frozen_since) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
-          "Cannot renew an active subscription. Wait until it expires or becomes inactive.",
+        error: "This membership is frozen. Unfreeze it before renewing.",
+      });
+    }
+    if (
+      existingSubscription?.is_active &&
+      !existingSubscription.is_expired &&
+      getDaysUntilExpiration(existingSubscription.end_date) > EXPIRING_SOON_DAYS
+    ) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: `This membership is still running. You can renew it in the last ${EXPIRING_SOON_DAYS} days.`,
       });
     }
 
@@ -206,7 +217,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       // Record what was paid now (nothing when the member pays later)
-      if (paidNow > 0) await tx.payment.create({
+      const payment = paidNow <= 0 ? null : await tx.payment.create({
         data: {
           member_subscription_id: memberSubscription.id,
           subscription_type: SubscriptionTypeEnum.MEMBER,
@@ -220,12 +231,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      return memberSubscription;
+      return { memberSubscription, paymentId: payment?.id ?? null };
     });
 
     return res.status(StatusCodes.CREATED).json({
       message: "Member subscription renewed and payment created successfully",
-      data: result,
+      data: result.memberSubscription,
+      /** For sharing the receipt; null when nothing was paid now. */
+      payment_id: result.paymentId,
     });
   } catch (err: unknown) {
     // Same renewal sent twice at once: the transaction rolled back, the other one saved it.

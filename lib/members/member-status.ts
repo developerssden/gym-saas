@@ -5,7 +5,7 @@ import { summarizeBalance, type FeeBreakdown } from "@/lib/member-balance";
 import { getDaysUntilExpiration } from "@/lib/date-utils";
 import { EXPIRING_SOON_DAYS, expiryStatus } from "@/lib/dashboard";
 
-export const MEMBER_STATUS_FILTERS = ["active", "expiring", "expired", "owing"] as const;
+export const MEMBER_STATUS_FILTERS = ["active", "expiring", "expired", "frozen", "owing"] as const;
 export type MemberStatusFilter = (typeof MEMBER_STATUS_FILTERS)[number];
 
 export function parseMemberStatusFilter(value: unknown): MemberStatusFilter | null {

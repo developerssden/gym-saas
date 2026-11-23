@@ -65,7 +65,7 @@ export default function ChurnReasonModal({
         throw new Error(err.message || "Failed to record");
       }
 
-      toast.success("Churn reason saved");
+      toast.success(`Saved why ${memberName} left`);
       queryClient.invalidateQueries({ queryKey: ["membersubscriptions"] });
       handleClose();
     } catch (err: unknown) {
@@ -94,9 +94,9 @@ export default function ChurnReasonModal({
 
         <div className="grid gap-4 py-2">
           <div className="grid gap-1.5">
-            <Label>Reason</Label>
+            <Label htmlFor="churn-reason">Reason</Label>
             <Select value={reason} onValueChange={setReason}>
-              <SelectTrigger>
+              <SelectTrigger id="churn-reason" className="h-11 md:h-9">
                 <SelectValue placeholder="Select a reason…" />
               </SelectTrigger>
               <SelectContent>
@@ -111,7 +111,7 @@ export default function ChurnReasonModal({
 
           <div className="grid gap-1.5">
             <Label htmlFor="churn-note">
-              Additional note{" "}
+              Anything else{" "}
               <span className="text-muted-foreground">(optional)</span>
             </Label>
             <Textarea
@@ -129,7 +129,7 @@ export default function ChurnReasonModal({
             Skip
           </Button>
           <Button onClick={handleSubmit} disabled={!reason || loading}>
-            {loading ? "Saving…" : "Save"}
+            {loading ? "Saving…" : "Save reason"}
           </Button>
         </DialogFooter>
       </DialogContent>

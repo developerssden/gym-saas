@@ -78,3 +78,12 @@ test("status filter parsing", () => {
   assert.equal(parseMemberStatusFilter("all"), null);
   assert.equal(parseMemberStatusFilter(undefined), null);
 });
+
+test("membership length labels", async () => {
+  const { lengthLabel, MEMBERSHIP_LENGTHS } = await import("@/lib/fee-memory");
+  assert.equal(lengthLabel(1), "1 month");
+  assert.equal(lengthLabel(3), "3 months");
+  assert.equal(lengthLabel(12), "1 year");
+  assert.equal(lengthLabel(24), "2 years");
+  assert.deepEqual(MEMBERSHIP_LENGTHS.map((l) => l.months), [1, 3, 6, 12]);
+});

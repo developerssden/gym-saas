@@ -31,6 +31,7 @@ import { SubscriptionExpiredModal } from "@/components/subscription/Subscription
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { FeeSummary } from "@/components/membersubscriptions/FeeSummary";
 import { amountDue } from "@/lib/member-balance";
+import { AddMembership } from "@/components/membersubscriptions/AddMembership";
 
 const MemberSubscriptionSchema = Yup.object({
   member_id: Yup.string().required("Member is required"),
@@ -166,7 +167,7 @@ const ManageMemberSubscriptionContent = () => {
     mutationFn: (values: any) =>
       axios.post("/api/membersubscriptions/createmembersubscription-owner", values),
     onSuccess: () => {
-      toast.success("Member subscription created successfully");
+      toast.success("Membership saved");
       queryClient.invalidateQueries({ queryKey: ["membersubscriptions"] });
       router.push("/membersubscriptions");
     },
@@ -180,7 +181,7 @@ const ManageMemberSubscriptionContent = () => {
         ...values,
       }),
     onSuccess: () => {
-      toast.success("Member subscription updated successfully");
+      toast.success("Membership updated");
       queryClient.invalidateQueries({ queryKey: ["membersubscriptions"] });
       router.push("/membersubscriptions");
     },
@@ -293,10 +294,10 @@ const ManageMemberSubscriptionContent = () => {
       <div className="w-full space-y-12">
         <h1 className="h1 text-center">
           {action === "create"
-            ? "Create Member Subscription"
+            ? "Add membership"
             : action === "edit"
-            ? "Edit Member Subscription"
-            : "View Member Subscription"}
+            ? "Edit membership"
+            : "Membership details"}
         </h1>
 
         <form className="max-w-2xl mx-auto" onSubmit={formik.handleSubmit}>
@@ -616,10 +617,18 @@ const ManageMemberSubscriptionContent = () => {
   );
 };
 
+/** Adding goes to the new flow (member search + membership form); editing keeps this form. */
+function ManageMemberSubscriptionRouter() {
+  const searchParams = useSearchParams();
+  const action = searchParams?.get("action") || "create";
+  if (action === "create") return <AddMembership initialMemberId={searchParams?.get("member") || null} />;
+  return <ManageMemberSubscriptionContent />;
+}
+
 const ManageMemberSubscriptionPage = () => {
   return (
-    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
-      <ManageMemberSubscriptionContent />
+    <Suspense fallback={null}>
+      <ManageMemberSubscriptionRouter />
     </Suspense>
   );
 };
