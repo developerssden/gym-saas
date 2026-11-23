@@ -127,7 +127,7 @@ function downloadBlob(blob: Blob, filename: string) {
  * so the owner can pick WhatsApp and the member. Where sharing files isn't
  * supported (most desktops), it downloads the PDF and opens the member's chat.
  */
-export function ShareReceiptMenuItem(props: ShareReceiptProps) {
+function useShareReceipt(props: ShareReceiptProps) {
   const [busy, setBusy] = useState(false);
 
   const share = async () => {
@@ -178,6 +178,11 @@ export function ShareReceiptMenuItem(props: ShareReceiptProps) {
     }
   };
 
+  return { share, busy };
+}
+
+export function ShareReceiptMenuItem(props: ShareReceiptProps) {
+  const { share, busy } = useShareReceipt(props);
   return (
     <DropdownMenuItem
       disabled={busy}
@@ -189,5 +194,16 @@ export function ShareReceiptMenuItem(props: ShareReceiptProps) {
       {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <WhatsAppIcon className="mr-2 size-4" />}
       Share receipt on WhatsApp
     </DropdownMenuItem>
+  );
+}
+
+/** Same as ShareReceiptMenuItem, as a button (e.g. right after a payment). */
+export function ShareReceiptButton({ className, ...props }: ShareReceiptProps & { className?: string }) {
+  const { share, busy } = useShareReceipt(props);
+  return (
+    <Button type="button" className={className} onClick={() => void share()} loading={busy}>
+      {!busy && <WhatsAppIcon className="size-4" />}
+      Send receipt on WhatsApp
+    </Button>
   );
 }

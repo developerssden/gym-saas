@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { requireAccess, ownsGym } from "@/lib/access";
 import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
 import { hashPassword } from "@/lib/authHelper";
+import { memberListSelect } from "@/lib/api-selects";
 import {
   normalizeOptionalString,
   resolveMemberGeoFields,
@@ -43,10 +44,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const normalizedLastName = normalizeOptionalString(last_name);
     const normalizedCnic = normalizeOptionalString(cnic);
 
-    if (!gym_id || !location_id || !normalizedFirstName || !normalizedAddress) {
+    if (!gym_id || !location_id || !normalizedFirstName) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error:
-          "Missing required fields: gym_id, location_id, first_name, address",
+        error: "Missing required fields: gym_id, location_id, first_name",
       });
     }
 
@@ -226,11 +226,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         gym_id,
         location_id,
       },
-      include: {
-        user: true,
-        gym: true,
-        location: true,
-      },
+      // Never send the user row back: it holds the password hash.
+      select: memberListSelect,
     });
 
     return res.status(StatusCodes.CREATED).json({

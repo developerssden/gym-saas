@@ -122,7 +122,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      finalStartDate = new Date(); // Current date
+      // Starts today, or on start_date when given (e.g. a walk-in who starts tomorrow).
+      finalStartDate = start_date ? new Date(start_date) : new Date();
+      if (isNaN(finalStartDate.getTime())) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid start date" });
+      }
       finalEndDate = new Date(finalStartDate);
       finalEndDate.setMonth(finalEndDate.getMonth() + months);
     }
@@ -154,7 +158,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           discount: fee.discount,
           discount_note: fee.discount > 0 ? discount_note?.trim() || null : null,
           admission_fee: fee.admission_fee,
-          billing_model: "MONTHLY", // Default, can be adjusted if needed
+          // Whole years are yearly plans; renewals default to the same length.
+          billing_model: !use_custom_dates && months && months % 12 === 0 ? "YEARLY" : "MONTHLY",
           start_date: finalStartDate,
           end_date: finalEndDate,
           is_expired: false,
@@ -163,7 +168,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       // Record what was paid now (nothing when the member pays later)
-      if (paidNow > 0) await tx.payment.create({
+      const payment = paidNow <= 0 ? null : await tx.payment.create({
         data: {
           member_subscription_id: memberSubscription.id,
           subscription_type: SubscriptionTypeEnum.MEMBER,
@@ -176,12 +181,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      return memberSubscription;
+      return { memberSubscription, paymentId: payment?.id ?? null };
     });
 
     return res.status(StatusCodes.CREATED).json({
       message: "Member subscription and payment created successfully",
-      data: result,
+      data: result.memberSubscription,
+      /** For sharing the receipt; null when nothing was paid now. */
+      payment_id: result.paymentId,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

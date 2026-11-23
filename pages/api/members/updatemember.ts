@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess, ownsGym } from "@/lib/access";
+import { memberListSelect } from "@/lib/api-selects";
 import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
 import {
   normalizeOptionalString,
@@ -167,11 +168,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    if (!nextAddress) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        error: "Address is required",
-      });
-    }
 
     if (!nextEmail && !nextPhone) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -323,11 +319,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ...(data.gym_id !== undefined && { gym_id: data.gym_id }),
         ...(data.location_id !== undefined && { location_id: data.location_id }),
       },
-      include: {
-        user: true,
-        gym: true,
-        location: true,
-      },
+      // Never send the user row back: it holds the password hash.
+      select: memberListSelect,
     });
 
     return res.status(StatusCodes.OK).json({
