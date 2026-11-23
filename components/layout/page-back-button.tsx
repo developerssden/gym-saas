@@ -1,51 +1,39 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { routeItems } from "@/constants/data"
 
-function getParentPath(pathname: string): string {
+/** The page one level up, named as it is in the menu ("/members/import" → Members). */
+export function parentPage(pathname: string): { href: string; title: string } | null {
   const segments = pathname.split("/").filter(Boolean)
-  if (segments.length <= 1) return "/dashboard"
-  return `/${segments.slice(0, -1).join("/")}`
+  // Menu pages need no back link; they're one tap away in the menu.
+  if (segments.length === 0 || routeItems.some((route) => route.href === pathname)) return null
+  const href = segments.length > 1 ? `/${segments.slice(0, -1).join("/")}` : "/dashboard"
+  const title = routeItems.find((route) => route.href === href)?.title ?? "Dashboard"
+  return { href: routeItems.some((route) => route.href === href) ? href : "/dashboard", title }
 }
 
+/**
+ * "← Members" above every page that isn't in the menu (forms, import, profile…).
+ * The only back link on a page: pages shouldn't add their own.
+ */
 export function PageBackButton() {
   const pathname = usePathname() || "/"
-  const router = useRouter()
-  const isMobile = useIsMobile()
-
-  const showBackButton = useMemo(() => {
-    if (!isMobile) return false
-    return !routeItems.some((route) => route.href === pathname)
-  }, [isMobile, pathname])
-
-  const handleBack = useCallback(() => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back()
-      return
-    }
-    router.push(getParentPath(pathname))
-  }, [pathname, router])
-
-  if (!showBackButton) return null
+  const parent = parentPage(pathname)
+  if (!parent) return null
 
   return (
-    <div className="mb-3 md:hidden">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="-ml-2 h-9 gap-1.5 px-2 text-muted-foreground"
-        onClick={handleBack}
-        aria-label="Go back"
+    <div className="mb-3">
+      <Link
+        href={parent.href}
+        className="-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 md:min-h-9"
       >
-        <ArrowLeft className="size-4" />
-        Back
-      </Button>
+        <ArrowLeft aria-hidden className="size-4" />
+        <span className="sr-only">Back to </span>
+        {parent.title}
+      </Link>
     </div>
   )
 }

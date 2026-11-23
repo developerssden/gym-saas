@@ -22,8 +22,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useMemo, useState, Suspense } from "react";
 import { toast } from "sonner";
-import Link from "next/link";
-import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
@@ -218,14 +217,6 @@ const ManageGymContent = () => {
   return (
     <PageContainer>
       <div className="mx-auto w-full max-w-3xl pb-8">
-        <Link
-          href="/gyms"
-          className="mb-6 inline-flex items-center gap-2 rounded-sm text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        >
-          <ArrowLeft className="size-4" />
-          Gyms
-        </Link>
-
         <div className="mb-8">
           <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
             {action === "create"
