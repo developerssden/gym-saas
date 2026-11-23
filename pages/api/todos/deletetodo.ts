@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!existing || existing.is_deleted || existing.user_id !== ownerId) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        error: "Todo not found",
+        error: "This to-do was deleted",
       });
     }
 

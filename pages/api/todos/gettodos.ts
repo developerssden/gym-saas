@@ -1,8 +1,11 @@
 // pages/api/todos/gettodos.ts
+// The gym's to-do list: open ones (soonest due first) or done ones (latest first),
+// with a search over the title and notes.
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess } from "@/lib/access";
+import type { Prisma } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -14,45 +17,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const ownerId = access.ownerId!;
 
   try {
-    const {
-      page = 1,
-      limit = 10,
-      is_completed,
-    } = req.body as {
-      page?: number;
+    const { status, search, limit = 200 } = req.body as {
+      /** "open" (default) or "done". */
+      status?: "open" | "done";
+      search?: string;
       limit?: number;
-      is_completed?: boolean;
     };
+    const done = status === "done";
+    const take = Math.min(Math.max(Number(limit) || 200, 1), 500);
 
-    const skip = (page - 1) * limit;
-
-    const where: any = {
-      user_id: ownerId,
-      is_deleted: false,
-    };
-
-    if (typeof is_completed === "boolean") {
-      where.is_completed = is_completed;
+    const base: Prisma.TodoWhereInput = { user_id: ownerId, is_deleted: false };
+    const q = typeof search === "string" ? search.trim() : "";
+    if (q) {
+      base.OR = [
+        { title: { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+      ];
     }
+    const where: Prisma.TodoWhereInput = { ...base, is_completed: done };
 
-    const [todos, totalCount] = await Promise.all([
+    const [todos, openCount, doneCount] = await Promise.all([
       prisma.todo.findMany({
         where,
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limit,
+        orderBy: done
+          ? [{ updatedAt: "desc" }]
+          : [{ due_date: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }],
+        take,
       }),
-      prisma.todo.count({ where }),
+      prisma.todo.count({ where: { ...base, is_completed: false } }),
+      prisma.todo.count({ where: { ...base, is_completed: true } }),
     ]);
 
-    return res.status(StatusCodes.OK).json({
-      data: todos,
-      totalCount,
-      pageCount: Math.ceil(totalCount / limit),
-    });
+    return res.status(StatusCodes.OK).json({ data: todos, openCount, doneCount });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: message });
   }
 }
-

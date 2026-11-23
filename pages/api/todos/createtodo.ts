@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess } from "@/lib/access";
+import { parseDueDay, validateTodoInput } from "@/lib/todos";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -14,21 +15,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const ownerId = access.ownerId!;
 
   try {
-    const { title, description } = req.body as {
-      title: string;
-      description: string;
+    const { title, description, due_date } = req.body as {
+      title?: string;
+      description?: string | null;
+      /** "yyyy-MM-dd", optional. */
+      due_date?: string | null;
     };
 
-    if (!title || !description) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        error: "Missing required fields: title, description",
-      });
-    }
+    const error = validateTodoInput({ title: title ?? "", description, due_date });
+    if (error) return res.status(StatusCodes.BAD_REQUEST).json({ error });
+    const due = parseDueDay(due_date);
 
     const todo = await prisma.todo.create({
       data: {
-        title,
-        description,
+        title: (title as string).trim(),
+        description: description?.trim() ?? "",
+        due_date: due instanceof Date ? due : null,
         user_id: ownerId,
         is_completed: false,
         is_active: true,
@@ -37,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     return res.status(StatusCodes.CREATED).json({
-      message: "Todo created successfully",
+      message: "To-do added",
       data: todo,
     });
   } catch (err: unknown) {
