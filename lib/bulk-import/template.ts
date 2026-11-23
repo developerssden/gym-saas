@@ -1,23 +1,32 @@
 import * as XLSX from "xlsx";
-import { TEMPLATE_EXAMPLE_ROW, TEMPLATE_HEADERS } from "./types";
+import { IMPORT_COLUMNS } from "./columns";
 
+const requiredText = (r: (typeof IMPORT_COLUMNS)[number]["required"]) =>
+  r === "always" ? "Yes" : r === "membership" ? "With memberships" : "No";
+
+/** Just the header row: an example row would be imported as a real member if left in. */
 export function buildTemplateCsv(): string {
-  const header = TEMPLATE_HEADERS.join(",");
-  const example = TEMPLATE_HEADERS.map((key) => {
-    const value = TEMPLATE_EXAMPLE_ROW[key] ?? "";
-    const str = String(value);
-    return str.includes(",") ? `"${str}"` : str;
-  }).join(",");
-  return `${header}\n${example}\n`;
+  return `${IMPORT_COLUMNS.map((c) => c.label).join(",")}\n`;
 }
 
+/**
+ * "Members": just the header row. "How to fill in": every column, whether
+ * it's needed, an example and a note.
+ */
 export function buildTemplateXlsxBuffer(): Buffer {
-  const sheet = XLSX.utils.json_to_sheet([TEMPLATE_EXAMPLE_ROW], {
-    header: [...TEMPLATE_HEADERS],
-  });
+  const members = XLSX.utils.aoa_to_sheet([IMPORT_COLUMNS.map((c) => c.label)]);
+  members["!cols"] = IMPORT_COLUMNS.map((c) => ({ wch: Math.max(c.label.length, c.example.length, 12) + 2 }));
+
+  const help = XLSX.utils.aoa_to_sheet([
+    ["Column", "Needed?", "Example", "Notes"],
+    ...IMPORT_COLUMNS.map((c) => [c.label, requiredText(c.required), c.example, c.hint ?? ""]),
+    [],
+    ["Dates can be written as 31/01/2026 or 2026-01-31. Fill in one member per row on the Members sheet."],
+  ]);
+  help["!cols"] = [{ wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 60 }];
+
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, sheet, "Members");
-  return Buffer.from(
-    XLSX.write(workbook, { type: "buffer", bookType: "xlsx" })
-  );
+  XLSX.utils.book_append_sheet(workbook, members, "Members");
+  XLSX.utils.book_append_sheet(workbook, help, "How to fill in");
+  return Buffer.from(XLSX.write(workbook, { type: "buffer", bookType: "xlsx" }));
 }

@@ -29,6 +29,24 @@ async function checkPhoneDuplicateAtLocation(
   return !!existing;
 }
 
+/**
+ * Why this row can't be added because of who's already saved (the email is
+ * taken, or the phone is already a member at this branch), or null when it can.
+ */
+export async function rowConflict(row: ValidatedImportRow, gymId: string, locationId: string): Promise<string | null> {
+  const email = row.email || generateImportEmail(row.phone_number, gymId);
+  const existingUser = await prisma.user.findFirst({ where: { email, is_deleted: false }, select: { id: true } });
+  if (existingUser) {
+    return row.email
+      ? `Email ${row.email} is already used by another account`
+      : `Phone ${row.phone_number} was already imported`;
+  }
+  if (await checkPhoneDuplicateAtLocation(row.phone_number, locationId)) {
+    return `Phone ${row.phone_number} is already a member at this branch`;
+  }
+  return null;
+}
+
 export async function importMemberRow(
   row: ValidatedImportRow,
   mode: ImportMode,
@@ -38,22 +56,8 @@ export async function importMemberRow(
 ): Promise<string> {
   const email = row.email || generateImportEmail(row.phone_number, gymId);
 
-  const existingUser = await prisma.user.findFirst({
-    where: { email, is_deleted: false },
-  });
-  if (existingUser) {
-    throw new Error(`Email already exists: ${email}`);
-  }
-
-  const phoneTaken = await checkPhoneDuplicateAtLocation(
-    row.phone_number,
-    locationId
-  );
-  if (phoneTaken) {
-    throw new Error(
-      `Phone number already registered at this location: ${row.phone_number}`
-    );
-  }
+  const conflict = await rowConflict(row, gymId, locationId);
+  if (conflict) throw new Error(conflict);
 
   const memberId = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
