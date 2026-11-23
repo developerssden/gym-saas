@@ -6,6 +6,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { Session } from "next-auth";
 import Link from "next/link";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useDebounce } from "@/hooks/use-debounce";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
@@ -19,15 +20,25 @@ import { columns } from "./columns";
 const Payments = ({ session }: { session: Session }) => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
-  const debouncedFilter = useDebounce(globalFilter, 1000);
+  const debouncedFilter = useDebounce(globalFilter, 400);
   const { can, isGymUser } = usePermissions();
   const [quickOpen, setQuickOpen] = useState(false);
   const outbox = useOutbox();
+  // The branch switcher updates the client session, so read the selected
+  // gym/location from it (the `session` prop is from page load).
+  const { data: liveSession } = useSession();
 
-  // Use the hook
+  const handleSearchChange = (value: string) => {
+    setGlobalFilter(value);
+    setPagination(p => ({ ...p, pageIndex: 0 }));
+  };
+
   const { data, isLoading, error, refetch } = usePayments({
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
+    search: debouncedFilter,
+    gym_id: isGymUser ? liveSession?.user?.selected_gym_id || undefined : undefined,
+    location_id: isGymUser ? liveSession?.user?.selected_location_id || undefined : undefined,
     enabled: true,
   });
 
@@ -85,9 +96,13 @@ const Payments = ({ session }: { session: Session }) => {
           pageCount={data.pageCount}
           rowCount={data.totalCount}
           onPaginationChange={setPagination}
-          onSearchChange={setGlobalFilter}
+          onSearchChange={handleSearchChange}
           pagination={pagination}
           searchValue={globalFilter}
+          isSearching={!!debouncedFilter.trim()}
+          searchPlaceholder={
+            isGymUser ? "Search by member name, phone or transaction ID" : "Search by owner name, email or transaction ID"
+          }
         />
       )}
       {isGymUser && <QuickPaymentDialog open={quickOpen} onClose={() => setQuickOpen(false)} />}
