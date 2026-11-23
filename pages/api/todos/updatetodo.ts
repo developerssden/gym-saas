@@ -3,6 +3,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess } from "@/lib/access";
+import { parseDueDay, validateTodoInput } from "@/lib/todos";
+import type { Prisma } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -14,11 +16,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const ownerId = access.ownerId!;
 
   try {
-    const { id, title, description, is_completed } = req.body as {
+    const { id, title, description, is_completed, due_date } = req.body as {
       id: string;
       title?: string;
-      description?: string;
+      description?: string | null;
       is_completed?: boolean;
+      /** "yyyy-MM-dd", or null / "" to clear. */
+      due_date?: string | null;
     };
 
     if (!id) {
@@ -34,13 +38,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!existing || existing.is_deleted || existing.user_id !== ownerId) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        error: "Todo not found",
+        error: "This to-do was deleted",
       });
     }
 
-    const updateData: any = {};
-    if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
+    const error = validateTodoInput({ title, description, due_date });
+    if (error) return res.status(StatusCodes.BAD_REQUEST).json({ error });
+
+    const updateData: Prisma.TodoUpdateInput = {};
+    if (title !== undefined) updateData.title = title.trim();
+    if (description !== undefined) updateData.description = description?.trim() ?? "";
+    if (due_date !== undefined) {
+      const due = parseDueDay(due_date);
+      updateData.due_date = due instanceof Date ? due : null;
+    }
     if (is_completed !== undefined) updateData.is_completed = is_completed;
 
     const updated = await prisma.todo.update({

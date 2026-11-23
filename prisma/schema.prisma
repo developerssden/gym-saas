@@ -116,7 +116,9 @@ model InAppNotification {
 model Todo {
   id           String   @id @default(uuid())
   title        String
-  description  String
+  description  String   @default("")
+  /// Optional day it should be done by (stored as UTC midnight of that day).
+  due_date     DateTime?
   is_completed Boolean  @default(false)
   is_active    Boolean  @default(true)
   is_deleted   Boolean  @default(false)
