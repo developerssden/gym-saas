@@ -116,7 +116,7 @@ const ReportsPage = () => {
     <PageContainer>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="h1">Monthly report</h1>
+          <h1 className="h1">Reports</h1>
           <p className="text-sm text-muted-foreground">
             Fees, expenses, profit and members for one month. Download it to share with a partner or family.
           </p>

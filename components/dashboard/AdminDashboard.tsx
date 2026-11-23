@@ -286,7 +286,7 @@ const AdminDashboard = () => {
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="h1">Admin Dashboard</h1>
+              <h1 className="h1">Dashboard</h1>
               {isFetching && (
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <RefreshCw className="size-3 animate-spin" />

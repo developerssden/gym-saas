@@ -43,7 +43,7 @@ export const PERMISSION_PAGES: PermissionPage[] = [
   },
   {
     id: "membersubscriptions",
-    label: "Member subscriptions",
+    label: "Memberships",
     routes: ["/membersubscriptions"],
     actions: [
       { key: "membersubscriptions.view", label: "View subscriptions" },

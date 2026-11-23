@@ -1,23 +1,29 @@
 'use client'
+import { Suspense } from "react"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import BreadCrumbs from "./breadcrumbs"
 import ProfileDropdown from "./profile"
+import { MobileBranchButton } from "./gym-location-switcher"
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { QuickPaymentButton } from "@/components/payments/QuickPaymentButton"
 import { OfflineStatus } from "@/components/offline/OfflineStatus"
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear">
-      <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6 py-2">
-        <SidebarTrigger className="-ml-1" />
+    <header className="sticky top-0 z-50 flex h-(--header-height) shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear">
+      <div className="flex w-full min-w-0 items-center gap-1 px-2 py-2 md:px-4 lg:gap-2 lg:px-6">
+        <SidebarTrigger className="size-11 md:-ml-1 md:size-7" aria-label="Open menu" />
         <Separator
           orientation="vertical"
-          className="mx-2 data-[orientation=vertical]:h-4"
+          className="mx-2 hidden data-[orientation=vertical]:h-4 md:block"
         />
-        <BreadCrumbs />
-        <div className="ml-auto flex items-center gap-2">
+        {/* Phones: which gym/branch you're in, tap to switch. Desktop: where you are. */}
+        <MobileBranchButton />
+        <Suspense fallback={null}>
+          <BreadCrumbs />
+        </Suspense>
+        <div className="ml-auto flex shrink-0 items-center gap-1 md:gap-2">
           <OfflineStatus />
           <QuickPaymentButton />
           <NotificationBell />

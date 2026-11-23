@@ -75,12 +75,12 @@ const MemberSubscriptionsPage = () => {
 
   const createAction = !can("membersubscriptions.create") ? null : !isSubscriptionActive || subscriptionExpired ? (
     <Button onClick={() => setShowExpiredModal(true)}>
-      <Plus aria-hidden /> Add subscription
+      <Plus aria-hidden /> Add membership
     </Button>
   ) : (
     <Button asChild>
       <Link href={`/membersubscriptions/manage?action=create`}>
-        <Plus aria-hidden /> Add subscription
+        <Plus aria-hidden /> Add membership
       </Link>
     </Button>
   );
@@ -88,7 +88,7 @@ const MemberSubscriptionsPage = () => {
   return (
     <PageContainer>
       <PageHeader
-        title="Member subscriptions"
+        title="Memberships"
         description="Who has paid, who is due soon and who has expired."
         actions={createAction}
       />
