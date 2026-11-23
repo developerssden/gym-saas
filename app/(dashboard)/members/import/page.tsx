@@ -3,11 +3,10 @@
 import { useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
-import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
 import { offerPushNotifications } from "@/lib/push-offer";
-import { Upload, Download, ArrowLeft } from "lucide-react";
+import { Upload, Download } from "lucide-react";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { PageContainer } from "@/components/layout/page-container";
 import { Button } from "@/components/ui/button";
@@ -123,12 +122,6 @@ export default function MemberImportPage() {
 
       <div className="mb-6 flex items-center justify-between">
         <div className="space-y-1">
-          <Button variant="ghost" size="sm" asChild className="-ml-2">
-            <Link href="/members">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to members
-            </Link>
-          </Button>
           <h1 className="h1">Bulk import members</h1>
           <p className="text-sm text-muted-foreground">
             Upload a spreadsheet to add many members at once for your selected
