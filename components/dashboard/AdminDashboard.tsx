@@ -40,6 +40,7 @@ import DataFetchError from "@/components/common/DataFetchError"
 import DateRangePicker from "@/components/date-range-picker"
 import { addDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
+import { formatDate as formatDisplayDate } from "@/lib/format"
 
 type DashboardOverview = {
   totals: {
@@ -81,11 +82,7 @@ function formatPct(pct: number) {
   return `${sign}${pct.toFixed(1)}%`
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return "-"
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString()
-}
+const formatDate = (value?: string | null) => formatDisplayDate(value, "-")
 
 const revenueMonthConfig = {
   revenue: { label: "Revenue", color: "var(--color-chart-2)" },

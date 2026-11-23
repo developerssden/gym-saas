@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
@@ -10,6 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { billingModelLabel, formatDateRange } from "@/lib/format";
 
 interface Props {
   open: boolean;
@@ -78,13 +78,12 @@ export function OwnerSubscriptionHistoryDrawer({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">
-                    {format(new Date(sub.start_date), "MMM d, yyyy")} —{" "}
-                    {format(new Date(sub.end_date), "MMM d, yyyy")}
+                    {formatDateRange(sub.start_date, sub.end_date)}
                   </span>
                   <Badge variant={color}>{label}</Badge>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {sub.plan?.name} · {sub.billing_model}
+                  {sub.plan?.name} · {billingModelLabel(sub.billing_model)}
                 </span>
               </div>
             );

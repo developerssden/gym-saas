@@ -5,30 +5,33 @@ import axios from "axios";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { usePermissions } from "@/hooks/usePermissions";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
 import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CashBook } from "@/components/expenses/CashBook";
-import ExpenseDialog from "@/components/expenses/ExpenseDialog";
-import { columns } from "@/components/expenses/columns";
+import ExpenseDialog, { type ExpenseRow } from "@/components/expenses/ExpenseDialog";
+import { ExpenseCard, columns } from "@/components/expenses/columns";
+
+type ExpensesResponse = { data: ExpenseRow[]; totalCount: number; pageCount: number };
 
 const ExpensesPage = () => {
   const { data: session, status } = useSession({ required: true });
   const { can } = usePermissions();
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
-  const debouncedFilter = useDebounce(globalFilter, 800);
+  const debouncedFilter = useDebounce(globalFilter, 400);
   const [adding, setAdding] = useState(false);
 
   const selectedGymId = session?.user?.selected_gym_id;
   const selectedLocationId = session?.user?.selected_location_id;
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery<ExpensesResponse>({
     queryKey: [
       "expenses",
       pagination.pageIndex + 1,
@@ -47,66 +50,70 @@ const ExpensesPage = () => {
       });
       return res.data;
     },
+    // Keep the list (and the search box) on screen while the next page or search loads.
+    placeholderData: keepPreviousData,
     enabled: status === "authenticated" && (session?.user?.role === "GYM_OWNER" || session?.user?.role === "STAFF") && !!selectedGymId,
   });
 
-  if (status === "loading") return <FullScreenLoader />;
+  if (status === "loading") {
+    return (
+      <PageContainer>
+        <Skeleton className="mb-6 h-9 w-48" />
+        <Skeleton className="h-64 w-full" />
+      </PageContainer>
+    );
+  }
   if (session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") return redirect("/unauthorized");
+
+  const canAdd = can("expenses.create");
+  const addButton = (
+    <Button onClick={() => setAdding(true)} disabled={!selectedGymId}>
+      <Plus aria-hidden /> Add expense
+    </Button>
+  );
 
   return (
     <PageContainer>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="h1">Expenses</h1>
-          <p className="text-sm text-muted-foreground">Rent, bills, salaries and repairs. Profit = collected − expenses.</p>
-        </div>
-        {can("expenses.create") && (
-          <Button onClick={() => setAdding(true)} disabled={!selectedGymId} className="h-11">
-            <Plus className="size-4" /> Add expense
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="Expenses"
+        description="Rent, bills, salaries and repairs. Profit = collected − expenses."
+        actions={canAdd ? addButton : undefined}
+      />
 
       {!selectedGymId ? (
         <div className="mb-4 rounded-md bg-muted p-4">
-          <p className="text-sm text-muted-foreground">
-            Please select a gym and location from the header to see expenses.
-          </p>
+          <p className="text-sm text-muted-foreground">Choose a gym and branch at the top of the page to see expenses.</p>
         </div>
       ) : (
-        can("expenses.cashbook") && <CashBook gymId={selectedGymId} locationId={selectedLocationId} />
-      )}
+        <>
+          {can("expenses.cashbook") && <CashBook gymId={selectedGymId} locationId={selectedLocationId} />}
 
-      {isLoading && !data && selectedGymId && (
-        <div className="flex h-64 items-center justify-center">
-          <FullScreenLoader label="Loading expenses..." />
-        </div>
-      )}
-
-      {error && <DataFetchError error={error} onRetry={() => refetch()} message="Error loading expenses" />}
-
-      {data && (
-        <DataTable
-          columns={columns}
-          data={data.data}
-          searchableColumns={["category", "note"]}
-          searchPlaceholder="Search by category or note"
-          emptyMessage="No expenses yet"
-          emptyDescription="Add rent, bills and salaries to see your real profit."
-          emptyAction={
-            can("expenses.create") ? (
-              <Button onClick={() => setAdding(true)} disabled={!selectedGymId}>
-                <Plus className="size-4" /> Add expense
-              </Button>
-            ) : undefined
-          }
-          pageCount={data.pageCount}
-          rowCount={data.totalCount}
-          onPaginationChange={setPagination}
-          onSearchChange={setGlobalFilter}
-          pagination={pagination}
-          searchValue={globalFilter}
-        />
+          {error ? (
+            <DataFetchError error={error} onRetry={() => refetch()} message="Couldn't load expenses" />
+          ) : (
+            <DataTable
+              columns={columns}
+              data={data?.data ?? []}
+              isLoading={isLoading && !data}
+              mobileCard={(expense) => <ExpenseCard key={expense.id} expense={expense} />}
+              searchableColumns={["category", "note"]}
+              searchPlaceholder="Search by category or note"
+              isSearching={!!debouncedFilter.trim()}
+              emptyMessage="No expenses yet"
+              emptyDescription="Add rent, bills and salaries to see your real profit."
+              emptyAction={canAdd ? addButton : undefined}
+              pageCount={data?.pageCount ?? 1}
+              rowCount={data?.totalCount}
+              onPaginationChange={setPagination}
+              onSearchChange={(value) => {
+                setGlobalFilter(value);
+                setPagination((p) => ({ ...p, pageIndex: 0 }));
+              }}
+              pagination={pagination}
+              searchValue={globalFilter}
+            />
+          )}
+        </>
       )}
 
       <ExpenseDialog

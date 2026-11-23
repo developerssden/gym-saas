@@ -8,15 +8,17 @@ import { Button } from "@/components/ui/button";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { removeFromOutbox, updateOutboxItem } from "@/lib/offline/outbox";
 import type { OutboxItem } from "@/lib/offline/outbox-types";
-
-const when = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+import { useConfirm } from "@/components/common/confirm-dialog";
+import { formatDateTime, paymentMethodLabel } from "@/lib/format";
 
 export function PendingPaymentsList({ items, onRetry }: { items: OutboxItem[]; onRetry?: () => void }) {
   const { format } = useGymCurrency();
+  const { confirm, dialog: confirmDialog } = useConfirm();
   if (items.length === 0) return null;
 
   return (
+    <>
+    {confirmDialog}
     <ul className="divide-y">
       {items.map(item => (
         <li key={item.id} className="flex flex-wrap items-start justify-between gap-2 py-2.5">
@@ -25,7 +27,7 @@ export function PendingPaymentsList({ items, onRetry }: { items: OutboxItem[]; o
               {item.memberName} · {format(item.amount)}
             </p>
             <p className="text-xs text-muted-foreground">
-              {item.kind === "renew" ? "Renewal" : "Payment"} · {item.method === "CASH" ? "Cash" : "Bank transfer"} · {when(item.createdAt)}
+              {item.kind === "renew" ? "Renewal" : "Payment"} · {paymentMethodLabel(item.method)} · {formatDateTime(item.createdAt)}
             </p>
             {item.status === "failed" && item.error && <p className="mt-1 text-xs text-destructive">{item.error}</p>}
           </div>
@@ -37,7 +39,7 @@ export function PendingPaymentsList({ items, onRetry }: { items: OutboxItem[]; o
               <Button
                 size="icon"
                 variant="ghost"
-                className="size-8"
+                className="size-11 md:size-9"
                 aria-label={`Try ${item.memberName}'s payment again`}
                 onClick={async () => {
                   await updateOutboxItem(item.id, { status: "pending", error: undefined, attempts: 0 });
@@ -49,12 +51,17 @@ export function PendingPaymentsList({ items, onRetry }: { items: OutboxItem[]; o
               <Button
                 size="icon"
                 variant="ghost"
-                className="size-8"
+                className="size-11 md:size-9"
                 aria-label={`Remove ${item.memberName}'s payment`}
-                onClick={() => {
-                  if (confirm(`Remove ${item.memberName}'s ${format(item.amount)} payment from this device? It was not recorded.`)) {
-                    void removeFromOutbox(item.id);
-                  }
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: `Remove ${item.memberName}'s payment?`,
+                    description: `The ${format(item.amount)} payment was never recorded. Removing it deletes it from this device, so record it again if the member did pay.`,
+                    confirmLabel: "Remove payment",
+                    cancelLabel: "Keep it",
+                    destructive: true,
+                  });
+                  if (ok) void removeFromOutbox(item.id);
                 }}
               >
                 <Trash2 className="size-4" />
@@ -64,5 +71,6 @@ export function PendingPaymentsList({ items, onRetry }: { items: OutboxItem[]; o
         </li>
       ))}
     </ul>
+    </>
   );
 }

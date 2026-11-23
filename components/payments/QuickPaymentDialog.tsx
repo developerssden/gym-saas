@@ -26,6 +26,7 @@ import { applyPendingPayments, searchDirectory } from "@/lib/offline/outbox-type
 import { submitPayment } from "@/lib/offline/submit";
 import type { FeeAction } from "@/lib/quick-payment";
 import { PAYMENT_QUERY_KEYS } from "@/lib/payment-queries";
+import { formatDate } from "@/lib/format";
 
 export type QuickPaymentMember = { id: string; name: string };
 
@@ -42,8 +43,7 @@ type FeeResponse = {
 
 const memberName = (m: MemberRow) => `${m.user.first_name ?? ""} ${m.user.last_name ?? ""}`.trim() || "Member";
 
-const shortDate = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+const shortDate = (iso: string) => formatDate(iso);
 
 type Props = {
   open: boolean;

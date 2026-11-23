@@ -10,6 +10,7 @@ import { MoreHorizontal, Plus, ShieldCheck, Mail, UserX, UserCheck, XCircle } fr
 
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
+import { useConfirm } from "@/components/common/confirm-dialog";
 import { PageContainer } from "@/components/layout/page-container";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ const STATUS_BADGE: Record<StaffRow["status"], { label: string; variant: "defaul
 function StaffActions({ staff }: { staff: StaffRow }) {
   const queryClient = useQueryClient();
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["staff"] });
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   const update = useMutation({
     mutationFn: (is_active: boolean) => axios.post("/api/staff/updatestaff", { id: staff.id, is_active }),
@@ -71,10 +73,11 @@ function StaffActions({ staff }: { staff: StaffRow }) {
   });
 
   return (
+    <>
+    {confirmDialog}
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
+        <Button variant="ghost" className="size-11 p-0 md:size-9" aria-label={`Actions for ${staff.email ?? "staff member"}`}>
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -95,8 +98,15 @@ function StaffActions({ staff }: { staff: StaffRow }) {
             <DropdownMenuItem
               className="text-destructive"
               disabled={cancel.isPending}
-              onClick={() => {
-                if (confirm("Cancel this invite? The link in their email will stop working.")) cancel.mutate();
+              onClick={async () => {
+                const ok = await confirm({
+                  title: "Cancel this invite?",
+                  description: `The link we emailed${staff.email ? ` to ${staff.email}` : ""} will stop working. You can invite them again later.`,
+                  confirmLabel: "Cancel invite",
+                  cancelLabel: "Keep invite",
+                  destructive: true,
+                });
+                if (ok) cancel.mutate();
               }}
             >
               <XCircle className="mr-2 h-4 w-4" />
@@ -110,10 +120,14 @@ function StaffActions({ staff }: { staff: StaffRow }) {
             <DropdownMenuItem
               className="text-destructive"
               disabled={update.isPending}
-              onClick={() => {
-                if (confirm("Deactivate this staff member? They lose access straight away and can't sign in until you reactivate them.")) {
-                  update.mutate(false);
-                }
+              onClick={async () => {
+                const ok = await confirm({
+                  title: "Deactivate this staff member?",
+                  description: "They lose access straight away and can't sign in until you reactivate them.",
+                  confirmLabel: "Deactivate",
+                  destructive: true,
+                });
+                if (ok) update.mutate(false);
               }}
             >
               <UserX className="mr-2 h-4 w-4" />
@@ -129,6 +143,7 @@ function StaffActions({ staff }: { staff: StaffRow }) {
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+    </>
   );
 }
 

@@ -28,8 +28,8 @@ import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { formatDate as formatDisplayDate } from "@/lib/format";
 
 const EquipmentSchema = Yup.object({
   name: Yup.string().required("Item Name is required"),
@@ -98,7 +98,7 @@ const formatWeight = (
 const formatDate = (date: Date | string | undefined): string => {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
-  return format(d, "PPP");
+  return formatDisplayDate(d, "");
 };
 
 const ManageEquipmentContent = () => {

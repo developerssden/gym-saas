@@ -49,6 +49,7 @@ import OwnerSubscriptionBanner from "@/components/dashboard/OwnerSubscriptionBan
 import SetupChecklist from "@/components/dashboard/SetupChecklist"
 import { addDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
+import { formatDate as formatDisplayDate, formatDateTime } from "@/lib/format"
 
 type OwnerDashboardOverview = {
   totals: {
@@ -109,11 +110,7 @@ function formatPct(pct: number) {
   return `${sign}${pct.toFixed(1)}%`
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return "-"
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString()
-}
+const formatDate = (value?: string | null) => formatDisplayDate(value, "-")
 
 const revenueMonthConfig = {
   revenue: { label: "Revenue", color: "var(--color-chart-2)" },
@@ -458,7 +455,7 @@ const OwnerDashboard = () => {
 
   const cachedAtLabel =
     dataUpdatedAt > 0
-      ? new Date(dataUpdatedAt).toLocaleString()
+      ? formatDateTime(dataUpdatedAt)
       : "an earlier session"
 
   const growthLabel =
@@ -516,7 +513,7 @@ const OwnerDashboard = () => {
 
         {error && (
           <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
-            <span>Couldn't refresh dashboard data. Showing last results.</span>
+            <span>Couldn&apos;t refresh dashboard data. Showing last results.</span>
             <Button variant="outline" size="sm" onClick={() => refetch()}>
               Retry
             </Button>

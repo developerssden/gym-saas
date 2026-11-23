@@ -56,11 +56,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { OwnerSubscriptionHistoryDrawer } from "./OwnerSubscriptionHistoryDrawer";
+import { formatDate as formatDisplayDate, billingModelLabel } from "@/lib/format";
 
-const formatDate = (value: unknown) => {
-  const d = value instanceof Date ? value : new Date(value as any);
-  return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
-};
+const formatDate = (value: unknown) => formatDisplayDate(value as string | Date | null, "-");
 
 // Column definitions for TanStack table
 export const columns: ColumnDef<OwnerSubscription>[] = [
@@ -100,7 +98,7 @@ export const columns: ColumnDef<OwnerSubscription>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Billing" />
     ),
-    cell: ({ row }) => row.original.billing_model,
+    cell: ({ row }) => billingModelLabel(row.original.billing_model),
   },
   {
     accessorKey: "start_date",

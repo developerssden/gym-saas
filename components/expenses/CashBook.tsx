@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { expenseCategoryLabel } from "@/lib/expenses";
 import { cn } from "@/lib/utils";
+import { formatDate, paymentMethodLabel } from "@/lib/format";
 
 type CashBookResponse = {
   day: string;
@@ -53,7 +54,7 @@ export function CashBook({ gymId, locationId }: { gymId?: string | null; locatio
         <div>
           <CardTitle>Cash book</CardTitle>
           <CardDescription>
-            {isToday ? "Today's" : format(new Date(`${day}T12:00:00`), "d MMM yyyy") + "'s"} money in and out
+            {isToday ? "Today's" : formatDate(new Date(`${day}T12:00:00`)) + "'s"} money in and out
           </CardDescription>
         </div>
         <div className="grid gap-1">
@@ -66,7 +67,7 @@ export function CashBook({ gymId, locationId }: { gymId?: string | null; locatio
             max={today}
             value={day}
             onChange={(e) => setDay(e.target.value || today)}
-            className="h-9 w-auto"
+            className="h-11 w-auto md:h-9"
           />
         </div>
       </CardHeader>
@@ -85,9 +86,9 @@ export function CashBook({ gymId, locationId }: { gymId?: string | null; locatio
                   tone: (data?.net ?? 0) < 0 ? "text-destructive" : "text-primary-dim",
                 },
               ].map((item) => (
-                <div key={item.label} className="rounded-md border px-3 py-2.5">
+                <div key={item.label} className="min-w-0 rounded-md border px-2.5 py-2.5 sm:px-3">
                   <div className="text-xs text-muted-foreground">{item.label}</div>
-                  <div className={cn("text-lg font-semibold sm:text-xl", item.tone)}>
+                  <div className={cn("break-words text-base font-semibold sm:text-xl", item.tone)}>
                     {isLoading || item.value === undefined ? "…" : formatMoney(item.value)}
                   </div>
                 </div>
@@ -105,7 +106,7 @@ export function CashBook({ gymId, locationId }: { gymId?: string | null; locatio
                         <span>
                           {p.member_name}
                           <span className="ml-1.5 text-xs text-muted-foreground">
-                            {p.payment_method === "BANK_TRANSFER" ? "Bank" : "Cash"}
+                            {paymentMethodLabel(p.payment_method)}
                           </span>
                         </span>
                         <span className="font-medium">{formatMoney(p.amount)}</span>

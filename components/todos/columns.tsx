@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, CheckCircle2, Circle, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
 import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useConfirm } from "@/components/common/confirm-dialog";
+import { formatDate } from "@/lib/format";
 
 export type Todo = {
   id: string;
@@ -96,7 +97,7 @@ export const columns: ColumnDef<Todo>[] = [
     header: "Created",
     cell: ({ row }) => {
       const date = row.getValue("createdAt") as string;
-      return <div>{format(new Date(date), "MMM dd, yyyy")}</div>;
+      return <div>{formatDate(date)}</div>;
     },
   },
   {
@@ -111,6 +112,7 @@ export const columns: ColumnDef<Todo>[] = [
 function TodoActionsCell({ todo }: { todo: Todo }) {
   const queryClient = useQueryClient();
   const { can } = usePermissions();
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -124,6 +126,8 @@ function TodoActionsCell({ todo }: { todo: Todo }) {
   });
 
   return (
+    <>
+    {confirmDialog}
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -148,10 +152,14 @@ function TodoActionsCell({ todo }: { todo: Todo }) {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => {
-                if (confirm("Are you sure you want to delete this todo?")) {
-                  deleteMutation.mutate();
-                }
+              onClick={async () => {
+                const ok = await confirm({
+                  title: "Delete this to-do?",
+                  description: `"${todo.title}" is removed from your list. This can't be undone.`,
+                  confirmLabel: "Delete to-do",
+                  destructive: true,
+                });
+                if (ok) deleteMutation.mutate();
               }}
               className="text-destructive"
             >
@@ -162,5 +170,6 @@ function TodoActionsCell({ todo }: { todo: Todo }) {
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+    </>
   );
 }
