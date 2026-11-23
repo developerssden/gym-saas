@@ -13,12 +13,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useConfirm } from "@/components/common/confirm-dialog";
 
 export type Equipment = {
   id: string;
@@ -42,6 +42,7 @@ export type Equipment = {
 function EquipmentActionsCell({ equipment }: { equipment: Equipment }) {
   const queryClient = useQueryClient();
   const { can } = usePermissions();
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -55,6 +56,8 @@ function EquipmentActionsCell({ equipment }: { equipment: Equipment }) {
   });
 
   return (
+    <>
+    {confirmDialog}
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -79,10 +82,14 @@ function EquipmentActionsCell({ equipment }: { equipment: Equipment }) {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => {
-                if (confirm("Are you sure you want to delete this equipment?")) {
-                  deleteMutation.mutate();
-                }
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Delete ${equipment.name}?`,
+                  description: "It's removed from your equipment list, with its maintenance dates and notes. This can't be undone.",
+                  confirmLabel: "Delete equipment",
+                  destructive: true,
+                });
+                if (ok) deleteMutation.mutate();
               }}
               className="text-destructive"
             >
@@ -93,6 +100,7 @@ function EquipmentActionsCell({ equipment }: { equipment: Equipment }) {
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+    </>
   );
 }
 

@@ -35,18 +35,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { formatDate } from "@/lib/format";
 
-const formatDob = (value: unknown) => {
-  if (!value) return "-";
-  const d = value instanceof Date ? value : new Date(value as any);
-  if (Number.isNaN(d.getTime())) return "-";
-  // DD Month YYYY (month in words)
-  return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-};
+const formatDob = (value: unknown) => formatDate(value as string | Date | null, "-");
 
 // Column definitions for TanStack table
 export const columns: ColumnDef<Client>[] = [

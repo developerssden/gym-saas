@@ -19,11 +19,9 @@ import { resolveGymCountry } from "@/lib/currency";
 import { ShareReceiptMenuItem } from "@/components/common/whatsapp-actions";
 import { usePermissions } from "@/hooks/usePermissions";
 import { recordedByLabel } from "@/lib/recorded-by";
+import { formatDate as formatDisplayDate, paymentMethodLabel, subscriptionTypeLabel } from "@/lib/format";
 
-const formatDate = (value: unknown) => {
-  const d = value instanceof Date ? value : new Date(value as any);
-  return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
-};
+const formatDate = (value: unknown) => formatDisplayDate(value as string | Date | null, "-");
 
 function paymentCountryCode(payment: Payment): string | null {
   if (payment.subscription_type === "MEMBER") {
@@ -63,7 +61,7 @@ export const columns: ColumnDef<Payment>[] = [
               {owner ? `${owner.first_name ?? ""} ${owner.last_name ?? ""}`.trim() : "-"}
             </span>
             <span className="text-xs text-muted-foreground">{owner?.email ?? ""}</span>
-            <span className="text-xs text-muted-foreground">Owner Subscription</span>
+            <span className="text-xs text-muted-foreground">{subscriptionTypeLabel("OWNER")}</span>
           </div>
         );
       } else {
@@ -74,7 +72,7 @@ export const columns: ColumnDef<Payment>[] = [
               {member ? `${member.first_name ?? ""} ${member.last_name ?? ""}`.trim() : "-"}
             </span>
             <span className="text-xs text-muted-foreground">{member?.email ?? ""}</span>
-            <span className="text-xs text-muted-foreground">Member Subscription</span>
+            <span className="text-xs text-muted-foreground">{subscriptionTypeLabel("MEMBER")}</span>
           </div>
         );
       }
@@ -92,15 +90,15 @@ export const columns: ColumnDef<Payment>[] = [
   },
   {
     accessorKey: "payment_method",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Payment Method" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Method" />,
     cell: ({ row }) => {
       const method = row.original.payment_method;
-      return method === "CASH" ? "Cash" : method === "BANK_TRANSFER" ? "Bank Transfer" : method;
+      return paymentMethodLabel(method);
     },
   },
   {
     accessorKey: "payment_date",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Payment Date" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
     cell: ({ row }) => formatDate(row.original.payment_date),
   },
   {
@@ -111,7 +109,7 @@ export const columns: ColumnDef<Payment>[] = [
   {
     accessorKey: "subscription_type",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
-    cell: ({ row }) => row.original.subscription_type,
+    cell: ({ row }) => subscriptionTypeLabel(row.original.subscription_type),
   },
   {
     id: "recorded_by",

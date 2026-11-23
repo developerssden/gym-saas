@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { usePermissions } from "@/hooks/usePermissions";
 import QuickPaymentDialog from "@/components/payments/QuickPaymentDialog";
+import { useConfirm } from "@/components/common/confirm-dialog";
+import { formatDate } from "@/lib/format";
 
 type Member = {
   id: string;
@@ -68,11 +70,8 @@ export const columns: ColumnDef<Member>[] = [
   },
   {
     accessorKey: "joinedAt",
-    header: "Joined Date",
-    cell: ({ row }) => {
-      const date = new Date(row.original.joinedAt);
-      return date.toLocaleDateString();
-    },
+    header: "Joined",
+    cell: ({ row }) => <span className="whitespace-nowrap">{formatDate(row.original.joinedAt)}</span>,
   },
   {
     id: "actions",
@@ -91,6 +90,7 @@ function MemberActionsCell({ member }: { member: Member }) {
   const canDelete = can("members.delete");
   const canTakeFee = can("payments.record") || can("membersubscriptions.renew");
   const [paying, setPaying] = useState(false);
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -107,6 +107,7 @@ function MemberActionsCell({ member }: { member: Member }) {
 
   return (
     <>
+    {confirmDialog}
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -131,10 +132,15 @@ function MemberActionsCell({ member }: { member: Member }) {
         )}
         {canDelete && (
           <DropdownMenuItem
-            onClick={() => {
-              if (confirm("Are you sure you want to delete this member?")) {
-                deleteMutation.mutate();
-              }
+            onClick={async () => {
+              const name = `${member.user.first_name} ${member.user.last_name}`.trim() || "this member";
+              const ok = await confirm({
+                title: `Delete ${name}?`,
+                description: "They're removed from your members and can no longer be renewed or sent reminders. This can't be undone.",
+                confirmLabel: "Delete member",
+                destructive: true,
+              });
+              if (ok) deleteMutation.mutate();
             }}
             className="text-destructive"
           >

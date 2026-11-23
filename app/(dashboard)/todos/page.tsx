@@ -28,7 +28,7 @@ const TodosPage = () => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "pending">("all");
-  const debouncedFilter = useDebounce(globalFilter, 1000);
+  const debouncedFilter = useDebounce(globalFilter, 400);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["todos", pagination.pageIndex + 1, pagination.pageSize, debouncedFilter, statusFilter],
@@ -92,6 +92,7 @@ const TodosPage = () => {
         <DataTable
           columns={columns}
           data={data.data}
+          searchPlaceholder="Search to-dos"
           searchableColumns={["title", "description"]}
           emptyMessage={statusFilter === "all" ? "No to-dos yet" : statusFilter === "completed" ? "No completed to-dos" : "Nothing pending"}
           emptyDescription={statusFilter === "all" ? "Note jobs for the gym, like fixing a machine or paying a bill." : undefined}

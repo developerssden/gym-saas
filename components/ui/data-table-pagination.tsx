@@ -19,97 +19,93 @@ interface DataTablePaginationProps<TData> {
     table: Table<TData>
 }
 
+/** Page size and page buttons (44px on phones). */
 export function DataTablePagination<TData>({
     table,
 }: DataTablePaginationProps<TData>) {
-    const pageCount = Math.max(1, table.getPageCount())
+    const tablePageCount = table.getPageCount()
+    // If pageCount is -1 (unknown), calculate from row count
+    const pageCount =
+        tablePageCount === -1
+            ? Math.max(1, Math.ceil(table.getFilteredRowModel().rows.length / table.getState().pagination.pageSize))
+            : Math.max(1, tablePageCount)
+    const pageIndex = table.getState().pagination.pageIndex
+    const selected = table.getFilteredSelectedRowModel().rows.length
 
     return (
-        <div className="flex w-full items-center justify-between overflow-x-auto p-3">
-            {table.getFilteredSelectedRowModel().rows.length > 0 && (
-                <div className="text-muted-foreground flex-1 text-sm">
-                    {table.getFilteredSelectedRowModel().rows.length} of{" "}
-                    {table.getFilteredRowModel().rows.length} row(s) selected.
+        <div className="flex w-full flex-wrap items-center justify-between gap-3 p-3">
+            {selected > 0 && (
+                <div className="w-full text-sm text-muted-foreground">
+                    {selected} of {table.getFilteredRowModel().rows.length} selected
                 </div>
             )}
-            <div className="flex w-full items-center gap-4 sm:gap-6 lg:gap-8">
-                <div className="flex w-full items-center space-x-2">
-                    <label htmlFor="rows-per-page" className="text-sm font-medium">
-                        Rows per page
-                    </label>
-                    <Select
-                        value={`${table.getState().pagination.pageSize}`}
-                        onValueChange={(value) => {
-                            table.setPageSize(Number(value))
-                        }}
-                    >
-                        <SelectTrigger id="rows-per-page" aria-label="Rows per page" className="h-8 w-[70px]">
-                            <SelectValue placeholder={table.getState().pagination.pageSize} />
-                        </SelectTrigger>
-                        <SelectContent side="top">
-                            {[10, 20, 25, 30, 40, 50].map((pageSize) => (
-                                <SelectItem key={pageSize} value={`${pageSize}`}>
-                                    {pageSize}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                    Page {table.getState().pagination.pageIndex + 1} of{" "}
-                    {(() => {
-                        const tablePageCount = table.getPageCount()
-                        // If pageCount is -1 (unknown), calculate from row count
-                        if (tablePageCount === -1) {
-                            const pageSize = table.getState().pagination.pageSize
-                            const rowCount = table.getFilteredRowModel().rows.length
-                            return Math.max(1, Math.ceil(rowCount / pageSize))
-                        }
-                        return pageCount
-                    })()}
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="hidden size-8 lg:flex"
-                        onClick={() => table.setPageIndex(0)}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <span className="sr-only">Go to first page</span>
-                        <ChevronsLeft />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="size-8"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <span className="sr-only">Go to previous page</span>
-                        <ChevronLeft />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="size-8"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <span className="sr-only">Go to next page</span>
-                        <ChevronRight />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="hidden size-8 lg:flex"
-                        onClick={() => table.setPageIndex(pageCount - 1)}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <span className="sr-only">Go to last page</span>
-                        <ChevronsRight />
-                    </Button>
-                </div>
+            <div className="flex items-center gap-2">
+                <label htmlFor="rows-per-page" className="text-sm font-medium">
+                    <span className="hidden sm:inline">Rows per page</span>
+                    <span className="sm:hidden">Show</span>
+                </label>
+                <Select
+                    value={`${table.getState().pagination.pageSize}`}
+                    onValueChange={(value) => {
+                        table.setPageSize(Number(value))
+                    }}
+                >
+                    <SelectTrigger id="rows-per-page" className="h-11 w-[76px] md:h-9">
+                        <SelectValue placeholder={table.getState().pagination.pageSize} />
+                    </SelectTrigger>
+                    <SelectContent side="top">
+                        {[10, 20, 25, 30, 40, 50].map((pageSize) => (
+                            <SelectItem key={pageSize} value={`${pageSize}`}>
+                                {pageSize}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="flex items-center gap-2">
+                <span className="mr-1 whitespace-nowrap text-sm font-medium" aria-live="polite">
+                    Page {pageIndex + 1} of {pageCount}
+                </span>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="hidden size-9 lg:flex"
+                    onClick={() => table.setPageIndex(0)}
+                    disabled={!table.getCanPreviousPage()}
+                    aria-label="First page"
+                >
+                    <ChevronsLeft />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-11 md:size-9"
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                    aria-label="Previous page"
+                >
+                    <ChevronLeft />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-11 md:size-9"
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                    aria-label="Next page"
+                >
+                    <ChevronRight />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="hidden size-9 lg:flex"
+                    onClick={() => table.setPageIndex(pageCount - 1)}
+                    disabled={!table.getCanNextPage()}
+                    aria-label="Last page"
+                >
+                    <ChevronsRight />
+                </Button>
             </div>
         </div>
     )

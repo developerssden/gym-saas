@@ -5,17 +5,9 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormDialog } from "@/components/forms/form-dialog";
+import { LabeledField } from "@/components/forms/labeled-field";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { cn } from "@/lib/utils";
@@ -23,6 +15,7 @@ import {
   EXPENSE_CATEGORIES,
   MAX_EXPENSE_NOTE,
   expenseCategoryLabel,
+  isExpenseCategory,
   validateExpenseInput,
   type ExpenseCategoryValue,
 } from "@/lib/expenses";
@@ -51,30 +44,41 @@ export function invalidateExpenseQueries(queryClient: ReturnType<typeof useQuery
   queryClient.invalidateQueries({ queryKey: ["ownerDashboardOverview"] });
 }
 
-export default function ExpenseDialog(props: ExpenseDialogProps) {
-  return (
-    <Dialog open={props.open} onOpenChange={(o) => !o && props.onClose()}>
-      <DialogContent className="sm:max-w-md">
-        {props.open && <ExpenseForm {...props} />}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ExpenseForm({ onClose, expense, gymId, locationId }: ExpenseDialogProps) {
+/** Add or edit an expense: dialog on larger screens, bottom sheet on phones. */
+export default function ExpenseDialog({ open, onClose, expense, gymId, locationId }: ExpenseDialogProps) {
   const queryClient = useQueryClient();
   const { currencyCode, format: formatMoney } = useGymCurrency();
   const isEdit = !!expense;
   const today = format(new Date(), "yyyy-MM-dd");
 
-  const [amount, setAmount] = useState(expense ? String(expense.amount) : "");
-  const [category, setCategory] = useState<ExpenseCategoryValue | "">(expense?.category ?? "");
-  const [day, setDay] = useState(expense ? format(new Date(expense.expense_date), "yyyy-MM-dd") : today);
-  const [note, setNote] = useState(expense?.note ?? "");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState<ExpenseCategoryValue | "">("");
+  const [day, setDay] = useState(today);
+  const [note, setNote] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [wasOpen, setWasOpen] = useState(false);
 
-  const error = validateExpenseInput({ amount: amount.trim() ? Number(amount) : NaN, category, note });
+  // Reset the fields each time the dialog opens.
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setAmount(expense ? String(expense.amount) : "");
+      setCategory(expense?.category ?? "");
+      setDay(expense ? format(new Date(expense.expense_date), "yyyy-MM-dd") : today);
+      setNote(expense?.note ?? "");
+      setSubmitted(false);
+    }
+  }
+
+  const amountError = validateExpenseInput({
+    amount: amount.trim() ? Number(amount) : NaN,
+    category: EXPENSE_CATEGORIES[0].value,
+  });
+  const categoryError = isExpenseCategory(category) ? null : "Choose a category";
   const dayError = !day ? "Pick a date" : day > today ? "Can't be in the future" : null;
+  const noteError = note.length > MAX_EXPENSE_NOTE ? `Keep the note under ${MAX_EXPENSE_NOTE} characters` : null;
+  const hasErrors = !!(amountError || categoryError || dayError || noteError);
+  const show = (error: string | null) => (submitted ? error : null);
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -95,36 +99,34 @@ function ExpenseForm({ onClose, expense, gymId, locationId }: ExpenseDialogProps
             note: note.trim() || undefined,
           }),
     onSuccess: () => {
-      toast.success(
-        isEdit
-          ? "Expense updated"
-          : `Added ${formatMoney(Number(amount))} · ${expenseCategoryLabel(category)}`
-      );
+      const what = `${formatMoney(Number(amount))} · ${expenseCategoryLabel(category)}`;
+      toast.success(isEdit ? `Saved ${what}` : `Added ${what}`);
       invalidateExpenseQueries(queryClient);
       onClose();
     },
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = () => {
     setSubmitted(true);
-    if (error || dayError) return;
+    if (hasErrors) return;
     mutation.mutate();
   };
 
   return (
-    <form onSubmit={submit} noValidate>
-      <DialogHeader>
-        <DialogTitle>{isEdit ? "Edit expense" : "Add expense"}</DialogTitle>
-        <DialogDescription>Money the gym spent, e.g. rent, bills or salaries.</DialogDescription>
-      </DialogHeader>
-
-      <div className="grid gap-4 py-4">
-        <div className="grid gap-1.5">
-          <Label htmlFor="expense-amount">Amount ({currencyCode})</Label>
+    <FormDialog
+      open={open}
+      onOpenChange={(o) => !o && onClose()}
+      title={isEdit ? "Edit expense" : "Add expense"}
+      description="Money the gym spent, e.g. rent, bills or salaries."
+      onSubmit={submit}
+      submitLabel={isEdit ? "Save changes" : "Add expense"}
+      pending={mutation.isPending}
+    >
+      <LabeledField label={`Amount (${currencyCode})`} error={show(amountError)} required>
+        {(p) => (
           <Input
-            id="expense-amount"
+            {...p}
             type="number"
             inputMode="numeric"
             min={1}
@@ -135,67 +137,63 @@ function ExpenseForm({ onClose, expense, gymId, locationId }: ExpenseDialogProps
             placeholder="e.g. 45000"
             className="h-12 text-lg"
           />
+        )}
+      </LabeledField>
+
+      <fieldset
+        className="grid gap-1.5"
+        aria-describedby={show(categoryError) ? "expense-category-error" : undefined}
+        aria-invalid={show(categoryError) ? true : undefined}
+      >
+        <legend className="mb-1.5 text-sm font-medium">
+          Category
+          <span aria-hidden className="text-destructive">
+            *
+          </span>
+        </legend>
+        <div className="flex flex-wrap gap-2">
+          {EXPENSE_CATEGORIES.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              aria-pressed={category === c.value}
+              onClick={() => setCategory(c.value)}
+              className={cn(
+                "min-h-11 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                category === c.value
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "bg-background hover:bg-muted"
+              )}
+            >
+              {expenseCategoryLabel(c.value)}
+            </button>
+          ))}
         </div>
+        {show(categoryError) && (
+          <p id="expense-category-error" className="text-sm text-destructive">
+            {categoryError}
+          </p>
+        )}
+      </fieldset>
 
-        <fieldset className="grid gap-1.5">
-          <legend className="mb-1.5 text-sm font-medium">Category</legend>
-          <div className="flex flex-wrap gap-2">
-            {EXPENSE_CATEGORIES.map((c) => (
-              <button
-                key={c.value}
-                type="button"
-                aria-pressed={category === c.value}
-                onClick={() => setCategory(c.value)}
-                className={cn(
-                  "min-h-10 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
-                  category === c.value
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "bg-background hover:bg-muted"
-                )}
-              >
-                {expenseCategoryLabel(c.value)}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+      <LabeledField label="Date" error={show(dayError)} required>
+        {(p) => (
+          <Input {...p} type="date" max={today} value={day} onChange={(e) => setDay(e.target.value)} className="h-11" />
+        )}
+      </LabeledField>
 
-        <div className="grid gap-1.5">
-          <Label htmlFor="expense-date">Date</Label>
+      <LabeledField label="Note (optional)" error={show(noteError)}>
+        {(p) => (
           <Input
-            id="expense-date"
-            type="date"
-            max={today}
-            value={day}
-            onChange={(e) => setDay(e.target.value)}
-          />
-        </div>
-
-        <div className="grid gap-1.5">
-          <Label htmlFor="expense-note">Note (optional)</Label>
-          <Input
-            id="expense-note"
+            {...p}
             maxLength={MAX_EXPENSE_NOTE}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="e.g. November electricity bill"
+            className="h-11"
           />
-        </div>
-
-        {submitted && (error || dayError) && (
-          <p role="alert" className="text-sm text-destructive">
-            {error ?? dayError}
-          </p>
         )}
-      </div>
-
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose} disabled={mutation.isPending}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Saving..." : isEdit ? "Save changes" : "Add expense"}
-        </Button>
-      </DialogFooter>
-    </form>
+      </LabeledField>
+    </FormDialog>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
@@ -11,6 +10,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { CurrencyAmount } from "@/components/common/CurrencyAmount";
+import { billingModelLabel, formatDate, formatDateRange, formatShortDate } from "@/lib/format";
 
 interface Props {
   open: boolean;
@@ -88,22 +88,21 @@ export function MemberSubscriptionHistoryDrawer({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">
-                    {format(new Date(sub.start_date), "MMM d, yyyy")} —{" "}
-                    {format(new Date(sub.end_date), "MMM d, yyyy")}
+                    {formatDateRange(sub.start_date, sub.end_date)}
                   </span>
                   <Badge variant={color}>{label}</Badge>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  <CurrencyAmount amount={sub.price} /> · {sub.billing_model}
+                  <CurrencyAmount amount={sub.price} /> · {billingModelLabel(sub.billing_model)}
                 </span>
                 {sub.freezes && sub.freezes.length > 0 && (
                   <ul className="mt-2 flex flex-col gap-1 border-t pt-2 text-xs text-muted-foreground">
                     {sub.freezes.map((freeze) => (
                       <li key={freeze.id}>
                         <span className="font-medium text-foreground">Frozen</span>{" "}
-                        {format(new Date(freeze.start_date), "MMM d")}
+                        {formatShortDate(freeze.start_date)}
                         {freeze.end_date
-                          ? ` – ${format(new Date(freeze.end_date), "MMM d, yyyy")} (+${freeze.days ?? 0} day${freeze.days === 1 ? "" : "s"})`
+                          ? ` – ${formatDate(freeze.end_date)} (+${freeze.days ?? 0} day${freeze.days === 1 ? "" : "s"})`
                           : " – now"}
                         {freeze.reason ? ` · ${freeze.reason}` : ""}
                       </li>

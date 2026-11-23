@@ -23,7 +23,7 @@ const EquipmentPage = () => {
   const { can } = usePermissions();
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
-  const debouncedFilter = useDebounce(globalFilter, 1000);
+  const debouncedFilter = useDebounce(globalFilter, 400);
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [limitExceeded, setLimitExceeded] = useState<{
@@ -109,6 +109,7 @@ const EquipmentPage = () => {
         <DataTable
           columns={columns}
           data={data.data}
+          searchPlaceholder="Search by name or type"
           searchableColumns={["name", "type"]}
           emptyMessage="No equipment yet"
           emptyDescription="Keep track of machines and weights, their condition and when they need repairs."

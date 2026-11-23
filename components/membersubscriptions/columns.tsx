@@ -35,6 +35,7 @@ import { WhatsAppReminderMenuItem } from "@/components/common/whatsapp-actions";
 import RecordPaymentModal from "@/components/membersubscriptions/RecordPaymentModal";
 import FreezeDialog from "@/components/membersubscriptions/FreezeDialog";
 import { usePermissions } from "@/hooks/usePermissions";
+import { formatDate } from "@/lib/format";
 
 export type MemberSubscription = {
   id: string;
@@ -287,18 +288,12 @@ export const columns: ColumnDef<MemberSubscription>[] = [
   {
     accessorKey: "start_date",
     header: "Start Date",
-    cell: ({ row }) => {
-      const date = new Date(row.original.start_date);
-      return date.toLocaleDateString();
-    },
+    cell: ({ row }) => <span className="whitespace-nowrap">{formatDate(row.original.start_date)}</span>,
   },
   {
     accessorKey: "end_date",
     header: "End Date",
-    cell: ({ row }) => {
-      const date = new Date(row.original.end_date);
-      return date.toLocaleDateString();
-    },
+    cell: ({ row }) => <span className="whitespace-nowrap">{formatDate(row.original.end_date)}</span>,
   },
   {
     accessorKey: "is_active",
@@ -310,7 +305,7 @@ export const columns: ColumnDef<MemberSubscription>[] = [
           <span className="flex flex-col">
             <span className="text-sky-600 dark:text-sky-400">Frozen</span>
             <span className="text-xs text-muted-foreground">
-              since {new Date(sub.frozen_since).toLocaleDateString()}
+              since {formatDate(sub.frozen_since)}
             </span>
           </span>
         );

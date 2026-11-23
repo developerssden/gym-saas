@@ -8,10 +8,11 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
-import { addDays, format } from "date-fns"
+import { addDays } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import * as React from "react"
 import { type DateRange } from "react-day-picker"
+import { formatDate, formatDateRange } from "@/lib/format"
 
 export default function DateRangePicker({
   className,
@@ -61,11 +62,10 @@ export default function DateRangePicker({
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, "LLL dd, y")} -{" "}
-                  {format(date.to, "LLL dd, y")}
+                  {formatDateRange(date.from, date.to)}
                 </>
               ) : (
-                format(date.from, "LLL dd, y")
+                formatDate(date.from)
               )
             ) : (
               <span>Pick a date</span>

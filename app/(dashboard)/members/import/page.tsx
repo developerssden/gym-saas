@@ -304,7 +304,7 @@ export default function MemberImportPage() {
                           row.status === "success" ? "default" : "destructive"
                         }
                       >
-                        {row.status}
+                        {row.status === "success" ? "Added" : "Not added"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">

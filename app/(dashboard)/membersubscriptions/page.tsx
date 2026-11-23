@@ -22,7 +22,7 @@ const MemberSubscriptionsPage = () => {
   const { can } = usePermissions();
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
-  const debouncedFilter = useDebounce(globalFilter, 1000);
+  const debouncedFilter = useDebounce(globalFilter, 400);
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
 
@@ -114,6 +114,7 @@ const MemberSubscriptionsPage = () => {
         <DataTable
           columns={columns}
           data={latestByMember}
+          searchPlaceholder="Search by member name, phone or email"
           searchableColumns={[
             "member.user.first_name",
             "member.user.last_name",

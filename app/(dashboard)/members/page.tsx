@@ -21,7 +21,7 @@ const MembersPage = () => {
   const { data: session, status } = useSession({ required: true });
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [globalFilter, setGlobalFilter] = useState("");
-  const debouncedFilter = useDebounce(globalFilter, 1000);
+  const debouncedFilter = useDebounce(globalFilter, 400);
   const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const { can } = usePermissions();
@@ -110,6 +110,7 @@ const MembersPage = () => {
         <DataTable
           columns={columns}
           data={data.data}
+          searchPlaceholder="Search by name, phone or email"
           searchableColumns={["user.first_name", "user.last_name", "user.email", "user.phone_number"]}
           emptyMessage="No members yet"
           emptyDescription="Import your member list from Excel in one go, or add members one by one."
