@@ -9,7 +9,9 @@ import {
   recordedBySelect,
 } from "@/lib/api-selects";
 import { StatusCodes } from "http-status-codes";
-import { requireAccess, gymScope } from "@/lib/access";
+import { requireAccess, ownedGymWhere } from "@/lib/access";
+import { memberIdsMatchingPhone, phoneSearchDigits } from "@/lib/members/phone-search";
+import { memberPaymentSearchWhere, ownerPaymentSearchWhere } from "@/lib/payments/payment-search";
 import { Prisma, SubscriptionTypeEnum } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -28,6 +30,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       subscription_type,
       page = 1,
       limit = 10,
+      search,
+      gym_id,
+      location_id,
     } = req.body;
 
     const skip = (page - 1) * limit;
@@ -35,38 +40,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Build where clause
     const where: Prisma.PaymentWhereInput = {};
 
-    // For GYM_OWNER: only show payments for their MEMBERS' subscriptions (not their own owner subscriptions)
+    // Owners and staff: only payments for their members' subscriptions (not their
+    // own owner subscriptions), in the selected branch. Staff always stay in
+    // their own gym, whatever gym_id the client sends.
     if (isGymOwner) {
-      // GYM_OWNER should only see member subscription payments
-      if (subscription_type === SubscriptionTypeEnum.MEMBER && member_subscription_id) {
-        // Specific member subscription
-        where.member_subscription_id = member_subscription_id;
-        where.memberSubscription = {
-          member: {
-            ...gymScope(access),
-          },
-        };
-      } else {
-        // All member subscription payments for their members
-        where.member_subscription_id = {
-          not: null,
-        };
-        where.memberSubscription = {
-          member: {
-            ...gymScope(access),
-          },
-        };
-      }
+      const gymId = access.staffGymId ?? (typeof gym_id === "string" && gym_id ? gym_id : undefined);
+      where.member_subscription_id =
+        subscription_type === SubscriptionTypeEnum.MEMBER && member_subscription_id
+          ? member_subscription_id
+          : { not: null };
+      where.memberSubscription = {
+        member: {
+          gym: { ...ownedGymWhere(access), is_deleted: false, ...(gymId ? { id: gymId } : {}) },
+          ...(typeof location_id === "string" && location_id ? { location_id } : {}),
+        },
+      };
+      // Phone numbers in any format: "0301 84" finds "+92301 84…".
+      const digits = typeof search === "string" ? phoneSearchDigits(search) : null;
+      const phoneMemberIds = digits ? await memberIdsMatchingPhone(digits, access.ownerId) : [];
+      const searchWhere = memberPaymentSearchWhere(search, phoneMemberIds);
+      if (searchWhere) where.AND = [searchWhere];
     } else {
       // SUPER_ADMIN: only show payments for gym owners' subscriptions (owner subscription payments)
       if (subscription_type === SubscriptionTypeEnum.OWNER && owner_subscription_id) {
         where.owner_subscription_id = owner_subscription_id;
       } else {
-        // Show all owner subscription payments (gym owners' payments)
-        where.owner_subscription_id = {
-          not: null,
-        };
+        where.owner_subscription_id = { not: null };
       }
+      const searchWhere = ownerPaymentSearchWhere(search);
+      if (searchWhere) where.AND = [searchWhere];
     }
 
     const [payments, totalCount] = await Promise.all([
