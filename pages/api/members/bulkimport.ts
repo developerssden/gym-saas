@@ -9,12 +9,14 @@ import {
 } from "@/lib/subscription-validation";
 import prisma from "@/lib/prisma";
 import { parseSpreadsheetBuffer } from "@/lib/bulk-import/parse-spreadsheet";
-import { validateImportRow } from "@/lib/bulk-import/validate-row";
-import { importMemberRow } from "@/lib/bulk-import/import-row";
+import { duplicatesInFile, validateImportRow } from "@/lib/bulk-import/validate-row";
+import { importMemberRow, rowConflict } from "@/lib/bulk-import/import-row";
 import type {
+  BulkImportCheckResponse,
   BulkImportResponse,
   ImportMode,
   ImportRowResult,
+  ValidatedImportRow,
 } from "@/lib/bulk-import/types";
 import { MAX_IMPORT_FILE_BYTES, MAX_IMPORT_ROWS } from "@/lib/bulk-import/types";
 
@@ -61,9 +63,19 @@ export default async function handler(
   const ownerId = access.ownerId!;
 
   try {
-    const { fields, files } = await parseForm(req);
+    let form: Awaited<ReturnType<typeof parseForm>>;
+    try {
+      form = await parseForm(req);
+    } catch {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: `The file is too big or couldn't be read. Upload a file under ${MAX_IMPORT_FILE_BYTES / 1024 / 1024} MB.`,
+      });
+    }
+    const { fields, files } = form;
 
     const mode = fieldValue(fields, "mode") as ImportMode;
+    // "1": only check the rows and say which can be added; nothing is saved.
+    const checkOnly = fieldValue(fields, "check_only") === "1";
     const gymId = fieldValue(fields, "gym_id");
     const locationId = fieldValue(fields, "location_id");
 
@@ -75,7 +87,7 @@ export default async function handler(
 
     if (!gymId || !locationId) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error: "Missing required fields: gym_id, location_id",
+        error: "Choose a gym and branch at the top of the page first",
       });
     }
 
@@ -98,7 +110,7 @@ export default async function handler(
 
     if (!location || location.is_deleted || location.gym_id !== gymId) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error: "Invalid location_id or location does not belong to the selected gym",
+        error: "That branch isn't part of the selected gym. Choose the branch again at the top of the page.",
       });
     }
 
@@ -124,7 +136,7 @@ export default async function handler(
     const lowerName = filename.toLowerCase();
     if (!lowerName.endsWith(".csv") && !lowerName.endsWith(".xlsx")) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error: "File must be .csv or .xlsx",
+        error: "Upload an Excel (.xlsx) or CSV file",
       });
     }
 
@@ -142,85 +154,85 @@ export default async function handler(
 
     if (rows.length === 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error: "No data rows found in file",
+        error: "The file has no members in it. Fill in one member per row under the headings.",
       });
     }
 
     if (rows.length > MAX_IMPORT_ROWS) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error: `Too many rows. Maximum is ${MAX_IMPORT_ROWS}`,
+        error: `The file has ${rows.length} rows. Import up to ${MAX_IMPORT_ROWS} at a time.`,
       });
     }
 
-    const limitCheck = await checkLimitExceeded(
-      ownerId,
-      "member",
-      locationId
+    const limitCheck = await checkLimitExceeded(ownerId, "member", locationId);
+    const slotsLeft = Math.max(0, limitCheck.max - limitCheck.current);
+
+    // Check every row first: its own values, repeats inside the file, and
+    // members already saved. Nothing is written yet.
+    const checked = rows.map((row) => ({
+      row,
+      name: row.full_name.trim() || `Row ${row.rowNumber}`,
+      validation: validateImportRow(row, mode),
+    }));
+    const repeats = duplicatesInFile(
+      checked.flatMap((c) => (c.validation.ok ? [c.validation.data] : []))
     );
-    const remaining = limitCheck.max - limitCheck.current;
-    if (remaining <= 0) {
-      return res.status(StatusCodes.CONFLICT).json({
-        error: "LIMIT_EXCEEDED",
-        message: `Member limit reached for this location (max ${limitCheck.max})`,
-      });
-    }
-    if (rows.length > remaining) {
-      return res.status(StatusCodes.CONFLICT).json({
-        error: "LIMIT_EXCEEDED",
-        message: `Import has ${rows.length} rows but only ${remaining} member slots remain at this location`,
-      });
-    }
-
     const results: ImportRowResult[] = [];
-    let succeeded = 0;
-    let failed = 0;
-
-    for (const row of rows) {
-      const name = row.full_name.trim() || `Row ${row.rowNumber}`;
-
-      const validation = validateImportRow(row, mode);
-      if (!validation.ok) {
-        results.push({
-          row: row.rowNumber,
-          status: "error",
-          name,
-          error: validation.error,
-        });
-        failed++;
-        continue;
+    const ready: Array<{ name: string; data: ValidatedImportRow }> = [];
+    for (const { row, name, validation } of checked) {
+      const error = !validation.ok
+        ? validation.error
+        : repeats.get(row.rowNumber) ?? (await rowConflict(validation.data, gymId, locationId));
+      if (error || !validation.ok) {
+        results.push({ row: row.rowNumber, status: "error", name, error: error ?? "This row couldn't be read" });
+      } else {
+        ready.push({ name, data: validation.data });
+        results.push({ row: row.rowNumber, status: "ready", name });
       }
+    }
 
+    if (checkOnly) {
+      const response: BulkImportCheckResponse = {
+        total: rows.length,
+        ready: ready.length,
+        failed: rows.length - ready.length,
+        slotsLeft,
+        results: results.sort((a, b) => a.row - b.row),
+      };
+      return res.status(StatusCodes.OK).json(response);
+    }
+
+    if (ready.length > slotsLeft) {
+      return res.status(StatusCodes.CONFLICT).json({
+        error: "LIMIT_EXCEEDED",
+        message:
+          slotsLeft === 0
+            ? `This branch has reached its member limit (${limitCheck.max}). Upgrade your plan to add more.`
+            : `${ready.length} members are ready but this branch has room for ${slotsLeft} more on your plan. Remove some rows or upgrade your plan.`,
+      });
+    }
+
+    let succeeded = 0;
+    for (const { name, data } of ready) {
+      const index = results.findIndex((r) => r.row === data.rowNumber);
       try {
-        const memberId = await importMemberRow(
-          validation.data,
-          mode,
-          gymId,
-          locationId,
-          access.userId
-        );
-        results.push({
-          row: row.rowNumber,
-          status: "success",
-          member_id: memberId,
-          name,
-        });
+        const memberId = await importMemberRow(data, mode, gymId, locationId, access.userId);
+        results[index] = { row: data.rowNumber, status: "success", member_id: memberId, name };
         succeeded++;
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Import failed";
-        results.push({
-          row: row.rowNumber,
+        results[index] = {
+          row: data.rowNumber,
           status: "error",
           name,
-          error: message,
-        });
-        failed++;
+          error: err instanceof Error ? err.message : "Couldn't be added",
+        };
       }
     }
 
     const response: BulkImportResponse = {
       total: rows.length,
       succeeded,
-      failed,
+      failed: rows.length - succeeded,
       results,
     };
 
