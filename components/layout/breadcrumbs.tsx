@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { breadcrumbsFor } from "@/lib/navigation";
+import { useBreadcrumbEntity } from "./breadcrumb-context";
 
 /**
  * "Members › Add" on pages below a menu page. Nothing on menu pages (the page
@@ -21,7 +22,8 @@ import { breadcrumbsFor } from "@/lib/navigation";
 export default function BreadCrumbs() {
   const pathname = usePathname() || "/";
   const action = useSearchParams()?.get("action");
-  const crumbs = breadcrumbsFor(pathname, action);
+  const entity = useBreadcrumbEntity();
+  const crumbs = breadcrumbsFor(pathname, action, entity);
   if (crumbs.length === 0) return null;
 
   return (

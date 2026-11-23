@@ -1,160 +1,160 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useState } from "react";
-import { Banknote, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import axios from "axios";
+import { ColumnDef } from "@tanstack/react-table";
+import { Banknote, Pencil, Trash2, UserRound } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useGymCurrency } from "@/hooks/useGymCurrency";
 import QuickPaymentDialog from "@/components/payments/QuickPaymentDialog";
 import { useConfirm } from "@/components/common/confirm-dialog";
+import { ListCard } from "@/components/common/list-card";
+import { RowActions } from "@/components/common/row-actions";
+import { MemberStatusBadge, OwesBadge } from "@/components/members/member-status-badge";
 import { formatDate } from "@/lib/format";
+import type { MembershipState } from "@/lib/members/member-status";
 
-type Member = {
+export type MemberRow = {
   id: string;
   user: {
     first_name: string;
     last_name: string;
     email: string | null;
-    phone_number: string;
-  };
-  gym: {
-    id: string;
-    name: string;
-  };
-  location: {
-    id: string;
-    name: string;
+    phone_number: string | null;
   };
   joinedAt: string;
+  membership: {
+    state: MembershipState;
+    label: string;
+    days: number | null;
+    endDate: string | null;
+    owes: boolean;
+    /** null when the viewer may not see amounts. */
+    balance: number | null;
+  };
 };
 
-export const columns: ColumnDef<Member>[] = [
+export const memberName = (m: MemberRow) => `${m.user.first_name ?? ""} ${m.user.last_name ?? ""}`.trim() || "Member";
+export const memberHref = (m: MemberRow) => `/members/${m.id}`;
+
+function StatusBadges({ member }: { member: MemberRow }) {
+  const { format } = useGymCurrency();
+  const { membership } = member;
+  return (
+    <span className="flex flex-wrap items-center justify-end gap-1.5 md:justify-start">
+      <MemberStatusBadge state={membership.state} label={membership.label} />
+      {membership.owes && <OwesBadge amount={membership.balance !== null ? format(membership.balance) : null} />}
+    </span>
+  );
+}
+
+const endLabel = (m: MemberRow) => {
+  if (!m.membership.endDate || m.membership.state === "frozen") return null;
+  return `${m.membership.state === "expired" ? "Ended" : "Ends"} ${formatDate(m.membership.endDate)}`;
+};
+
+export const columns: ColumnDef<MemberRow>[] = [
   {
-    accessorKey: "user.first_name",
-    header: "Name",
-    cell: ({ row }) => {
-      const member = row.original;
-      return `${member.user.first_name} ${member.user.last_name}`;
-    },
+    id: "name",
+    header: "Member",
+    cell: ({ row }) => (
+      <div className="flex min-w-[10rem] flex-col">
+        <span className="font-medium">{memberName(row.original)}</span>
+        <span className="text-sm text-muted-foreground tabular-nums">{row.original.user.phone_number || "No phone"}</span>
+      </div>
+    ),
   },
   {
-    accessorKey: "user.email",
-    header: "Email",
-    cell: ({ row }) => row.original.user.email || "-",
+    id: "status",
+    header: "Status",
+    cell: ({ row }) => <StatusBadges member={row.original} />,
   },
   {
-    accessorKey: "user.phone_number",
-    header: "Phone",
-    cell: ({ row }) => row.original.user.phone_number || "-",
+    id: "ends",
+    header: "Membership ends",
+    cell: ({ row }) =>
+      row.original.membership.endDate ? (
+        <span className="whitespace-nowrap">{formatDate(row.original.membership.endDate)}</span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
   },
   {
-    accessorKey: "gym.name",
-    header: "Gym",
-    cell: ({ row }) => row.original.gym.name,
-  },
-  {
-    accessorKey: "location.name",
-    header: "Location",
-    cell: ({ row }) => row.original.location.name,
-  },
-  {
-    accessorKey: "joinedAt",
+    id: "joined",
     header: "Joined",
-    cell: ({ row }) => <span className="whitespace-nowrap">{formatDate(row.original.joinedAt)}</span>,
+    cell: ({ row }) => <span className="whitespace-nowrap text-muted-foreground">{formatDate(row.original.joinedAt)}</span>,
   },
   {
     id: "actions",
-    header: "Actions",
+    header: () => <span className="sr-only">Actions</span>,
     enableHiding: false,
-    cell: ({ row }) => <MemberActionsCell member={row.original} />,
+    cell: ({ row }) => <MemberActions member={row.original} />,
   },
 ];
 
+/** Phone layout for one member: tap opens their profile. */
+export function MemberCard({ member }: { member: MemberRow }) {
+  return (
+    <ListCard
+      href={memberHref(member)}
+      title={memberName(member)}
+      subtitle={member.user.phone_number || "No phone"}
+      status={<StatusBadges member={member} />}
+      meta={endLabel(member)}
+      actions={<MemberActions member={member} className="justify-start" />}
+    />
+  );
+}
 
-// Separate component so the actions cell can use hooks
-function MemberActionsCell({ member }: { member: Member }) {
+function MemberActions({ member, className }: { member: MemberRow; className?: string }) {
   const queryClient = useQueryClient();
   const { can } = usePermissions();
-  const canEdit = can("members.edit");
-  const canDelete = can("members.delete");
-  const canTakeFee = can("payments.record") || can("membersubscriptions.renew");
   const [paying, setPaying] = useState(false);
   const { confirm, dialog: confirmDialog } = useConfirm();
+  const name = memberName(member);
 
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      await axios.post("/api/members/deletemember", { id: member.id });
-    },
+  const remove = useMutation({
+    mutationFn: () => axios.post("/api/members/deletemember", { id: member.id }),
     onSuccess: () => {
-      toast.success("Member deleted successfully");
+      toast.success(`Deleted ${name}`);
       queryClient.invalidateQueries({ queryKey: ["members"] });
     },
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
-  if (!canEdit && !canDelete && !canTakeFee) return null;
+  const askDelete = async () => {
+    const ok = await confirm({
+      title: `Delete ${name}?`,
+      description: "They're removed from your members and can no longer be renewed or sent reminders. This can't be undone.",
+      confirmLabel: "Delete member",
+      destructive: true,
+    });
+    if (ok) remove.mutate();
+  };
 
   return (
     <>
-    {confirmDialog}
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {canTakeFee && (
-          <DropdownMenuItem onClick={() => setPaying(true)}>
-            <Banknote className="mr-2 h-4 w-4" />
-            Record payment
-          </DropdownMenuItem>
-        )}
-        {canEdit && (
-          <DropdownMenuItem asChild>
-            <Link href={`/members/manage?action=edit&id=${member.id}`}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </Link>
-          </DropdownMenuItem>
-        )}
-        {canDelete && (
-          <DropdownMenuItem
-            onClick={async () => {
-              const name = `${member.user.first_name} ${member.user.last_name}`.trim() || "this member";
-              const ok = await confirm({
-                title: `Delete ${name}?`,
-                description: "They're removed from your members and can no longer be renewed or sent reminders. This can't be undone.",
-                confirmLabel: "Delete member",
-                destructive: true,
-              });
-              if (ok) deleteMutation.mutate();
-            }}
-            className="text-destructive"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-    <QuickPaymentDialog
-      open={paying}
-      onClose={() => setPaying(false)}
-      member={{ id: member.id, name: `${member.user.first_name} ${member.user.last_name}`.trim() }}
-    />
+      {confirmDialog}
+      <RowActions
+        className={className}
+        visible={1}
+        moreLabel={`More actions for ${name}`}
+        actions={[
+          {
+            label: "Record payment",
+            icon: Banknote,
+            onClick: () => setPaying(true),
+            hidden: !(can("payments.record") || can("membersubscriptions.renew")),
+          },
+          { label: "View profile", icon: UserRound, href: memberHref(member) },
+          { label: "Edit", icon: Pencil, href: `/members/manage?action=edit&id=${member.id}`, hidden: !can("members.edit") },
+          { label: "Delete", icon: Trash2, destructive: true, onClick: askDelete, hidden: !can("members.delete") },
+        ]}
+      />
+      <QuickPaymentDialog open={paying} onClose={() => setPaying(false)} member={{ id: member.id, name }} />
     </>
   );
 }

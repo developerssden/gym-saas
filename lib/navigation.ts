@@ -35,26 +35,37 @@ const titleCase = (s: string) => s.replace(/[-_]/g, " ").replace(/^./, c => c.to
 
 export type Crumb = { label: string; href?: string };
 
+/** The record a page is about ("Ali Khan", linking to his profile), set by the page. */
+export type CrumbEntity = { label: string; href?: string };
+
+/** Database ids in paths (uuids, cuids): never shown as text. */
+const isId = (segment: string) => /^[0-9a-f-]{20,}$/i.test(segment) || /^c[a-z0-9]{20,}$/.test(segment);
+
 /**
- * Breadcrumb for a page below a menu page: "Members › Add", "Members › Import".
- * Empty for menu pages themselves, whose title is already the page heading.
+ * Breadcrumb for a page below a menu page: "Members › Add", "Members › Import",
+ * "Members › Ali Khan", "Members › Ali Khan › Edit" (when the page names its
+ * record). Empty for menu pages themselves, whose title is already the heading.
  */
-export function breadcrumbsFor(pathname: string, action?: string | null): Crumb[] {
+export function breadcrumbsFor(pathname: string, action?: string | null, entity?: CrumbEntity | null): Crumb[] {
   const section = navItemForPath(pathname);
   if (!section) {
     const last = pathname.split("/").filter(Boolean).pop();
-    return last ? [{ label: titleCase(last) }] : [];
+    return last && !isId(last) ? [{ label: titleCase(last) }] : [];
   }
   if (pathname === section.href) return [];
   const rest = pathname.slice(section.href.length).split("/").filter(Boolean);
   const crumbs: Crumb[] = [{ label: section.title, href: section.href }];
   for (const [i, segment] of rest.entries()) {
     const isLast = i === rest.length - 1;
-    const label =
-      isLast && segment === "manage" && action && ACTION_LABELS[action]
-        ? ACTION_LABELS[action]
-        : SEGMENT_LABELS[segment] ?? titleCase(segment);
-    crumbs.push({ label });
+    if (isId(segment)) {
+      crumbs.push({ label: entity?.label ?? "Details", href: isLast ? undefined : entity?.href });
+    } else if (isLast && segment === "manage" && action && ACTION_LABELS[action]) {
+      // Editing or viewing a named record: "Members › Ali Khan › Edit".
+      if (entity && action !== "create") crumbs.push({ label: entity.label, href: entity.href });
+      crumbs.push({ label: ACTION_LABELS[action] });
+    } else {
+      crumbs.push({ label: SEGMENT_LABELS[segment] ?? titleCase(segment) });
+    }
   }
   return crumbs;
 }

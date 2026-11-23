@@ -60,3 +60,25 @@ test("breadcrumbs name the section and the action", () => {
   assert.deepEqual(breadcrumbsFor("/members/import"), [{ label: "Members", href: "/members" }, { label: "Import" }]);
   assert.deepEqual(breadcrumbsFor("/notifications"), [{ label: "Notifications" }]);
 });
+
+test("breadcrumbs name the record instead of showing its id", () => {
+  const id = "3f2a9c1e-8b7d-4e6f-9a0b-1c2d3e4f5a6b";
+  const ali = { label: "Ali Khan", href: `/members/${id}` };
+  assert.deepEqual(breadcrumbsFor(`/members/${id}`, null, ali), [
+    { label: "Members", href: "/members" },
+    { label: "Ali Khan", href: undefined },
+  ]);
+  assert.deepEqual(breadcrumbsFor(`/members/${id}`), [
+    { label: "Members", href: "/members" },
+    { label: "Details", href: undefined },
+  ]);
+  assert.deepEqual(breadcrumbsFor("/members/manage", "edit", ali), [
+    { label: "Members", href: "/members" },
+    { label: "Ali Khan", href: `/members/${id}` },
+    { label: "Edit" },
+  ]);
+  assert.deepEqual(breadcrumbsFor("/members/manage", "create", ali), [
+    { label: "Members", href: "/members" },
+    { label: "Add" },
+  ]);
+});

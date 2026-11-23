@@ -7,7 +7,7 @@
     "build": "node scripts/db-deploy.mjs && next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test tests/date-utils.test.ts tests/compute-actions.test.ts tests/email.test.ts tests/subscription-lifecycle.test.ts tests/expired-members-notice.test.ts tests/member-due-reminders.test.ts tests/whatsapp.test.ts tests/member-balance.test.ts tests/subscription-freeze.test.ts tests/expenses.test.ts tests/staff-permissions.test.ts tests/monthly-report.test.ts tests/quick-payment.test.ts tests/setup-checklist.test.ts tests/offline-payments.test.ts tests/my-plan.test.ts tests/payment-search.test.ts tests/format.test.ts tests/navigation.test.ts tests/dashboard.test.ts",
+    "test": "tsx --test tests/date-utils.test.ts tests/compute-actions.test.ts tests/email.test.ts tests/subscription-lifecycle.test.ts tests/expired-members-notice.test.ts tests/member-due-reminders.test.ts tests/whatsapp.test.ts tests/member-balance.test.ts tests/subscription-freeze.test.ts tests/expenses.test.ts tests/staff-permissions.test.ts tests/monthly-report.test.ts tests/quick-payment.test.ts tests/setup-checklist.test.ts tests/offline-payments.test.ts tests/my-plan.test.ts tests/payment-search.test.ts tests/format.test.ts tests/navigation.test.ts tests/dashboard.test.ts tests/member-status.test.ts",
     "postinstall": "prisma generate",
     "db:push:dev": "prisma db push",
     "db:deploy": "node scripts/db-deploy.mjs",

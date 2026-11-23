@@ -2,6 +2,7 @@
 "use client";
 
 import { PageContainer } from "@/components/layout/page-container";
+import { useNameBreadcrumb } from "@/components/layout/breadcrumb-context";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -112,6 +113,14 @@ const ManageMemberContent = () => {
     enabled: !!memberId && action !== "create",
   });
 
+  // "Members › Ali Khan › Edit" in the header, linking back to the profile.
+  const memberName = memberData?.user
+    ? `${memberData.user.first_name ?? ""} ${memberData.user.last_name ?? ""}`.trim()
+    : "";
+  useNameBreadcrumb(action !== "create" && !!memberId && !!memberName && { label: memberName, href: `/members/${memberId}` });
+  // Edits return to the member's profile; adding a member returns to the list.
+  const doneHref = action !== "create" && memberId ? `/members/${memberId}` : "/members";
+
   // Mutations
   const createMutation = useMutation({
     mutationFn: (values: any) => axios.post("/api/members/createmember", values),
@@ -138,9 +147,10 @@ const ManageMemberContent = () => {
     mutationFn: (values: any) =>
       axios.post("/api/members/updatemember", { id: memberId, ...values }),
     onSuccess: () => {
-      toast.success("Member updated successfully");
+      toast.success(memberName ? `Saved ${memberName}'s details` : "Member details saved");
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      router.push("/members");
+      queryClient.invalidateQueries({ queryKey: ["member-profile", memberId] });
+      router.push(doneHref);
     },
     onError: (err: any) => {
       if (err?.response?.data?.error === "LIMIT_EXCEEDED") {
@@ -491,7 +501,7 @@ const ManageMemberContent = () => {
                   type="button"
                   variant="outline"
                   className="flex-1"
-                  onClick={() => router.push("/members")}
+                  onClick={() => router.push(doneHref)}
                 >
                   Cancel
                 </Button>
@@ -501,7 +511,7 @@ const ManageMemberContent = () => {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => router.push("/members")}
+                onClick={() => router.push(doneHref)}
               >
                 Back
               </Button>

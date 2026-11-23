@@ -92,6 +92,10 @@ test("manage pages need the permission for the action", () => {
   assert.deepEqual(permissionsForPath("/payments/manage", "create"), ["payments.record"]);
 });
 
+test("a member's profile page needs members.view", () => {
+  assert.deepEqual(permissionsForPath("/members/3f2a9c1e-8b7d-4e6f-9a0b-1c2d3e4f5a6b"), ["members.view"]);
+});
+
 test("a similar prefix is not the same page", () => {
   // "/membersubscriptions" must not be treated as part of "/members".
   assert.deepEqual(permissionsForPath("/membersubscriptions"), ["membersubscriptions.view"]);
