@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { calendarMonthRange, formatCalendarMonth, previousCalendarMonth } from "@/lib/date-utils";
-import { buildMonthlyReport, monthLabel, type ReportSubscriptionRow } from "@/lib/monthly-report";
+import {
+  buildMonthlyReport,
+  monthLabel,
+  monthOf,
+  profitOrLoss,
+  recentMonths,
+  shiftMonth,
+  type ReportSubscriptionRow,
+} from "@/lib/monthly-report";
 
 const TZ = "Asia/Karachi"; // UTC+5, no daylight saving
 
@@ -157,4 +165,18 @@ test("new subscriptions, renewals, top plans, expiries and members lost", () => 
     report.members.lostByReason.map(r => [r.label, r.count]).sort(),
     [["Not recorded", 1], ["Too expensive", 1]]
   );
+});
+
+test("month picker: moving months across years, and the recent months list", () => {
+  assert.equal(shiftMonth("2026-01", -1), "2025-12");
+  assert.equal(shiftMonth("2026-12", 1), "2027-01");
+  assert.equal(shiftMonth("2026-11", -13), "2025-10");
+  assert.equal(monthOf(new Date(2026, 10, 30, 23, 59)), "2026-11");
+  assert.deepEqual(recentMonths("2026-02", 3), ["2026-02", "2026-01", "2025-12"]);
+});
+
+test("a negative profit is shown as a loss", () => {
+  assert.deepEqual(profitOrLoss(5000), { label: "Profit", amount: 5000, isLoss: false });
+  assert.deepEqual(profitOrLoss(0), { label: "Profit", amount: 0, isLoss: false });
+  assert.deepEqual(profitOrLoss(-1200), { label: "Loss", amount: 1200, isLoss: true });
 });

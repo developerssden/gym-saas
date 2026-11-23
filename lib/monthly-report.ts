@@ -241,3 +241,25 @@ export function buildMonthlyReport(input: MonthlyReportInput): MonthlyReport {
     expiryList,
   };
 }
+
+/** "2026-11" moved by `delta` months: shiftMonth("2026-01", -1) → "2025-12". */
+export function shiftMonth(month: string, delta: number): string {
+  const [y, m] = month.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/** The month `date` is in (device time), as "yyyy-MM". */
+export function monthOf(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/** The last `count` months up to `latest`, newest first, for the month picker. */
+export function recentMonths(latest: string, count: number): string[] {
+  return Array.from({ length: count }, (_, i) => shiftMonth(latest, -i));
+}
+
+/** "Profit" when it's 0 or more, else "Loss" with the amount lost (positive). */
+export function profitOrLoss(value: number): { label: "Profit" | "Loss"; amount: number; isLoss: boolean } {
+  return value < 0 ? { label: "Loss", amount: -value, isLoss: true } : { label: "Profit", amount: value, isLoss: false };
+}

@@ -9,7 +9,7 @@ import { SubscriptionTypeEnum } from "@/prisma/generated/client";
 import { calendarMonthRange, formatCalendarDate } from "@/lib/date-utils";
 import { formatCurrency, resolveGymCountry } from "@/lib/currency";
 import { churnReasonLabel } from "@/lib/churn-reasons";
-import { billingModelLabel, buildMonthlyReport, type MonthlyReport } from "@/lib/monthly-report";
+import { billingModelLabel, buildMonthlyReport, profitOrLoss, type MonthlyReport } from "@/lib/monthly-report";
 
 export type ReportScope = {
   month: string;
@@ -132,23 +132,24 @@ const shortDate = (d: Date) => {
 
 export function reportFileName(loaded: LoadedReport, ext: "pdf" | "xlsx"): string {
   const slug = loaded.scopeLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "gym";
-  return `monthly-report-${slug}-${loaded.report.month}.${ext}`;
+  return `report-${slug}-${loaded.report.month}.${ext}`;
 }
 
 // ---------------------------------------------------------------- Excel
 
 export function renderReportXlsx({ report, scopeLabel }: LoadedReport): Buffer {
   const m = report.money;
+  const pl = profitOrLoss(m.profit);
   const mem = report.members;
   const summary: (string | number)[][] = [
-    [`Monthly report: ${report.monthLabel}`],
+    [`Report for ${report.monthLabel}`],
     [scopeLabel],
     report.isCurrentMonth ? ["Month in progress: figures so far"] : [],
     [],
     ["Money", "Amount"],
     ["Collected from members", m.collected],
     ["Expenses", m.expenses],
-    ["Profit", m.profit],
+    [pl.label, pl.amount],
     ["Outstanding (unpaid fees)", m.outstanding],
     ["Members owing", m.outstandingMembers],
     [],
@@ -160,15 +161,15 @@ export function renderReportXlsx({ report, scopeLabel }: LoadedReport): Buffer {
     [],
     ["Members", "Count"],
     ["New members", mem.newMembers],
-    ["Subscriptions started", mem.newSubscriptions],
+    ["Memberships started", mem.newSubscriptions],
     ["of which renewals", mem.renewals],
-    ["Subscriptions ending", mem.expiries],
+    ["Memberships ending", mem.expiries],
     ["Members lost", mem.lost],
     [],
     ["Why members left", "Count"],
     ...mem.lostByReason.map(r => [r.label, r.count]),
     [],
-    ["Top plans (subscriptions started)", "Price", "Count"],
+    ["Top plans (memberships started)", "Price", "Count"],
     ...report.topPlans.map(p => [p.label, p.price, p.count]),
   ];
   const summarySheet = XLSX.utils.aoa_to_sheet(summary);
@@ -211,7 +212,7 @@ export function renderReportPdf({ report, scopeLabel, countryCode }: LoadedRepor
   const width = doc.page.width - left - doc.page.margins.right;
   const bottom = doc.page.height - doc.page.margins.bottom;
 
-  doc.font("Helvetica-Bold").fontSize(18).text(`Monthly report: ${report.monthLabel}`);
+  doc.font("Helvetica-Bold").fontSize(18).text(`Report for ${report.monthLabel}`);
   doc.font("Helvetica").fontSize(10).fillColor("#555555").text(scopeLabel);
   if (report.isCurrentMonth) doc.text("Month in progress: figures so far.");
   doc.text(`Generated ${shortDate(new Date())}`);
@@ -219,21 +220,24 @@ export function renderReportPdf({ report, scopeLabel, countryCode }: LoadedRepor
 
   // Key figures as boxes
   const m = report.money;
-  const boxes: Array<[string, string]> = [
-    ["Collected", money(m.collected)],
-    ["Expenses", money(m.expenses)],
-    ["Profit", money(m.profit)],
-    ["Outstanding", money(m.outstanding)],
+  const pl = profitOrLoss(m.profit);
+  // [label, value, colour]; a loss is red.
+  const boxes: Array<[string, string, string]> = [
+    ["Collected", money(m.collected), "#000000"],
+    ["Expenses", money(m.expenses), "#000000"],
+    [pl.label, money(pl.amount), pl.isLoss ? "#c0262d" : "#000000"],
+    ["Outstanding", money(m.outstanding), "#000000"],
   ];
   const gap = 8;
   const boxW = (width - gap * (boxes.length - 1)) / boxes.length;
   const boxY = doc.y;
-  boxes.forEach(([label, value], i) => {
+  boxes.forEach(([label, value, colour], i) => {
     const x = left + i * (boxW + gap);
     doc.roundedRect(x, boxY, boxW, 48, 4).lineWidth(0.5).strokeColor("#cccccc").stroke();
     doc.font("Helvetica").fontSize(9).fillColor("#555555").text(label, x + 8, boxY + 8, { width: boxW - 16 });
-    doc.font("Helvetica-Bold").fontSize(13).fillColor("#000000").text(value, x + 8, boxY + 24, { width: boxW - 16 });
+    doc.font("Helvetica-Bold").fontSize(13).fillColor(colour).text(value, x + 8, boxY + 24, { width: boxW - 16 });
   });
+  doc.fillColor("#000000");
   doc.x = left;
   doc.y = boxY + 60;
 
@@ -271,7 +275,7 @@ export function renderReportPdf({ report, scopeLabel, countryCode }: LoadedRepor
       ...m.collectedByMethod.map(r => [`   ${r.label}`, money(r.amount)]),
       ["Expenses", money(m.expenses)],
       ...m.expensesByCategory.map(r => [`   ${r.label}`, money(r.amount)]),
-      ["Profit", money(m.profit)],
+      [pl.label, money(pl.amount)],
       ["Outstanding (unpaid fees)", `${money(m.outstanding)} from ${m.outstandingMembers} member${m.outstandingMembers === 1 ? "" : "s"}`],
     ]
   );
@@ -283,8 +287,8 @@ export function renderReportPdf({ report, scopeLabel, countryCode }: LoadedRepor
     [width * 0.6, width * 0.4],
     [
       ["New members", String(mem.newMembers)],
-      ["Subscriptions started", `${mem.newSubscriptions} (${mem.renewals} renewal${mem.renewals === 1 ? "" : "s"})`],
-      ["Subscriptions ending", String(mem.expiries)],
+      ["Memberships started", `${mem.newSubscriptions} (${mem.renewals} renewal${mem.renewals === 1 ? "" : "s"})`],
+      ["Memberships ending", String(mem.expiries)],
       ["Members lost (ended, not renewed)", String(mem.lost)],
     ]
   );
@@ -297,10 +301,10 @@ export function renderReportPdf({ report, scopeLabel, countryCode }: LoadedRepor
     ["Plan", "Price", "Started"],
     [width * 0.4, width * 0.3, width * 0.3],
     report.topPlans.map(p => [p.label, money(p.price), String(p.count)]),
-    "No subscriptions started"
+    "No memberships started"
   );
 
-  heading("Subscriptions ending this month");
+  heading("Memberships ending this month");
   table(
     ["Member", "Phone", "End date", "Status", "Reason left"],
     [width * 0.25, width * 0.18, width * 0.16, width * 0.15, width * 0.26],
@@ -311,7 +315,7 @@ export function renderReportPdf({ report, scopeLabel, countryCode }: LoadedRepor
       e.renewed ? "Renewed" : e.lost ? "Lost" : "Not ended yet",
       e.lost ? churnReasonLabel(e.churn_reason) : "",
     ]),
-    "No subscriptions ending"
+    "No memberships ending"
   );
 
   doc.end();
