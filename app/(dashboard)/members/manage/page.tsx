@@ -1,546 +1,406 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { PageContainer } from "@/components/layout/page-container";
-import { useNameBreadcrumb } from "@/components/layout/breadcrumb-context";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { offerPushNotifications } from "@/lib/push-offer";
+import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import axios from "axios";
-import { getErrorMessage } from "@/lib/getErrorMessage";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import FullScreenLoader from "@/components/common/FullScreenLoader";
-import { useState, useMemo, Suspense } from "react";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { formatDate } from "@/lib/date-helper-functions";
-import { CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { CountryDropdown } from "@/components/ui/country-dropdown";
-import { cn } from "@/lib/utils";
-import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { CheckCircle2, ChevronDown, UserPlus, UserRound } from "lucide-react";
+
+import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
+import { useNameBreadcrumb } from "@/components/layout/breadcrumb-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { LabeledField } from "@/components/forms/labeled-field";
+import { StickyFormFooter } from "@/components/forms/sticky-form-footer";
+import { ShareReceiptButton } from "@/components/common/whatsapp-actions";
+import { NewMemberMembership, type MembershipSaved } from "@/components/members/new-member-membership";
 import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLimitModal";
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
+import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useGymCurrency } from "@/hooks/useGymCurrency";
+import { offerPushNotifications } from "@/lib/push-offer";
+import { getErrorMessage } from "@/lib/getErrorMessage";
+import { formatDate, paymentMethodLabel } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
-const emailOrPhoneRequired = function (
-  this: Yup.TestContext,
-  value: string | undefined
-) {
-  const { email, phone_number } = this.parent as {
-    email?: string;
-    phone_number?: string;
-  };
-  const hasEmail = Boolean(
-    (this.path === "email" ? value : email)?.toString().trim()
-  );
-  const hasPhone = Boolean(
-    (this.path === "phone_number" ? value : phone_number)?.toString().trim()
-  );
-  return hasEmail || hasPhone;
+type Details = {
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  email: string;
+  date_of_birth: string;
+  cnic: string;
+  address: string;
+  city: string;
 };
 
-const MemberSchema = Yup.object({
-  first_name: Yup.string().trim().required("First name is required"),
-  last_name: Yup.string().notRequired(),
-  email: Yup.string()
-    .transform((value) =>
-      typeof value === "string" && value.trim() === "" ? undefined : value
-    )
-    .email("Invalid email")
-    .test(
-      "email-or-phone",
-      "Email or phone number is required",
-      emailOrPhoneRequired
-    ),
-  phone_number: Yup.string().test(
-    "email-or-phone",
-    "Email or phone number is required",
-    emailOrPhoneRequired
-  ),
-  date_of_birth: Yup.date().nullable().notRequired(),
-  address: Yup.string().trim().required("Address is required"),
-  city: Yup.string().notRequired(),
-  state: Yup.string().notRequired(),
-  country: Yup.string().notRequired(),
-  zip_code: Yup.string().notRequired(),
-  cnic: Yup.string().notRequired(),
-});
+const EMPTY: Details = {
+  first_name: "",
+  last_name: "",
+  phone_number: "",
+  email: "",
+  date_of_birth: "",
+  cnic: "",
+  address: "",
+  city: "",
+};
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type Created = { id: string; name: string; phone: string };
 
 const ManageMemberContent = () => {
   const { data: session, status } = useSession({ required: true });
   const searchParams = useSearchParams();
-  const action = searchParams?.get("action") as "create" | "edit" | "view";
+  const action = (searchParams?.get("action") as "create" | "edit" | "view") || "create";
   const memberId = searchParams?.get("id") || null;
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [saving, setSaving] = useState(false);
-  const [limitModalOpen, setLimitModalOpen] = useState(false);
-  const [limitInfo, setLimitInfo] = useState<any>(null);
-  const [dateOfBirthOpen, setDateOfBirthOpen] = useState(false);
+  const { can } = usePermissions();
+  const { format: money } = useGymCurrency();
+  const { isSubscriptionActive, subscriptionExpired } = useSubscriptionValidation();
+
+  const [values, setValues] = useState<Details>(EMPTY);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [limitInfo, setLimitInfo] = useState<unknown>(null);
   const [showExpiredModal, setShowExpiredModal] = useState(false);
+  // Adding a member: details → membership and fee → done.
+  const [created, setCreated] = useState<Created | null>(null);
+  const [saved, setSaved] = useState<MembershipSaved | null>(null);
 
-  const { isSubscriptionActive, subscriptionExpired, subscriptionLimits } =
-    useSubscriptionValidation();
+  const isEdit = action === "edit" && !!memberId;
+  const selectedGymId = session?.user?.selected_gym_id || "";
+  const selectedLocationId = session?.user?.selected_location_id || "";
 
-  // Get selected gym and location from session (from header selector) - memoize to prevent re-renders
-  const selectedGymId = useMemo(
-    () => session?.user?.selected_gym_id || "",
-    [session?.user?.selected_gym_id]
-  );
-  const selectedLocationId = useMemo(
-    () => session?.user?.selected_location_id || "",
-    [session?.user?.selected_location_id]
-  );
+  // "View" is the member's profile page now.
+  useEffect(() => {
+    if (action === "view" && memberId) router.replace(`/members/${memberId}`);
+  }, [action, memberId, router]);
 
-  // Fetch member data
   const { data: memberData, isLoading: fetchingMember } = useQuery({
     queryKey: ["member", memberId],
-    queryFn: async () => {
-      if (!memberId) return null;
-      const res = await axios.post("/api/members/getmember", { id: memberId });
-      return res.data;
-    },
-    enabled: !!memberId && action !== "create",
+    queryFn: async () => (await axios.post("/api/members/getmember", { id: memberId })).data,
+    enabled: isEdit,
   });
 
-  // "Members › Ali Khan › Edit" in the header, linking back to the profile.
+  // Fill the form once the member has loaded.
+  if (isEdit && memberData && loadedFor !== memberId) {
+    const u = memberData.user ?? {};
+    setLoadedFor(memberId);
+    setValues({
+      first_name: u.first_name ?? "",
+      last_name: u.last_name ?? "",
+      phone_number: u.phone_number ?? "",
+      email: u.email ?? "",
+      date_of_birth: u.date_of_birth ? String(u.date_of_birth).slice(0, 10) : "",
+      cnic: u.cnic ?? "",
+      address: u.address ?? "",
+      city: u.city ?? "",
+    });
+    if (u.email || u.date_of_birth || u.cnic || u.address) setMoreOpen(true);
+  }
+
   const memberName = memberData?.user
     ? `${memberData.user.first_name ?? ""} ${memberData.user.last_name ?? ""}`.trim()
     : "";
-  useNameBreadcrumb(action !== "create" && !!memberId && !!memberName && { label: memberName, href: `/members/${memberId}` });
-  // Edits return to the member's profile; adding a member returns to the list.
-  const doneHref = action !== "create" && memberId ? `/members/${memberId}` : "/members";
+  useNameBreadcrumb(isEdit && !!memberName && { label: memberName, href: `/members/${memberId}` });
 
-  // Mutations
+  const set = (field: keyof Details) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setValues((v) => ({ ...v, [field]: e.target.value }));
+
+  // Name and phone are what the counter needs; an existing member with only an email can keep it.
+  const hadEmailOnly = isEdit && !memberData?.user?.phone_number && !!memberData?.user?.email;
+  const errors = {
+    first_name: values.first_name.trim() ? null : "Enter their first name",
+    phone_number:
+      values.phone_number.trim() || (hadEmailOnly && values.email.trim())
+        ? values.phone_number.trim() && values.phone_number.replace(/\D/g, "").length < 7
+          ? "That number looks too short"
+          : null
+        : "Enter a phone number for reminders and receipts",
+    email: values.email.trim() && !EMAIL.test(values.email.trim()) ? "That email doesn't look right" : null,
+  };
+  const hasErrors = Object.values(errors).some(Boolean);
+  const show = (e: string | null) => (submitted ? e : null);
+
+  const handleError = (err: unknown) => {
+    const data = (err as { response?: { data?: { error?: string } } })?.response?.data;
+    if (data?.error === "LIMIT_EXCEEDED") setLimitInfo(data);
+    else if (data?.error === "SUBSCRIPTION_EXPIRED") setShowExpiredModal(true);
+    else toast.error(getErrorMessage(err));
+  };
+
+  const payload = () => ({
+    first_name: values.first_name.trim(),
+    last_name: values.last_name.trim(),
+    phone_number: values.phone_number.trim(),
+    email: values.email.trim(),
+    date_of_birth: values.date_of_birth || null,
+    cnic: values.cnic.trim(),
+    address: values.address.trim(),
+    city: values.city.trim(),
+  });
+
   const createMutation = useMutation({
-    mutationFn: (values: any) => axios.post("/api/members/createmember", values),
-    onSuccess: () => {
-      toast.success("Member created successfully");
+    mutationFn: () =>
+      axios.post("/api/members/createmember", { ...payload(), gym_id: selectedGymId, location_id: selectedLocationId }),
+    onSuccess: (res) => {
+      const name = `${values.first_name.trim()} ${values.last_name.trim()}`.trim();
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["setup-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["offline-directory"] });
       offerPushNotifications();
-      router.push("/members");
-    },
-    onError: (err: any) => {
-      if (err?.response?.data?.error === "LIMIT_EXCEEDED") {
-        setLimitInfo(err.response.data);
-        setLimitModalOpen(true);
-      } else if (err?.response?.data?.error === "SUBSCRIPTION_EXPIRED") {
-        toast.error("Your subscription is expired. Please renew to continue.");
+      const id = res.data?.data?.id as string;
+      if (can("membersubscriptions.create")) {
+        toast.success(`Added ${name}. Now their membership.`);
+        setCreated({ id, name, phone: values.phone_number.trim() });
+        window.scrollTo({ top: 0 });
       } else {
-        toast.error(getErrorMessage(err));
+        toast.success(`Added ${name}`);
+        router.push(`/members/${id}`);
       }
     },
+    onError: handleError,
   });
 
   const updateMutation = useMutation({
-    mutationFn: (values: any) =>
-      axios.post("/api/members/updatemember", { id: memberId, ...values }),
+    mutationFn: () => axios.post("/api/members/updatemember", { id: memberId, ...payload() }),
     onSuccess: () => {
-      toast.success(memberName ? `Saved ${memberName}'s details` : "Member details saved");
+      toast.success(`Saved ${values.first_name.trim()}'s details`);
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["member"] });
       queryClient.invalidateQueries({ queryKey: ["member-profile", memberId] });
-      router.push(doneHref);
+      router.push(`/members/${memberId}`);
     },
-    onError: (err: any) => {
-      if (err?.response?.data?.error === "LIMIT_EXCEEDED") {
-        setLimitInfo(err.response.data);
-        setLimitModalOpen(true);
-      } else if (err?.response?.data?.error === "SUBSCRIPTION_EXPIRED") {
-        toast.error("Your subscription is expired. Please renew to continue.");
-      } else {
-        toast.error(getErrorMessage(err));
-      }
-    },
+    onError: handleError,
   });
 
-  // Determine gym_id and location_id based on action - memoize to prevent re-renders
-  const gymId = useMemo(
-    () => (action === "create" ? selectedGymId : memberData?.gym_id || ""),
-    [action, selectedGymId, memberData?.gym_id]
-  );
-  const locationId = useMemo(
-    () => (action === "create" ? selectedLocationId : memberData?.location_id || ""),
-    [action, selectedLocationId, memberData?.location_id]
-  );
-
-  // Memoize initial values to prevent unnecessary formik re-initializations
-  const initialValues = useMemo(
-    () => ({
-      first_name: memberData?.user?.first_name || "",
-      last_name: memberData?.user?.last_name || "",
-      email: memberData?.user?.email || "",
-      phone_number: memberData?.user?.phone_number || "",
-      date_of_birth: memberData?.user?.date_of_birth
-        ? new Date(memberData.user.date_of_birth)
-        : null,
-      address: memberData?.user?.address || "",
-      city: memberData?.user?.city || "",
-      state: memberData?.user?.state || "",
-      country: memberData?.user?.country || "",
-      zip_code: memberData?.user?.zip_code || "",
-      cnic: memberData?.user?.cnic || "",
-    }),
-    [
-      memberData?.user?.first_name,
-      memberData?.user?.last_name,
-      memberData?.user?.email,
-      memberData?.user?.phone_number,
-      memberData?.user?.date_of_birth,
-      memberData?.user?.address,
-      memberData?.user?.city,
-      memberData?.user?.state,
-      memberData?.user?.country,
-      memberData?.user?.zip_code,
-      memberData?.user?.cnic,
-    ]
-  );
-
-  const formik = useFormik({
-    initialValues,
-    validationSchema: MemberSchema,
-    enableReinitialize: !!memberData, // Only reinitialize when memberData exists
-    onSubmit: async (values) => {
-      if (!isSubscriptionActive || subscriptionExpired) {
-        setShowExpiredModal(true);
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitted(true);
+    if (hasErrors) {
+      if (errors.email) setMoreOpen(true);
+      return;
+    }
+    if (!isSubscriptionActive || subscriptionExpired) {
+      setShowExpiredModal(true);
+      return;
+    }
+    if (isEdit) updateMutation.mutate();
+    else {
+      if (!selectedGymId || !selectedLocationId) {
+        toast.error("Choose a gym and branch at the top of the page first.");
         return;
       }
+      createMutation.mutate();
+    }
+  };
 
-      // Validate gym and location selection for create action
-      if (action === "create" && (!selectedGymId || !selectedLocationId)) {
-        toast.error("Please select a gym and location from the header selector.");
-        return;
-      }
+  const startOver = () => {
+    setValues(EMPTY);
+    setSubmitted(false);
+    setMoreOpen(false);
+    setCreated(null);
+    setSaved(null);
+    window.scrollTo({ top: 0 });
+  };
 
-      setSaving(true);
-      try {
-        const submitValues = {
-          ...values,
-          gym_id: gymId,
-          location_id: locationId,
-        };
-        if (action === "create") {
-          await createMutation.mutateAsync(submitValues);
-        } else if (action === "edit") {
-          await updateMutation.mutateAsync(submitValues);
-        }
-      } finally {
-        setSaving(false);
-      }
-    },
-  });
-
-
-  // Early returns after all hooks
-  if (status === "loading") {
-    return <FullScreenLoader />;
+  if (status === "loading" || action === "view" || (isEdit && fetchingMember)) {
+    return (
+      <PageContainer>
+        <div aria-busy="true" aria-label="Loading" className="mx-auto flex max-w-xl flex-col gap-4">
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </PageContainer>
+    );
   }
   if (session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
     return redirect("/unauthorized");
   }
 
-  if (fetchingMember) return <FullScreenLoader label="Loading member..." />;
+  // Step 3: done.
+  if (created && saved) {
+    const owes = saved.due - saved.paid;
+    return (
+      <PageContainer>
+        <div className="mx-auto flex max-w-xl flex-col items-center gap-4 py-6 text-center">
+          <CheckCircle2 aria-hidden className="size-12 text-primary-dim" />
+          <div>
+            <h1 className="h1">{created.name} is a member</h1>
+            <p className="mt-2 text-muted-foreground">
+              {saved.endDate ? `Membership until ${formatDate(saved.endDate)}.` : "Membership saved."}{" "}
+              {saved.paid > 0 && `Paid ${money(saved.paid)} · ${paymentMethodLabel(saved.method)}.`}{" "}
+              {owes > 0 && `${money(owes)} still to collect.`}
+            </p>
+          </div>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            {saved.paymentId && can("membersubscriptions.whatsapp") && (
+              <ShareReceiptButton
+                className="h-11"
+                paymentId={saved.paymentId}
+                memberName={created.name}
+                phone={created.phone}
+                gymName={session?.user?.gyms?.find((g) => g.id === selectedGymId)?.name}
+                amount={saved.paid}
+                paymentDate={new Date()}
+              />
+            )}
+            <Button variant="outline" asChild className="h-11">
+              <Link href={`/members/${created.id}`}>
+                <UserRound aria-hidden /> Open profile
+              </Link>
+            </Button>
+            <Button variant="outline" className="h-11" onClick={startOver}>
+              <UserPlus aria-hidden /> Add another member
+            </Button>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
 
+  // Step 2: membership and fee.
+  if (created) {
+    return (
+      <PageContainer>
+        <div className="mx-auto max-w-xl">
+          <PageHeader title={`Membership for ${created.name}`} description="Step 2 of 2 · You can skip this and add it later." />
+        </div>
+        <NewMemberMembership
+          memberId={created.id}
+          gymId={selectedGymId}
+          canTakeFee={can("payments.record") || can("membersubscriptions.renew")}
+          onSaved={setSaved}
+          onSkip={() => router.push(`/members/${created.id}`)}
+        />
+      </PageContainer>
+    );
+  }
+
+  // Step 1 (or editing): the member's details.
+  const saving = createMutation.isPending || updateMutation.isPending;
   return (
     <PageContainer>
-      {saving && <FullScreenLoader label="Saving member..." />}
-      <div className="w-full space-y-12">
-        <h1 className="h1 text-center">
-          {action === "create"
-            ? "Create Member"
-            : action === "edit"
-            ? "Edit Member"
-            : "View Member"}
-        </h1>
+      <div className="mx-auto max-w-xl">
+        <PageHeader
+          title={isEdit ? `Edit ${memberName || "member"}` : "Add member"}
+          description={
+            isEdit
+              ? `${memberData?.gym?.name ?? ""}${memberData?.location?.name ? `, ${memberData.location.name}` : ""}`
+              : can("membersubscriptions.create")
+                ? "Step 1 of 2 · Name and phone are enough. Membership and fee come next."
+                : "Name and phone are enough."
+          }
+        />
 
-        {action === "create" && (!selectedGymId || !selectedLocationId) && (
-          <div className="max-w-2xl mx-auto mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              Please select a gym and location from the header selector before creating a member.
-            </p>
+        {!isEdit && (!selectedGymId || !selectedLocationId) && (
+          <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100">
+            Choose a gym and branch at the top of the page first.
           </div>
         )}
 
-        <form className="max-w-2xl mx-auto" onSubmit={formik.handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-            {(action === "edit" || action === "view") && memberData && (
-              <>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Gym</Label>
-                  <Input
-                    value={memberData.gym?.name || ""}
-                    disabled
-                    className="bg-muted"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Location</Label>
-                  <Input
-                    value={memberData.location?.name || ""}
-                    disabled
-                    className="bg-muted"
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="space-y-2">
-              <Label>First Name *</Label>
-              <Input
-                name="first_name"
-                value={formik.values.first_name}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={action === "view"}
-                placeholder="First name"
-              />
-              {formik.touched.first_name && formik.errors.first_name && (
-                <p className="text-red-500 text-sm">{String(formik.errors.first_name)}</p>
+        <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <LabeledField label="First name" required error={show(errors.first_name)}>
+              {(p) => (
+                <Input {...p} autoFocus={!isEdit} autoComplete="given-name" value={values.first_name} onChange={set("first_name")} className="h-12" />
               )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Last Name</Label>
-              <Input
-                name="last_name"
-                value={formik.values.last_name}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={action === "view"}
-                placeholder="Last name"
-              />
-              {formik.touched.last_name && formik.errors.last_name && (
-                <p className="text-red-500 text-sm">{String(formik.errors.last_name)}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Email (or phone) *</Label>
-              <Input
-                name="email"
-                type="email"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={action === "view"}
-                placeholder="Email"
-              />
-              {formik.touched.email && formik.errors.email && (
-                <p className="text-red-500 text-sm">{String(formik.errors.email)}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Phone Number (or email) *</Label>
-              <Input
-                name="phone_number"
-                value={formik.values.phone_number}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={action === "view"}
-                placeholder="Phone number"
-              />
-              {formik.touched.phone_number && formik.errors.phone_number && (
-                <p className="text-red-500 text-sm">{String(formik.errors.phone_number)}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Date of Birth</Label>
-              <Popover open={dateOfBirthOpen} onOpenChange={setDateOfBirthOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formik.values.date_of_birth && "text-muted-foreground"
-                    )}
-                    disabled={action === "view"}
-                    type="button"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formik.values.date_of_birth
-                      ? formatDate(formik.values.date_of_birth)
-                      : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formik.values.date_of_birth ?? undefined}
-                    onSelect={(date) => {
-                      if (date) {
-                        formik.setFieldValue("date_of_birth", date);
-                        setDateOfBirthOpen(false);
-                      }
-                    }}
-                    disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              {formik.touched.date_of_birth && formik.errors.date_of_birth && (
-                <p className="text-red-500 text-sm">{String(formik.errors.date_of_birth)}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>CNIC</Label>
-              <Input
-                name="cnic"
-                value={formik.values.cnic}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={action === "view"}
-                placeholder="CNIC (optional)"
-              />
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label>Address *</Label>
-              <Input
-                name="address"
-                value={formik.values.address}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={action === "view"}
-                placeholder="Address"
-              />
-              {formik.touched.address && formik.errors.address && (
-                <p className="text-red-500 text-sm">{String(formik.errors.address)}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>City</Label>
-              <Input
-                name="city"
-                value={formik.values.city}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={action === "view"}
-                placeholder="City (defaults to location)"
-              />
-              {formik.touched.city && formik.errors.city && (
-                <p className="text-red-500 text-sm">{String(formik.errors.city)}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>State</Label>
-              <Input
-                name="state"
-                value={formik.values.state}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={action === "view"}
-                placeholder="State (defaults to location)"
-              />
-              {formik.touched.state && formik.errors.state && (
-                <p className="text-red-500 text-sm">{String(formik.errors.state)}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Zip Code</Label>
-              <Input
-                name="zip_code"
-                value={formik.values.zip_code}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={action === "view"}
-                placeholder="Zip code (defaults to location)"
-              />
-              {formik.touched.zip_code && formik.errors.zip_code && (
-                <p className="text-red-500 text-sm">{String(formik.errors.zip_code)}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Country</Label>
-              <CountryDropdown
-                placeholder="Select country"
-                defaultValue={formik.values.country}
-                disabled={action === "view"}
-                onChange={(country) => {
-                  formik.setFieldValue("country", country.alpha3);
-                }}
-              />
-              {formik.touched.country && formik.errors.country && (
-                <p className="text-red-500 text-sm">{String(formik.errors.country)}</p>
-              )}
-            </div>
+            </LabeledField>
+            <LabeledField label="Last name">
+              {(p) => <Input {...p} autoComplete="family-name" value={values.last_name} onChange={set("last_name")} className="h-12" />}
+            </LabeledField>
           </div>
 
-          <div className="flex gap-4 mt-6">
-            {action !== "view" ? (
-              <>
-                <Button
-                  type="submit"
-                  className="flex-1"
-                  onClick={(e) => {
-                    if (!isSubscriptionActive || subscriptionExpired) {
-                      e.preventDefault();
-                      setShowExpiredModal(true);
-                    }
-                  }}
-                >
-                  {action === "create" ? "Create Member" : "Update Member"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => router.push(doneHref)}
-                >
-                  Cancel
-                </Button>
-              </>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => router.push(doneHref)}
-              >
-                Back
+          <LabeledField label="Phone" required={!hadEmailOnly} hint="For WhatsApp reminders and receipts." error={show(errors.phone_number)}>
+            {(p) => (
+              <Input
+                {...p}
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="e.g. 0301 2345678"
+                value={values.phone_number}
+                onChange={set("phone_number")}
+                className="h-12"
+              />
+            )}
+          </LabeledField>
+
+          <Collapsible open={moreOpen} onOpenChange={setMoreOpen}>
+            <CollapsibleTrigger asChild>
+              <Button type="button" variant="ghost" className="h-11 w-full justify-between px-2 md:h-9">
+                More details (optional)
+                <ChevronDown aria-hidden className={cn("transition-transform", moreOpen && "rotate-180")} />
               </Button>
-            )}
-          </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="grid gap-4 pt-2 sm:grid-cols-2">
+              <LabeledField label="Email" error={show(errors.email)} className="sm:col-span-2">
+                {(p) => (
+                  <Input {...p} type="email" autoComplete="email" value={values.email} onChange={set("email")} className="h-11" />
+                )}
+              </LabeledField>
+              <LabeledField label="Date of birth">
+                {(p) => (
+                  <Input
+                    {...p}
+                    type="date"
+                    max={new Date().toISOString().slice(0, 10)}
+                    value={values.date_of_birth}
+                    onChange={set("date_of_birth")}
+                    className="h-11"
+                  />
+                )}
+              </LabeledField>
+              <LabeledField label="CNIC">
+                {(p) => <Input {...p} inputMode="numeric" placeholder="e.g. 35202-1234567-1" value={values.cnic} onChange={set("cnic")} className="h-11" />}
+              </LabeledField>
+              <LabeledField label="Address" className="sm:col-span-2">
+                {(p) => <Input {...p} autoComplete="street-address" value={values.address} onChange={set("address")} className="h-11" />}
+              </LabeledField>
+              <LabeledField label="City" hint="Leave empty to use the branch's city.">
+                {(p) => <Input {...p} autoComplete="address-level2" value={values.city} onChange={set("city")} className="h-11" />}
+              </LabeledField>
+            </CollapsibleContent>
+          </Collapsible>
+
+          <StickyFormFooter>
+            <Button type="button" variant="outline" onClick={() => router.push(isEdit ? `/members/${memberId}` : "/members")} disabled={saving}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={saving}>
+              {isEdit ? "Save changes" : can("membersubscriptions.create") ? "Add and continue" : "Add member"}
+            </Button>
+          </StickyFormFooter>
         </form>
       </div>
-      {limitInfo && (
+
+      {!!limitInfo && (
         <SubscriptionLimitModal
-          open={limitModalOpen}
-          onClose={() => setLimitModalOpen(false)}
-          limitInfo={limitInfo}
+          open
+          onClose={() => setLimitInfo(null)}
+          limitInfo={limitInfo as React.ComponentProps<typeof SubscriptionLimitModal>["limitInfo"]}
         />
       )}
-      <SubscriptionExpiredModal
-        open={showExpiredModal}
-        onClose={() => setShowExpiredModal(false)}
-      />
+      <SubscriptionExpiredModal open={showExpiredModal} onClose={() => setShowExpiredModal(false)} />
     </PageContainer>
   );
 };
 
-const ManageMemberPage = () => {
-  return (
-    <Suspense fallback={<FullScreenLoader label="Loading..." />}>
-      <ManageMemberContent />
-    </Suspense>
-  );
-};
+const ManageMemberPage = () => (
+  <Suspense fallback={null}>
+    <ManageMemberContent />
+  </Suspense>
+);
 
 export default ManageMemberPage;
-
