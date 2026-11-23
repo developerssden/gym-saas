@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess, ownedGymWhere } from "@/lib/access";
 import { checkLimitExceeded, validateOwnerSubscription } from "@/lib/subscription-validation";
+import { defaultEquipmentType } from "@/lib/equipment";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -52,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       location_id,
     } = req.body as {
       name: string;
-      type: string;
+      type?: string;
       category?: string;
       brand?: string;
       model_number?: string;
@@ -88,10 +89,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       location_id,
     });
 
-    if (!name || !type || !quantityStr || !gym_id) {
+    if (!name?.trim() || !quantityStr || !gym_id) {
       console.log("Validation failed - missing required fields");
       return res.status(StatusCodes.BAD_REQUEST).json({
-        error: "Missing required fields: name, type, quantity, gym_id",
+        error: "Add a name and how many you have",
       });
     }
 
@@ -159,8 +160,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Prepare data object
     const equipmentData: any = {
-      name,
-      type,
+      name: name.trim(),
+      type: defaultEquipmentType(type, category),
       quantity: quantityStr,
       gym_id,
       location_id: location_id || null,
