@@ -33,6 +33,8 @@ type FormDialogProps = {
   submitLabel: string;
   cancelLabel?: string;
   pending?: boolean;
+  /** Just looking: one Close button and no submit (wrap the fields in a disabled fieldset). */
+  readOnly?: boolean;
   /** Disable submit without showing a spinner. */
   submitDisabled?: boolean;
   className?: string;
@@ -53,6 +55,7 @@ export function FormDialog({
   cancelLabel = "Cancel",
   pending = false,
   submitDisabled = false,
+  readOnly = false,
   className,
 }: FormDialogProps) {
   const isMobile = useIsMobile();
@@ -70,11 +73,13 @@ export function FormDialog({
         onClick={() => close(false)}
         disabled={pending}
       >
-        {cancelLabel}
+        {readOnly ? "Close" : cancelLabel}
       </Button>
+      {!readOnly && (
       <Button type="submit" className="h-11 md:h-9" loading={pending} disabled={submitDisabled}>
         {submitLabel}
       </Button>
+      )}
     </>
   );
 
@@ -103,7 +108,7 @@ export function FormDialog({
                   {description && <DrawerDescription>{description}</DrawerDescription>}
                 </DrawerHeader>
                 <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto px-4 pb-2">{children}</div>
-                <DrawerFooter className="grid grid-cols-2 border-t border-border">{buttons}</DrawerFooter>
+                <DrawerFooter className={cn("grid border-t border-border", readOnly ? "grid-cols-1" : "grid-cols-2")}>{buttons}</DrawerFooter>
               </>,
             )}
         </DrawerContent>
