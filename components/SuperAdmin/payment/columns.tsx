@@ -1,23 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import type { Payment } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
-import { FileText, MoreHorizontal } from "lucide-react";
-import axios from "axios";
-import { toast } from "sonner";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { CurrencyAmount } from "@/components/common/CurrencyAmount";
 import { resolveGymCountry } from "@/lib/currency";
-import { ShareReceiptMenuItem } from "@/components/common/whatsapp-actions";
-import { usePermissions } from "@/hooks/usePermissions";
+import { ReceiptDownloadButton } from "@/components/common/whatsapp-actions";
 import { recordedByLabel } from "@/lib/recorded-by";
 import { formatDate as formatDisplayDate, paymentMethodLabel, subscriptionTypeLabel } from "@/lib/format";
 
@@ -118,70 +106,12 @@ export const columns: ColumnDef<Payment>[] = [
   },
   {
     id: "actions",
-    header: "Actions",
+    header: () => <span className="sr-only">Receipt</span>,
     enableHiding: false,
     cell: ({ row }) => <ActionCell payment={row.original} />,
   },
 ];
 
-const ActionCell = ({ payment }: { payment: Payment }) => {
-  const { can, isGymUser } = usePermissions();
-  // Admins share no receipts; owners always can, staff with the WhatsApp permission.
-  const canShare = isGymUser && can("membersubscriptions.whatsapp");
-  const handleGenerateInvoice = async () => {
-    try {
-      const response = await axios.post(
-        "/api/payments/generateinvoice",
-        { payment_id: payment.id },
-        { responseType: "blob" }
-      );
-      
-      // Create a blob URL and trigger download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `invoice-${payment.id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success("Invoice generated successfully");
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.message || "Failed to generate invoice";
-      toast.error(errorMessage);
-    }
-  };
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleGenerateInvoice}>
-          <FileText className="mr-2 h-4 w-4" />
-          Generate Invoice
-        </DropdownMenuItem>
-        {payment.subscription_type === "MEMBER" && payment.memberSubscription?.member && canShare && (
-          <ShareReceiptMenuItem
-            paymentId={payment.id}
-            memberName={
-              `${payment.memberSubscription.member.user?.first_name ?? ""} ${payment.memberSubscription.member.user?.last_name ?? ""}`.trim() ||
-              "Member"
-            }
-            phone={payment.memberSubscription.member.user?.phone_number}
-            gymName={payment.memberSubscription.member.gym?.name}
-            gymCountry={paymentCountryCode(payment)}
-            amount={payment.amount}
-            paymentDate={payment.payment_date}
-          />
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
+const ActionCell = ({ payment }: { payment: Payment }) => (
+  <ReceiptDownloadButton paymentId={payment.id} className="h-8" />
+);

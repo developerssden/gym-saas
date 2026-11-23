@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { Loader2 } from "lucide-react";
+import { FileDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -197,13 +197,62 @@ export function ShareReceiptMenuItem(props: ShareReceiptProps) {
   );
 }
 
-/** Same as ShareReceiptMenuItem, as a button (e.g. right after a payment). */
-export function ShareReceiptButton({ className, ...props }: ShareReceiptProps & { className?: string }) {
+type ButtonLook = {
+  className?: string;
+  variant?: React.ComponentProps<typeof Button>["variant"];
+  size?: React.ComponentProps<typeof Button>["size"];
+};
+
+/** Same as ShareReceiptMenuItem, as a button (e.g. right after a payment, or on a payment row with `label="WhatsApp"`). */
+export function ShareReceiptButton({
+  className,
+  variant,
+  size,
+  label = "Send receipt on WhatsApp",
+  ...props
+}: ShareReceiptProps & ButtonLook & { label?: string }) {
   const { share, busy } = useShareReceipt(props);
   return (
-    <Button type="button" className={className} onClick={() => void share()} loading={busy}>
+    <Button
+      type="button"
+      variant={variant}
+      size={size}
+      className={className}
+      onClick={() => void share()}
+      loading={busy}
+      aria-label={label === "Send receipt on WhatsApp" ? undefined : `Send ${props.memberName}'s receipt on WhatsApp`}
+    >
       {!busy && <WhatsAppIcon className="size-4" />}
-      Send receipt on WhatsApp
+      {label}
+    </Button>
+  );
+}
+
+/** Downloads a payment's PDF receipt. */
+export function ReceiptDownloadButton({
+  paymentId,
+  className,
+  variant = "outline",
+  size = "sm",
+  label = "Receipt",
+}: { paymentId: string; label?: string } & ButtonLook) {
+  const [busy, setBusy] = useState(false);
+  const download = async () => {
+    setBusy(true);
+    try {
+      const response = await axios.post("/api/payments/generateinvoice", { payment_id: paymentId }, { responseType: "blob" });
+      downloadBlob(new Blob([response.data], { type: "application/pdf" }), `receipt-${paymentId}.pdf`);
+      toast.success("Receipt downloaded");
+    } catch (err) {
+      toast.error(getErrorMessage(err) || "Couldn't create the receipt");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Button type="button" variant={variant} size={size} className={className} onClick={() => void download()} loading={busy}>
+      {!busy && <FileDown className="size-4" />}
+      {label}
     </Button>
   );
 }

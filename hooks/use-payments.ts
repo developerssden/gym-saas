@@ -6,6 +6,8 @@ export interface PaymentsResponse {
   data: Payment[];
   totalCount: number;
   pageCount: number;
+  /** Sum of every payment matching the filters (all pages). */
+  totalAmount: number;
 }
 
 interface UsePaymentsParams {
@@ -18,6 +20,10 @@ interface UsePaymentsParams {
   search?: string;
   gym_id?: string;
   location_id?: string;
+  /** Payment date range: from (included) and to (excluded). */
+  date_from?: Date;
+  date_to?: Date;
+  payment_method?: "CASH" | "BANK_TRANSFER";
   enabled?: boolean;
 }
 
@@ -30,6 +36,9 @@ export const usePayments = ({
   search,
   gym_id,
   location_id,
+  date_from,
+  date_to,
+  payment_method,
   enabled = true,
 }: UsePaymentsParams = {}) =>
   useQuery<PaymentsResponse, Error>({
@@ -43,6 +52,9 @@ export const usePayments = ({
       search,
       gym_id,
       location_id,
+      date_from?.toISOString(),
+      date_to?.toISOString(),
+      payment_method,
     ],
     queryFn: async () => {
       const res = await axios.post<PaymentsResponse>("/api/payments/getpayments", {
@@ -54,6 +66,9 @@ export const usePayments = ({
         search: search?.trim() || undefined,
         gym_id: gym_id || undefined,
         location_id: location_id || undefined,
+        date_from: date_from?.toISOString(),
+        date_to: date_to?.toISOString(),
+        payment_method,
       });
       return res.data;
     },

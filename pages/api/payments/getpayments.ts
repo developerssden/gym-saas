@@ -11,7 +11,7 @@ import {
 import { StatusCodes } from "http-status-codes";
 import { requireAccess, ownedGymWhere } from "@/lib/access";
 import { memberIdsMatchingPhone, phoneSearchDigits } from "@/lib/members/phone-search";
-import { memberPaymentSearchWhere, ownerPaymentSearchWhere } from "@/lib/payments/payment-search";
+import { memberPaymentSearchWhere, ownerPaymentSearchWhere, paymentFilterWhere } from "@/lib/payments/payment-search";
 import { Prisma, SubscriptionTypeEnum } from "@/prisma/generated/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -59,7 +59,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const digits = typeof search === "string" ? phoneSearchDigits(search) : null;
       const phoneMemberIds = digits ? await memberIdsMatchingPhone(digits, access.ownerId) : [];
       const searchWhere = memberPaymentSearchWhere(search, phoneMemberIds);
-      if (searchWhere) where.AND = [searchWhere];
+      const filterWhere = paymentFilterWhere(req.body);
+      const and = [searchWhere, filterWhere].filter((w): w is Prisma.PaymentWhereInput => !!w);
+      if (and.length) where.AND = and;
     } else {
       // SUPER_ADMIN: only show payments for gym owners' subscriptions (owner subscription payments)
       if (subscription_type === SubscriptionTypeEnum.OWNER && owner_subscription_id) {
@@ -71,7 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (searchWhere) where.AND = [searchWhere];
     }
 
-    const [payments, totalCount] = await Promise.all([
+    const [payments, totalCount, totalAmount] = await Promise.all([
       prisma.payment.findMany({
         where,
         include: {
@@ -112,11 +114,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         take: limit,
       }),
       prisma.payment.count({ where }),
+      prisma.payment.aggregate({ where, _sum: { amount: true } }),
     ]);
 
     return res.status(StatusCodes.OK).json({
       data: payments,
       totalCount,
+      /** Sum of every payment that matches the filters, not just this page. */
+      totalAmount: Number(totalAmount._sum.amount ?? 0),
       pageCount: Math.ceil(totalCount / limit),
     });
   } catch (err: unknown) {
