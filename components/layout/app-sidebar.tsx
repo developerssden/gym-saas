@@ -3,30 +3,30 @@
 import { useEffect } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail
+  SidebarRail,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { GymLocationSwitcher } from '@/components/layout/gym-location-switcher';
-import { routeItems } from '@/constants/data';
-import Link from 'next/link';
-
-import { permissionsForPath } from '@/lib/staff-permissions';
+import { groupNavItems, visibleNavItems } from '@/lib/navigation';
 
 type Role = 'SUPER_ADMIN' | 'GYM_OWNER' | 'MEMBER' | 'STAFF';
 
 export function AppSidebar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
   const role = session?.user?.role as Role | undefined;
-  const granted = session?.user?.staff_permissions ?? [];
 
   // The session callback only fills in the role for active accounts. A
   // signed-in session without one means the account was deactivated or
@@ -37,47 +37,39 @@ export function AppSidebar() {
     }
   }, [status, session?.user?.role]);
 
-  const filteredItems = routeItems.filter(item => {
-    if (!item.permissions.length) return true;
-    if (!role) return false;
-    if (!item.permissions.includes(role)) return false;
-    // Staff only see pages their owner gave them.
-    if (role === 'STAFF') {
-      const needed = permissionsForPath(item.href);
-      return !needed || needed.some(p => granted.includes(p));
-    }
-    return true;
-  });
+  const groups = groupNavItems(visibleNavItems(role, session?.user?.staff_permissions ?? []));
 
   return (
     <Sidebar collapsible="icon">
       <GymLocationSwitcher />
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {filteredItems.map(item => {
-                const isActive =
-                  pathname === item.href || pathname?.startsWith(`${item.href}/`);
-
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={!!isActive}
-                      tooltip={item.title}
-                    >
-                      <Link href={item.href}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {groups.map(group => (
+          <SidebarGroup key={group.id}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map(item => {
+                  const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton asChild isActive={!!isActive} tooltip={item.title} className="md:h-8 h-11">
+                        <Link
+                          href={item.href}
+                          aria-current={isActive ? 'page' : undefined}
+                          // Close the phone menu after choosing a page.
+                          onClick={() => isMobile && setOpenMobile(false)}
+                        >
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

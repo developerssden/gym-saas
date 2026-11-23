@@ -55,7 +55,7 @@ const Locations = ({ session }: { session: Session }) => {
   return (
     <PageContainer>
       <PageHeader
-        title={isGymOwner ? "Your locations" : "Locations"}
+        title="Locations"
         description={
           isGymOwner
             ? "Manage the locations across your gyms."

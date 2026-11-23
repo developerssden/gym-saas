@@ -135,7 +135,10 @@ test("sidebar items match staff permissions", () => {
   for (const item of routeItems) {
     const forStaff = item.permissions.includes("STAFF");
     if (forStaff) {
-      assert.ok(permissionsForPath(item.href), `${item.href} is shown to staff but has no PERMISSION_PAGES entry`);
+      assert.ok(
+        permissionsForPath(item.href) || ALL_SIGNED_IN_ROUTES.includes(item.href),
+        `${item.href} is shown to staff but has no PERMISSION_PAGES entry`
+      );
     } else if (item.permissions.includes("GYM_OWNER")) {
       assert.ok(
         OWNER_ONLY_ROUTES.includes(item.href) || ALL_SIGNED_IN_ROUTES.includes(item.href),

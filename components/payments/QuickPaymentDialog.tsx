@@ -299,7 +299,7 @@ function FeeAmountForm({ member, action: serverAction, onDone }: { member: Quick
 
   if (blockedReason) return <p className="py-4 text-sm text-muted-foreground">{blockedReason}</p>;
   if (action.kind === "none") {
-    return <p className="py-4 text-sm text-muted-foreground">{member.name} has no subscription yet. Create one from Member Subscriptions.</p>;
+    return <p className="py-4 text-sm text-muted-foreground">{member.name} has no subscription yet. Add one from Memberships.</p>;
   }
   if (action.kind === "paid") {
     return <p className="py-4 text-sm">Nothing to pay: fees are paid until <strong>{shortDate(action.paidUntil)}</strong>.</p>;

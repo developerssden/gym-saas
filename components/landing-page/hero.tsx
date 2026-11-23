@@ -7,7 +7,7 @@ import { WHATSAPP_URL } from "@/constants/landing"
 
 const reassurance = ["Free setup", "Import members from Excel", "Works on any phone"]
 
-const sidebarItems = ["Dashboard", "Members", "Member subscriptions", "Payments", "Equipment", "To-dos"]
+const sidebarItems = ["Dashboard", "Members", "Memberships", "Payments", "Equipment", "To-dos"]
 
 const stats = [
     { label: "Active members", value: "184", className: "" },

@@ -52,7 +52,7 @@ const Gyms = ({ session }: { session: Session }) => {
   return (
     <PageContainer>
       <PageHeader
-        title={isGymOwner ? "Your gyms" : "Gyms"}
+        title="Gyms"
         description={
           isGymOwner
             ? "Manage the gyms and locations under your account."

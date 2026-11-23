@@ -1,11 +1,9 @@
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SiteHeader } from "@/components/layout/header";
+import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
+import { AppToaster } from "@/components/layout/app-toaster";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
-
-
-
 
 export const metadata: Metadata = {
   description: "The all-in-one platform for modern gym management.",
@@ -23,8 +21,9 @@ export default function DashboardLayout({
         <SiteHeader />
         <div className="flex-1 min-h-0">
           {children}
+          <MobileTabBar />
         </div>
-        <Toaster richColors position="top-right" />
+        <AppToaster />
       </main>
     </SidebarProvider>
   );
