@@ -24,6 +24,7 @@ import { SubscriptionLimitModal } from "@/components/subscription/SubscriptionLi
 import { SubscriptionExpiredModal } from "@/components/subscription/SubscriptionExpiredModal";
 import { useSubscriptionValidation } from "@/hooks/useSubscriptionValidation";
 import { usePermissions } from "@/hooks/usePermissions";
+import { TAKE_FEE_PERMISSIONS } from "@/lib/member-balance";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { offerPushNotifications } from "@/lib/push-offer";
 import { getErrorMessage } from "@/lib/getErrorMessage";
@@ -281,7 +282,7 @@ const ManageMemberContent = () => {
           mode="new"
           memberId={created.id}
           gymId={selectedGymId}
-          canTakeFee={can("payments.record") || can("membersubscriptions.renew")}
+          canTakeFee={TAKE_FEE_PERMISSIONS.some((p) => can(p))}
           onSaved={setSaved}
           onCancel={() => router.push(`/members/${created.id}`)}
           cancelLabel="Skip for now"
