@@ -6,55 +6,70 @@ Live: https://www.kettlio.com/
 
 ## ✨ Features
 
+Built phone first: every owner page works on a 375px screen, with a bottom tab bar, the current branch in the header, plain wording (no raw codes), dates like `22 Nov 2026`, and light and dark mode.
+
 ### 📊 Owner dashboard
-- Active members, revenue this month and revenue compared with last month
+- **Who to chase today**: members who owe money or whose membership is ending, with one-tap Record payment, Renew and WhatsApp reminder
+- Active members, fees collected this month (compared with last month), outstanding fees and memberships expiring in the next 7 days
 - Expenses this month and profit (fees collected minus expenses)
-- Charts of revenue and new members over time
-- Recent payments and member subscriptions at a glance
-- Filter by gym and location
+- Charts of revenue and new members over 6 months, 12 months or the year so far
 - Shows the last loaded figures when the device is offline
-- **Setup checklist** for new owners (gym, location, members, first payment, notifications, install the app) that ticks off from real data and disappears when done
+- **Setup checklist** for new owners (gym, branch, members, first payment, notifications, install the app) that ticks off from real data and disappears when done
 
 ### 👥 Members
-- Add, edit and search members, by name or by phone number in any format (`0301…`, `+92 301…`)
-- Bulk import members from an Excel/CSV file (with a downloadable template)
-- Member subscriptions with start/end dates, monthly or yearly billing, and renewals
-- **Freeze / unfreeze** a subscription; the end date moves forward by the frozen days
+- Members list with status (Active, Expires in 3 days, Expired, Frozen) and what they owe, with filter chips: All, Active, Expiring, Expired, Owing
+- Search by name or by phone number in any format (`0301…`, `+92 301…`)
+- **Member profile page**: call or WhatsApp in one tap, current membership, balance and every payment with its receipt
+- **Add a member, their membership and the fee in one flow**; only name and phone are required
+- **Import members** from Excel/CSV in four steps, with a check of every row before importing and errors that say how to fix them
+- **Freeze / unfreeze** a membership; the end date moves forward by the frozen days
 - Record why a member left (churn reason)
 
-### 💳 Fees & payments
-- **Record a fee in 3 taps** from any page: tap "Record payment", pick the member, save. The amount is pre-filled from what they owe, or renews an ended subscription and takes the fee in one step
-- Record payments by cash or bank transfer
-- **Partial payments** and outstanding balances per member
-- Admission fee and discounts
-- PDF invoices / receipts
+### 🪪 Memberships
+- Tabs with counts: Expiring soon, Expired, Owing, Frozen, All
+- Monthly or yearly plans, custom dates, admission fee and discounts
+- Renew in the last 7 days or after the membership ends; the days left are added on
 
-### 📲 Reminders & sharing
+### 💳 Fees & payments
+- **Record a fee in 3 taps** from any page: tap "Record payment", pick the member, save. The amount is pre-filled from what they owe, or renews an ended membership and takes the fee in one step
+- Cash or bank transfer, **partial payments** and outstanding balances per member
+- After saving: send the receipt on WhatsApp or download the PDF
+- Payments list filtered by period (today, this week, this month, chosen dates) and by cash or bank, with the total collected
+- Payments and receipts show who recorded them
+
+### 📲 Reminders & notifications
 - Daily email to gym owners listing members whose fees run out soon
-- Notification when members' subscriptions expire, with a downloadable PDF list
+- Notification when members' memberships expire, with a downloadable PDF list
 - **One-tap WhatsApp** fee reminders and receipt sharing to members
-- In-app notifications and web push notifications
+- In-app notifications grouped by day, and web push notifications on each device
 
 ### 💰 Expenses & cash book
-- Record expenses by category (rent, bills, salaries and more)
+- Record expenses by category (rent, bills, salaries and more), for one branch or the whole gym
 - Daily cash book of money in and money out
 - Monthly profit
 
-### 📈 Monthly report
-- Pick a month and download it as **PDF** or **Excel**
-- Fees collected (cash vs bank), expenses by category, profit and unpaid fees
-- New members, renewals, subscriptions ending, members lost and why, and top plans
+### 📈 Reports
+- Pick any month (works in every browser) and download it as **PDF** or **Excel**
+- Fees collected (cash vs bank), expenses by category, profit or **loss** and unpaid fees
+- New members, renewals, memberships ending, members lost and why, and top plans
 
-### 🏢 Gyms, locations & equipment
-- Multiple gyms and locations per owner, within plan limits
-- Equipment register with category, condition, usage and status
-- To-do list for the gym
+### 🏋️ Equipment & to-dos
+- Equipment list with condition and **maintenance due** (overdue in red, due soon in amber), added from a short form
+- To-dos as a checklist: add in one line, tap to mark done (with undo), optional due dates
+
+### ⚙️ Settings
+- **My gym**: gym details, branches and plan usage on one page; several gyms and branches per owner, within plan limits
+- **Profile**: your details (only name and phone required), password, notifications on this device, and **Plan & billing**
+- **Subscription** page: your plan, its status and end date, how much of each limit you use, and renew on WhatsApp
 
 ### 🧑‍🤝‍🧑 Staff logins
 - Gym owners invite staff by email; each staff member works in one gym
-- A permission page with checkboxes for what each staff member can see and do on every page (e.g. record payments but not see revenue, add members but not delete them)
-- Deactivate, reactivate, resend or cancel invites
-- Payments and receipts show who recorded them
+- A permission page with checkboxes for what each staff member can see and do on every page (e.g. record payments but not see revenue, add members but not delete them); the server enforces the same permissions
+- Deactivate, reactivate, resend or cancel invites, with confirmations that say what will happen
+
+### 🔐 Sign in & accounts
+- **Forgot password**: a reset link by email that works once, for 1 hour, then signs you in
+- Accepting an invite asks only for name, phone and a password, then signs you in and opens the dashboard
 
 ### 🛠️ Platform administration (super admin)
 - Manage gym owners (clients), invite them by email and resend invites
@@ -98,8 +113,8 @@ Not built yet. Each item has a GitHub issue:
 
 ```bash
 npm install          # also runs prisma generate
-npm run db:push:dev  # create the database schema
-npm run seed         # create the super admin user
+npm run db:push:dev  # create the database schema (builds also run it, via scripts/db-deploy.mjs)
+npm run db:seed      # create the super admin user
 npm run dev
 ```
 
@@ -117,8 +132,7 @@ Create a `.env` file with these variables:
 | `POLAR_WEBHOOK_SECRET` | Verifies Polar webhooks |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Web push |
 
-See `docs/CRON_SETUP.md` for setting up the daily cron job.
-
+See `docs/CRON_SETUP.md` for setting up the daily cron job. `APP_URL` (or `NEXTAUTH_URL`) must be the real site address, because invite and password reset emails link to it.
 Run the tests with `npm test` and lint with `npm run lint`.
 
 ## 📁 Project structure
