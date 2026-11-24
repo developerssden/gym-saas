@@ -50,6 +50,11 @@ export type User = Prisma.UserModel
  */
 export type InviteToken = Prisma.InviteTokenModel
 /**
+ * Model PasswordResetToken
+ * 
+ */
+export type PasswordResetToken = Prisma.PasswordResetTokenModel
+/**
  * Model PushSubscription
  * 
  */

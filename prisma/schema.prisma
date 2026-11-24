@@ -59,6 +59,7 @@ model User {
   ownerSubscriptions OwnerSubscription[]
   recordedPayments   Payment[]             @relation("RecordedPayments")
   inviteTokens       InviteToken[]
+  passwordResetTokens PasswordResetToken[]
   pushSubscriptions  PushSubscription[]
   notifications      InAppNotification[]
   targetedAnnouncements Announcement[] @relation("AnnouncementRecipient")
@@ -82,6 +83,19 @@ model InviteToken {
   user_id    String
   user       User     @relation(fields: [user_id], references: [id])
   createdAt  DateTime @default(now())
+}
+
+// "Forgot password?" links. Only the sha256 of the token is stored; the raw one is emailed.
+model PasswordResetToken {
+  id         String   @id @default(uuid())
+  token      String   @unique
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+  used       Boolean  @default(false)
+  expires_at DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([user_id])
 }
 
 model PushSubscription {

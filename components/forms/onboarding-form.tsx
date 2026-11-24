@@ -1,25 +1,23 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import axios from "axios";
-import { GalleryVerticalEnd, CalendarIcon, Loader2 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-import { formatDate } from "@/lib/date-helper-functions";
+import { AuthHeading, authButton, authInput, authLink } from "@/components/auth/auth-shell";
+import { LabeledField } from "@/components/forms/labeled-field";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { CountryDropdown } from "@/components/ui/country-dropdown";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { APP_NAME } from "@/constants/brand";
+import { onboardingErrors, type OnboardingValues } from "@/lib/onboarding";
+import { PASSWORD_MIN_LENGTH } from "@/lib/profile";
+
+const EMPTY: OnboardingValues = { first_name: "", last_name: "", phone_number: "", password: "", confirm_password: "" };
 
 export function OnboardingForm() {
   const searchParams = useSearchParams();
@@ -27,348 +25,170 @@ export function OnboardingForm() {
 
   const email = searchParams?.get("email") ?? "";
   const token = searchParams?.get("token") ?? "";
-  // Staff invites only ask for a name, phone and password.
   const isStaff = searchParams?.get("kind") === "staff";
 
-  const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
-    phone_number: "",
-    date_of_birth: undefined as Date | undefined,
-    address: "",
-    city: "",
-    state: "",
-    zip_code: "",
-    country: "",
-    cnic: "",
-    password: "",
-    confirm_password: "",
-  });
-
+  const [values, setValues] = useState<OnboardingValues>(EMPTY);
+  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
 
   if (!email || !token) {
     return (
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-md">
-            <GalleryVerticalEnd className="size-6" />
-          </div>
-          <h1 className="text-xl font-bold">Invalid Invite Link</h1>
-        </div>
-        <Alert variant="destructive">
-          <AlertDescription>
-            Invalid or missing invite link. Please contact your administrator.
-          </AlertDescription>
-        </Alert>
+      <div className="w-full max-w-[420px]">
+        <AuthHeading title="This invite link isn't complete">
+          Open the link from your invite email again, or ask the person who invited you to send a new one.
+        </AuthHeading>
+        <Link href="/sign-in" className={authLink}>
+          Go to sign in
+        </Link>
       </div>
     );
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  const errors = onboardingErrors(values);
+  const show = (e?: string) => (submitted ? e : undefined);
+  const set = (field: keyof OnboardingValues) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setValues(v => ({ ...v, [field]: e.target.value }));
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
     setError("");
-
-    if (form.password !== form.confirm_password) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (!isStaff && !form.date_of_birth) {
-      setError("Date of birth is required");
-      return;
-    }
+    if (Object.keys(errors).length > 0) return;
 
     setLoading(true);
     try {
       await axios.post("/api/clients/complete-invite", {
         token,
         email,
-        first_name: form.first_name,
-        last_name: form.last_name,
-        phone_number: form.phone_number,
-        password: form.password,
-        ...(isStaff
-          ? {}
-          : {
-              date_of_birth: form.date_of_birth?.toISOString(),
-              address: form.address,
-              city: form.city,
-              state: form.state,
-              zip_code: form.zip_code,
-              country: form.country,
-              cnic: form.cnic || undefined,
-            }),
+        first_name: values.first_name.trim(),
+        last_name: values.last_name.trim(),
+        phone_number: values.phone_number,
+        password: values.password,
       });
-      setSuccess(true);
-      setTimeout(() => router.push("/sign-in"), 3000);
     } catch (err: unknown) {
-      const message =
+      setError(
         axios.isAxiosError(err) && err.response?.data?.message
           ? err.response.data.message
-          : "Something went wrong. Please try again.";
-      setError(message);
-    } finally {
+          : "Something went wrong. Please try again."
+      );
       setLoading(false);
+      return;
+    }
+
+    // Account is ready: sign them straight in and open the dashboard (owners see the setup checklist there).
+    const result = await signIn("credentials", {
+      email: email.trim().toLowerCase(),
+      password: values.password,
+      remember: "true",
+      redirect: false,
+    });
+    if (result && !result.error) {
+      router.push("/dashboard");
+      router.refresh();
+    } else {
+      router.push("/sign-in");
     }
   };
 
-  if (success) {
-    return (
-      <div className="flex flex-col gap-6 text-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-md">
-            <GalleryVerticalEnd className="size-6" />
-          </div>
-          <h1 className="text-xl font-bold">Account setup complete!</h1>
-          <p className="text-muted-foreground text-sm">
-            Redirecting you to sign in...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-6">
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-6" />
-            </div>
-            <h1 className="text-xl font-bold">Complete Your Profile</h1>
-            <p className="text-muted-foreground text-center text-sm">
-              {isStaff
-                ? "Set up your staff account to get started."
-                : "Set up your gym owner account to get started."}
-            </p>
-          </div>
+    <div className="w-full max-w-[420px]">
+      <AuthHeading title={isStaff ? "Set up your staff account" : `Welcome to ${APP_NAME}`}>
+        {isStaff
+          ? "Three quick things and you're in."
+          : "Your name, phone and a password. You can add your gym and members straight after."}
+      </AuthHeading>
 
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+      <form onSubmit={submit} noValidate className="space-y-5">
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="email">Email</Label>
+        <LabeledField label="Email" hint="You'll sign in with this.">
+          {p => <Input {...p} type="email" value={email} readOnly disabled className={authInput} />}
+        </LabeledField>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <LabeledField label="First name" required error={show(errors.first_name)}>
+            {p => (
               <Input
-                id="email"
-                type="email"
-                value={email}
-                readOnly
-                disabled
-                className="opacity-60"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="first_name">First name</Label>
-              <Input
-                id="first_name"
-                name="first_name"
-                placeholder="Enter first name"
-                value={form.first_name}
-                onChange={handleChange}
-                required
+                {...p}
+                autoComplete="given-name"
+                autoFocus
+                value={values.first_name}
+                onChange={set("first_name")}
                 disabled={loading}
+                className={authInput}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="last_name">Last name</Label>
-              <Input
-                id="last_name"
-                name="last_name"
-                placeholder="Enter last name"
-                value={form.last_name}
-                onChange={handleChange}
-                required={!isStaff}
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Phone Number</Label>
-              <PhoneInput
-                placeholder="Enter phone number"
-                value={form.phone_number}
-                onChange={(value) =>
-                  setForm((prev) => ({ ...prev, phone_number: value }))
-                }
-                defaultCountry="PK"
-                international
-                disabled={loading}
-              />
-            </div>
-
-            {!isStaff && (
-            <>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="date_of_birth" className="px-1">
-                Date of birth
-              </Label>
-              <Popover>
-                <PopoverTrigger className="w-full" asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={loading}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !form.date_of_birth && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {form.date_of_birth ? (
-                      formatDate(form.date_of_birth)
-                    ) : (
-                      <span>Pick your date of birth</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0" align="start">
-                  <Calendar
-                    className="w-full"
-                    mode="single"
-                    selected={form.date_of_birth}
-                    onSelect={(date) =>
-                      setForm((prev) => ({ ...prev, date_of_birth: date }))
-                    }
-                    autoFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cnic">CNIC (Optional)</Label>
-              <Input
-                id="cnic"
-                name="cnic"
-                placeholder="Enter CNIC"
-                value={form.cnic}
-                onChange={handleChange}
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                name="address"
-                placeholder="Enter address"
-                value={form.address}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                name="city"
-                placeholder="Enter city"
-                value={form.city}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                name="state"
-                placeholder="Enter state"
-                value={form.state}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="zip_code">Zip Code</Label>
-              <Input
-                id="zip_code"
-                name="zip_code"
-                placeholder="Enter zip code"
-                value={form.zip_code}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Country</Label>
-              <CountryDropdown
-                placeholder="Select country"
-                defaultValue={form.country}
-                disabled={loading}
-                onChange={(country) => {
-                  setForm((prev) => ({ ...prev, country: country.alpha3 }));
-                }}
-              />
-            </div>
-            </>
             )}
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <PasswordInput
-                id="password"
-                name="password"
-                placeholder="Enter password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                minLength={6}
+          </LabeledField>
+          <LabeledField label="Last name">
+            {p => (
+              <Input
+                {...p}
+                autoComplete="family-name"
+                value={values.last_name}
+                onChange={set("last_name")}
                 disabled={loading}
-                autoComplete="new-password"
+                className={authInput}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirm_password">Confirm Password</Label>
-              <PasswordInput
-                id="confirm_password"
-                name="confirm_password"
-                placeholder="Confirm password"
-                value={form.confirm_password}
-                onChange={handleChange}
-                required
-                minLength={6}
-                disabled={loading}
-                autoComplete="new-password"
-              />
-            </div>
-          </div>
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Setting up...
-              </>
-            ) : (
-              "Complete Setup"
             )}
-          </Button>
+          </LabeledField>
         </div>
+
+        <LabeledField
+          label="Phone"
+          required
+          hint={isStaff ? undefined : "For your account; members never see it."}
+          error={show(errors.phone_number)}
+        >
+          {p => (
+            <PhoneInput
+              {...p}
+              value={values.phone_number}
+              onChange={value => setValues(v => ({ ...v, phone_number: value ?? "" }))}
+              defaultCountry="PK"
+              international
+              disabled={loading}
+            />
+          )}
+        </LabeledField>
+
+        <LabeledField
+          label="Password"
+          required
+          hint={`At least ${PASSWORD_MIN_LENGTH} characters.`}
+          error={show(errors.password)}
+        >
+          {p => (
+            <PasswordInput
+              {...p}
+              autoComplete="new-password"
+              value={values.password}
+              onChange={set("password")}
+              disabled={loading}
+              className={authInput}
+            />
+          )}
+        </LabeledField>
+        <LabeledField label="Password again" required error={show(errors.confirm_password)}>
+          {p => (
+            <PasswordInput
+              {...p}
+              autoComplete="new-password"
+              value={values.confirm_password}
+              onChange={set("confirm_password")}
+              disabled={loading}
+              className={authInput}
+            />
+          )}
+        </LabeledField>
+
+        <Button type="submit" className={authButton} loading={loading}>
+          {loading ? "Setting up..." : "Create account and sign in"}
+        </Button>
       </form>
     </div>
   );

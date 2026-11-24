@@ -1,33 +1,25 @@
 import { hashPassword } from "@/lib/authHelper";
 import prisma from "@/lib/prisma";
 import { hashToken } from "@/lib/tokens";
+import { missingInviteFields } from "@/lib/onboarding";
+import { PASSWORD_MIN_LENGTH } from "@/lib/profile";
 import type { NextApiRequest, NextApiResponse } from "next";
 
+// Accepting an invite. Owners and staff both give only a name, phone and password;
+// address, date of birth and the rest can be added later in Profile.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
 
-  const {
-    token,
-    email,
-    password,
-    first_name,
-    last_name,
-    phone_number,
-    date_of_birth,
-    address,
-    city,
-    state,
-    zip_code,
-    country,
-    cnic,
-  } = req.body;
+  const { token, email, password, first_name, last_name, phone_number } = (req.body ?? {}) as Record<string, unknown>;
 
-  if (!token || !email || !password) {
-    return res.status(400).json({ message: "All required fields must be filled" });
+  if (typeof token !== "string" || typeof email !== "string" || typeof password !== "string" || !token || !email) {
+    return res.status(400).json({ message: "This invite link isn't valid" });
   }
-
-  if (password.length < 6) {
-    return res.status(400).json({ message: "Password must be at least 6 characters" });
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    return res.status(400).json({ message: `Use a password of at least ${PASSWORD_MIN_LENGTH} characters` });
+  }
+  if (missingInviteFields({ first_name, phone_number }).length > 0) {
+    return res.status(400).json({ message: "Enter your first name and phone number" });
   }
 
   const hashedToken = hashToken(token);
@@ -36,70 +28,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     include: { user: { select: { role: true, is_deleted: true } } },
   });
 
-  // Staff only give a name, phone and password; owners fill in their full profile.
-  const isStaff = inviteRecord?.user.role === "STAFF";
-  const missingField = isStaff
-    ? !first_name || !phone_number
-    : !first_name ||
-      !last_name ||
-      !phone_number ||
-      !date_of_birth ||
-      !address ||
-      !city ||
-      !state ||
-      !zip_code ||
-      !country;
-  if (inviteRecord && missingField) {
-    return res.status(400).json({ message: "All required fields must be filled" });
+  if (!inviteRecord || inviteRecord.email !== email.toLowerCase().trim()) {
+    return res.status(400).json({ message: "This invite link isn't valid" });
   }
-
-  if (!inviteRecord) {
-    return res.status(400).json({ message: "Invalid invite link" });
-  }
-
   if (inviteRecord.used || inviteRecord.user.is_deleted) {
-    return res.status(400).json({ message: "This invite link has already been used" });
+    return res.status(400).json({ message: "This invite has already been used. Sign in with your email and password." });
   }
-
   if (new Date() > inviteRecord.expires_at) {
     return res.status(400).json({
-      message: "This invite link has expired. Please contact your administrator.",
+      message: "This invite link has expired. Ask the person who invited you to send a new one.",
     });
   }
 
-  if (inviteRecord.email !== email.toLowerCase().trim()) {
-    return res.status(400).json({ message: "Invalid invite link" });
-  }
-
   const hashedPassword = await hashPassword(password);
+  const lastName = typeof last_name === "string" && last_name.trim() ? last_name.trim() : null;
 
   await prisma.$transaction([
     prisma.user.update({
       where: { id: inviteRecord.user_id },
-      data: isStaff
-        ? {
-            first_name,
-            last_name: last_name || null,
-            phone_number,
-            password: hashedPassword,
-            is_active: true,
-            onboarding_completed: true,
-          }
-        : {
-            first_name,
-            last_name,
-            phone_number,
-            date_of_birth: new Date(date_of_birth),
-            address,
-            city,
-            state,
-            zip_code,
-            country,
-            cnic: cnic ?? null,
-            password: hashedPassword,
-            is_active: true,
-            onboarding_completed: true,
-          },
+      data: {
+        first_name: (first_name as string).trim(),
+        last_name: lastName,
+        phone_number: (phone_number as string).trim(),
+        password: hashedPassword,
+        is_active: true,
+        onboarding_completed: true,
+      },
     }),
     prisma.inviteToken.update({
       where: { token: hashedToken },
@@ -107,5 +61,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }),
   ]);
 
-  return res.status(200).json({ message: "Account setup complete. You can now sign in." });
+  return res.status(200).json({ message: "Account ready" });
 }

@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   InviteToken: 'InviteToken',
+  PasswordResetToken: 'PasswordResetToken',
   PushSubscription: 'PushSubscription',
   InAppNotification: 'InAppNotification',
   Todo: 'Todo',
@@ -126,6 +127,18 @@ export const InviteTokenScalarFieldEnum = {
 } as const
 
 export type InviteTokenScalarFieldEnum = (typeof InviteTokenScalarFieldEnum)[keyof typeof InviteTokenScalarFieldEnum]
+
+
+export const PasswordResetTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  user_id: 'user_id',
+  used: 'used',
+  expires_at: 'expires_at',
+  createdAt: 'createdAt'
+} as const
+
+export type PasswordResetTokenScalarFieldEnum = (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum]
 
 
 export const PushSubscriptionScalarFieldEnum = {
