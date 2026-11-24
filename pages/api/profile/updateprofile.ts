@@ -1,6 +1,7 @@
 // pages/api/profile/updateprofile.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
+import type { Prisma } from "@/prisma/generated/client";
 import { StatusCodes } from "http-status-codes";
 import { requireOwnAccount } from "@/lib/access";
 
@@ -23,21 +24,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       country,
       date_of_birth,
       cnic,
-    } = req.body as Record<string, any>;
+    } = (req.body ?? {}) as Record<string, unknown>;
 
-    // Build update data (exclude email - it cannot be changed)
-    const updateData: any = {};
+    // Build update data (exclude email - it cannot be changed).
+    // Name and phone can't be blanked; everything else is optional and "" / null clears it.
+    const updateData: Prisma.UserUpdateInput = {};
+    const text = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+    const optional = (v: unknown) => text(v) || null;
 
-    if (first_name !== undefined) updateData.first_name = first_name;
-    if (last_name !== undefined) updateData.last_name = last_name;
-    if (phone_number !== undefined) updateData.phone_number = phone_number;
-    if (address !== undefined) updateData.address = address;
-    if (city !== undefined) updateData.city = city;
-    if (state !== undefined) updateData.state = state;
-    if (zip_code !== undefined) updateData.zip_code = zip_code;
-    if (country !== undefined) updateData.country = country;
-    if (date_of_birth !== undefined) updateData.date_of_birth = new Date(date_of_birth);
-    if (cnic !== undefined) updateData.cnic = cnic || null;
+    if (first_name !== undefined) {
+      if (!text(first_name)) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Enter your first name" });
+      updateData.first_name = text(first_name);
+    }
+    if (phone_number !== undefined) {
+      if (!text(phone_number)) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Enter your phone number" });
+      updateData.phone_number = text(phone_number);
+    }
+    if (last_name !== undefined) updateData.last_name = optional(last_name);
+    if (address !== undefined) updateData.address = optional(address);
+    if (city !== undefined) updateData.city = optional(city);
+    if (state !== undefined) updateData.state = optional(state);
+    if (zip_code !== undefined) updateData.zip_code = optional(zip_code);
+    if (country !== undefined) updateData.country = optional(country);
+    if (cnic !== undefined) updateData.cnic = optional(cnic);
+    if (date_of_birth !== undefined) {
+      if (!date_of_birth) updateData.date_of_birth = null;
+      else {
+        const dob = new Date(String(date_of_birth));
+        if (Number.isNaN(dob.getTime()) || dob > new Date())
+          return res.status(StatusCodes.BAD_REQUEST).json({ error: "That date of birth doesn't look right" });
+        updateData.date_of_birth = dob;
+      }
+    }
 
     // Update user
     const updated = await prisma.user.update({

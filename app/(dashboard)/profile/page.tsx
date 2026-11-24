@@ -1,478 +1,96 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import Link from "next/link";
+import axios from "axios";
+import { redirect } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronRight } from "lucide-react";
+
+import DataFetchError from "@/components/common/DataFetchError";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
-import { useRouter } from "next/navigation";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import axios from "axios";
-import { getErrorMessage } from "@/lib/getErrorMessage";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import FullScreenLoader from "@/components/common/FullScreenLoader";
-import { useState, useMemo } from "react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { formatDate } from "@/lib/date-helper-functions";
-import { Bell, CalendarIcon, KeyRound, UserRound } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { CountryDropdown } from "@/components/ui/country-dropdown";
-import { cn } from "@/lib/utils";
+import { AccountSection } from "@/components/profile/AccountSection";
+import { PasswordSection } from "@/components/profile/PasswordSection";
+import { PlanSection } from "@/components/profile/PlanSection";
 import PushNotificationToggle from "@/components/profile/PushNotificationToggle";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { accountValuesFrom } from "@/lib/profile";
 
-const ProfileSchema = Yup.object({
-  first_name: Yup.string().required("First name is required"),
-  last_name: Yup.string().required("Last name is required"),
-  phone_number: Yup.string().required("Phone number is required"),
-  date_of_birth: Yup.date().required("Date of birth is required"),
-  address: Yup.string().required("Address is required"),
-  city: Yup.string().required("City is required"),
-  state: Yup.string().required("State is required"),
-  country: Yup.string().required("Country is required"),
-  zip_code: Yup.string().required("Zip code is required"),
-  cnic: Yup.string().notRequired(),
-});
-
-const PasswordSchema = Yup.object({
-  current_password: Yup.string().required("Current password is required"),
-  new_password: Yup.string()
-    .min(6, "Password must be at least 6 characters")
-    .required("New password is required"),
-  confirm_password: Yup.string()
-    .oneOf([Yup.ref("new_password")], "Passwords must match")
-    .required("Please confirm your password"),
-});
+type Profile = Parameters<typeof accountValuesFrom>[0] & { id: string; email: string | null };
 
 const ProfilePage = () => {
-  const { data: session, status, update: updateSession } = useSession({ required: true });
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const [saving, setSaving] = useState(false);
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [dateOfBirthOpen, setDateOfBirthOpen] = useState(false);
+  const { data: session, status } = useSession({ required: true });
+  const role = session?.user?.role;
+  const allowed = role === "GYM_OWNER" || role === "STAFF";
+  const isOwner = role === "GYM_OWNER";
 
-  // Fetch user data from API to ensure we have all fields
-  const { data: userData, isLoading: fetchingUser } = useQuery({
+  const { data: profile, isLoading, error, refetch } = useQuery<Profile>({
     queryKey: ["profile", session?.user?.id],
-    queryFn: async () => {
-      const res = await axios.post("/api/profile/getprofile");
-      return res.data;
-    },
-    enabled: !!session?.user?.id && status === "authenticated",
+    queryFn: async () => (await axios.post("/api/profile/getprofile")).data,
+    enabled: status === "authenticated" && allowed,
   });
 
-  // Password update mutation (defined before passwordFormik to avoid closure issues)
-  const updatePasswordMutation = useMutation({
-    mutationFn: (values: { current_password: string; new_password: string }) =>
-      axios.post("/api/profile/updatepassword", values),
-    onSuccess: () => {
-      toast.success("Password updated successfully");
-    },
-    onError: (err: unknown) => toast.error(getErrorMessage(err)),
-  });
+  if (status !== "loading" && !allowed) return redirect("/unauthorized");
 
-  // Profile update mutation
-  const updateProfileMutation = useMutation({
-    mutationFn: (values: any) => axios.post("/api/profile/updateprofile", values),
-    onSuccess: async (res) => {
-      toast.success("Profile updated successfully");
-      // Update session with new data
-      await updateSession({
-        user: {
-          ...session?.user,
-          ...res.data.data,
-        },
-      });
-    },
-    onError: (err: unknown) => toast.error(getErrorMessage(err)),
-  });
-
-  // Memoize initial values to prevent unnecessary re-initializations
-  const initialProfileValues = useMemo(() => ({
-    first_name: userData?.first_name || "",
-    last_name: userData?.last_name || "",
-    phone_number: userData?.phone_number || "",
-    date_of_birth: userData?.date_of_birth
-      ? new Date(userData.date_of_birth)
-      : new Date(),
-    address: userData?.address || "",
-    city: userData?.city || "",
-    state: userData?.state || "",
-    country: userData?.country || "",
-    zip_code: userData?.zip_code || "",
-    cnic: userData?.cnic || "",
-  }), [userData]);
-
-  const profileFormik = useFormik({
-    initialValues: initialProfileValues,
-    validationSchema: ProfileSchema,
-    enableReinitialize: true,
-    onSubmit: async (values) => {
-      setSaving(true);
-      try {
-        await updateProfileMutation.mutateAsync(values);
-      } finally {
-        setSaving(false);
-      }
-    },
-  });
-
-  const passwordFormik = useFormik({
-    initialValues: {
-      current_password: "",
-      new_password: "",
-      confirm_password: "",
-    },
-    validationSchema: PasswordSchema,
-    onSubmit: async (values) => {
-      setChangingPassword(true);
-      try {
-        await updatePasswordMutation.mutateAsync({
-          current_password: values.current_password,
-          new_password: values.new_password,
-        });
-        // Reset form after successful password change
-        passwordFormik.resetForm();
-      } finally {
-        setChangingPassword(false);
-      }
-    },
-  });
-
-  // Conditional returns after all hooks
-  if (status === "loading" || fetchingUser) {
-    return <FullScreenLoader />;
-  }
-  if (session?.user?.role !== "GYM_OWNER" && session?.user?.role !== "STAFF") {
-    return redirect("/unauthorized");
-  }
+  const sections = [
+    { id: "account", label: "Account" },
+    { id: "password", label: "Password" },
+    { id: "notifications", label: "Notifications" },
+    ...(isOwner ? [{ id: "plan", label: "Plan & billing" }] : []),
+  ];
 
   return (
     <PageContainer>
-      {saving && <FullScreenLoader label="Saving profile..." />}
-      {changingPassword && <FullScreenLoader label="Updating password..." />}
-      <div className="mx-auto w-full max-w-2xl">
-        <PageHeader title="Profile" description="Your details, password and notifications." />
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+        <PageHeader title="Profile" description="Your details, password, notifications and plan." />
 
-        <Tabs defaultValue="profile">
-          {/* Short labels on phones so all three tabs fit on one line. */}
-          <TabsList className="mb-6 grid h-auto w-full grid-cols-3">
-            <TabsTrigger value="profile" className="min-h-10 px-2">
-              <UserRound aria-hidden className="hidden sm:block" />
-              <span className="sm:hidden">Details</span>
-              <span className="hidden sm:inline">Your details</span>
-            </TabsTrigger>
-            <TabsTrigger value="password" className="min-h-10 px-2">
-              <KeyRound aria-hidden className="hidden sm:block" />
-              Password
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="min-h-10 px-2">
-              <Bell aria-hidden className="hidden sm:block" />
-              <span className="sm:hidden">Alerts</span>
-              <span className="hidden sm:inline">Notifications</span>
-            </TabsTrigger>
-          </TabsList>
+        {/* Jump links: one tap to a section on a long phone screen. Wraps instead of scrolling sideways. */}
+        <nav aria-label="Profile sections" className="-mt-2 flex flex-wrap gap-2">
+          {sections.map(s => (
+            <Button key={s.id} asChild variant="outline" size="sm" className="h-11 rounded-full md:h-8">
+              <a href={`#${s.id}`}>{s.label}</a>
+            </Button>
+          ))}
+        </nav>
 
-          <TabsContent value="profile" className="space-y-6">
-            <form onSubmit={profileFormik.handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input
-                  value={userData?.email || ""}
-                  disabled
-                  className="bg-muted"
-                  placeholder="Email (cannot be changed)"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Email cannot be changed for security reasons
-                </p>
-              </div>
+        {(status === "loading" || isLoading) && (
+          <div aria-busy="true" aria-label="Loading" className="space-y-4">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </div>
+        )}
+        {error && <DataFetchError error={error} onRetry={() => refetch()} message="Couldn't load your profile" />}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name *</Label>
-                  <Input
-                    name="first_name"
-                    value={profileFormik.values.first_name}
-                    onChange={profileFormik.handleChange}
-                    onBlur={profileFormik.handleBlur}
-                    placeholder="First name"
-                  />
-                  {profileFormik.touched.first_name && profileFormik.errors.first_name && (
-                    <p className="text-red-500 text-sm">
-                      {String(profileFormik.errors.first_name)}
-                    </p>
-                  )}
-                </div>
+        {profile && (
+          <>
+            <AccountSection key={profile.id} email={profile.email} initial={accountValuesFrom(profile)} />
+            <PasswordSection />
 
-                <div className="space-y-2">
-                  <Label>Last Name *</Label>
-                  <Input
-                    name="last_name"
-                    value={profileFormik.values.last_name}
-                    onChange={profileFormik.handleChange}
-                    onBlur={profileFormik.handleBlur}
-                    placeholder="Last name"
-                  />
-                  {profileFormik.touched.last_name && profileFormik.errors.last_name && (
-                    <p className="text-red-500 text-sm">
-                      {String(profileFormik.errors.last_name)}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Phone Number *</Label>
-                  <Input
-                    name="phone_number"
-                    value={profileFormik.values.phone_number}
-                    onChange={profileFormik.handleChange}
-                    onBlur={profileFormik.handleBlur}
-                    placeholder="Phone number"
-                  />
-                  {profileFormik.touched.phone_number && profileFormik.errors.phone_number && (
-                    <p className="text-red-500 text-sm">
-                      {String(profileFormik.errors.phone_number)}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Date of Birth *</Label>
-                  <Popover open={dateOfBirthOpen} onOpenChange={setDateOfBirthOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !profileFormik.values.date_of_birth && "text-muted-foreground"
-                        )}
-                        type="button"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {profileFormik.values.date_of_birth
-                          ? formatDate(profileFormik.values.date_of_birth)
-                          : "Pick a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={profileFormik.values.date_of_birth}
-                        onSelect={(date) => {
-                          if (date) {
-                            profileFormik.setFieldValue("date_of_birth", date);
-                            setDateOfBirthOpen(false);
-                          }
-                        }}
-                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {profileFormik.touched.date_of_birth && profileFormik.errors.date_of_birth && (
-                    <p className="text-red-500 text-sm">
-                      {String(profileFormik.errors.date_of_birth)}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>CNIC</Label>
-                  <Input
-                    name="cnic"
-                    value={profileFormik.values.cnic}
-                    onChange={profileFormik.handleChange}
-                    onBlur={profileFormik.handleBlur}
-                    placeholder="CNIC (optional)"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Address *</Label>
-                <Input
-                  name="address"
-                  value={profileFormik.values.address}
-                  onChange={profileFormik.handleChange}
-                  onBlur={profileFormik.handleBlur}
-                  placeholder="Address"
-                />
-                {profileFormik.touched.address && profileFormik.errors.address && (
-                  <p className="text-red-500 text-sm">{String(profileFormik.errors.address)}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>City *</Label>
-                  <Input
-                    name="city"
-                    value={profileFormik.values.city}
-                    onChange={profileFormik.handleChange}
-                    onBlur={profileFormik.handleBlur}
-                    placeholder="City"
-                  />
-                  {profileFormik.touched.city && profileFormik.errors.city && (
-                    <p className="text-red-500 text-sm">{String(profileFormik.errors.city)}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>State *</Label>
-                  <Input
-                    name="state"
-                    value={profileFormik.values.state}
-                    onChange={profileFormik.handleChange}
-                    onBlur={profileFormik.handleBlur}
-                    placeholder="State"
-                  />
-                  {profileFormik.touched.state && profileFormik.errors.state && (
-                    <p className="text-red-500 text-sm">{String(profileFormik.errors.state)}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Zip Code *</Label>
-                  <Input
-                    name="zip_code"
-                    value={profileFormik.values.zip_code}
-                    onChange={profileFormik.handleChange}
-                    onBlur={profileFormik.handleBlur}
-                    placeholder="Zip code"
-                  />
-                  {profileFormik.touched.zip_code && profileFormik.errors.zip_code && (
-                    <p className="text-red-500 text-sm">{String(profileFormik.errors.zip_code)}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Country *</Label>
-                  <CountryDropdown
-                    placeholder="Select country"
-                    defaultValue={profileFormik.values.country}
-                    onChange={(country) => {
-                      profileFormik.setFieldValue("country", country.alpha3);
-                    }}
-                  />
-                  {profileFormik.touched.country && profileFormik.errors.country && (
-                    <p className="text-red-500 text-sm">{String(profileFormik.errors.country)}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-6">
-                <Button type="submit" className="flex-1">
-                  Update Profile
+            <Card id="notifications" className="scroll-mt-20">
+              <CardHeader>
+                <CardTitle>Notifications</CardTitle>
+                <CardDescription>Alerts on this phone or computer when memberships are about to end.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <PushNotificationToggle />
+                <Button asChild variant="ghost" className="h-11 w-full justify-between px-2 md:h-9">
+                  <Link href="/notifications">
+                    See all notifications
+                    <ChevronRight aria-hidden />
+                  </Link>
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => router.back()}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </TabsContent>
+              </CardContent>
+            </Card>
 
-          <TabsContent value="password" className="space-y-6">
-            <form onSubmit={passwordFormik.handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label>Current Password *</Label>
-                <PasswordInput
-                  name="current_password"
-                  value={passwordFormik.values.current_password}
-                  onChange={passwordFormik.handleChange}
-                  onBlur={passwordFormik.handleBlur}
-                  placeholder="Enter current password"
-                  autoComplete="current-password"
-                />
-                {passwordFormik.touched.current_password &&
-                  passwordFormik.errors.current_password && (
-                    <p className="text-red-500 text-sm">
-                      {String(passwordFormik.errors.current_password)}
-                    </p>
-                  )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>New Password *</Label>
-                <PasswordInput
-                  name="new_password"
-                  value={passwordFormik.values.new_password}
-                  onChange={passwordFormik.handleChange}
-                  onBlur={passwordFormik.handleBlur}
-                  placeholder="Enter new password (min 6 characters)"
-                  autoComplete="new-password"
-                />
-                {passwordFormik.touched.new_password && passwordFormik.errors.new_password && (
-                  <p className="text-red-500 text-sm">
-                    {String(passwordFormik.errors.new_password)}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Confirm New Password *</Label>
-                <PasswordInput
-                  name="confirm_password"
-                  value={passwordFormik.values.confirm_password}
-                  onChange={passwordFormik.handleChange}
-                  onBlur={passwordFormik.handleBlur}
-                  placeholder="Confirm new password"
-                  autoComplete="new-password"
-                />
-                {passwordFormik.touched.confirm_password &&
-                  passwordFormik.errors.confirm_password && (
-                    <p className="text-red-500 text-sm">
-                      {String(passwordFormik.errors.confirm_password)}
-                    </p>
-                  )}
-              </div>
-
-              <div className="flex gap-4 mt-6">
-                <Button type="submit" className="flex-1">
-                  Change Password
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => passwordFormik.resetForm()}
-                >
-                  Clear
-                </Button>
-              </div>
-            </form>
-          </TabsContent>
-
-          <TabsContent value="notifications" className="space-y-6">
-            <div className="space-y-2">
-              <h2 className="text-lg font-medium">Push notifications</h2>
-              <p className="text-sm text-muted-foreground">
-                Enable browser notifications for subscription reminders on this device.
-              </p>
-            </div>
-            <PushNotificationToggle />
-          </TabsContent>
-        </Tabs>
+            {isOwner && <PlanSection />}
+          </>
+        )}
       </div>
     </PageContainer>
   );
 };
 
 export default ProfilePage;
-
