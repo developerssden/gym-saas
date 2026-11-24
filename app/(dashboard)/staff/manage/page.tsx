@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import { PageContainer } from "@/components/layout/page-container";
+import { StickyFormFooter } from "@/components/forms/sticky-form-footer";
 import { PermissionMatrix } from "@/components/staff/PermissionMatrix";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,7 +122,7 @@ function StaffForm({
     onError: (err: unknown) => toast.error(getErrorMessage(err)),
   });
 
-  const name =[form.first_name, form.last_name].filter(Boolean).join(" ");
+  const name = [form.first_name, form.last_name].filter(Boolean).join(" ");
 
   return (
     <PageContainer>
@@ -175,9 +176,9 @@ function StaffForm({
               />
             </div>
             <div className="space-y-2">
-              <Label>Works at</Label>
+              <Label htmlFor="gym_id">Works at</Label>
               <Select value={form.gym_id} onValueChange={gym_id => setForm(prev => ({ ...prev, gym_id }))}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="gym_id" className="w-full" aria-describedby="gym_id-hint">
                   <SelectValue placeholder="Choose a gym" />
                 </SelectTrigger>
                 <SelectContent>
@@ -188,7 +189,7 @@ function StaffForm({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">They only see this gym and its locations.</p>
+              <p id="gym_id-hint" className="text-xs text-muted-foreground">They only see this gym and its locations.</p>
             </div>
           </CardContent>
         </Card>
@@ -209,14 +210,14 @@ function StaffForm({
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-2">
+        <StickyFormFooter className="mt-0">
           <Button type="button" variant="outline" onClick={() => router.push("/staff")}>
             Cancel
           </Button>
           <Button type="submit" disabled={save.isPending || !form.gym_id}>
             {save.isPending ? "Saving..." : isEdit ? "Save permissions" : "Send invite"}
           </Button>
-        </div>
+        </StickyFormFooter>
       </form>
     </PageContainer>
   );
