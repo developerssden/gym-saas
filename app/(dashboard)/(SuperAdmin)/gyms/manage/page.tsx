@@ -201,6 +201,8 @@ const ManageGymContent = () => {
   });
 
   if (status === "loading") return <FullScreenLoader />;
+  // Owners add and edit gyms and branches on My gym.
+  if (isGymOwner) return redirect(`/my-gym${action === "create" ? "?add=gym" : ""}`);
   if (!isAuthorized) return redirect("/unauthorized");
   if (fetchingGym) return <FullScreenLoader label="Loading gym..." />;
 

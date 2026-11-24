@@ -130,9 +130,9 @@ function StepAction({ step, primary }: { step: SetupStep; primary: boolean }) {
 
   switch (step.id) {
     case "gym":
-      return link("/gyms/manage?action=create", "Add gym");
+      return link("/my-gym?add=gym", "Add gym");
     case "location":
-      return link("/locations/manage?action=create", "Add location");
+      return link("/my-gym?add=branch", "Add branch");
     case "members":
       return (
         <div className="flex gap-2">

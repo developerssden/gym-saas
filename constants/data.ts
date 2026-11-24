@@ -14,6 +14,7 @@ import {
   MapPin,
   Megaphone,
   Receipt,
+  Store,
   UserCog,
   UserRound,
   Users,
@@ -146,18 +147,27 @@ export const routeItems: RouteItem[] = [
   },
 
   // Settings: set up once, rarely changed.
+  // Owners: their gym, its branches and plan usage on one page.
+  {
+    title: "My gym",
+    href: "/my-gym",
+    icon: Store,
+    permissions: ["GYM_OWNER"],
+    group: "settings",
+  },
+  // Admins: every gym and location on the platform.
   {
     title: "Gyms",
     href: "/gyms",
     icon: Building2,
-    permissions: ["SUPER_ADMIN", "GYM_OWNER"],
+    permissions: ["SUPER_ADMIN"],
     group: "settings",
   },
   {
     title: "Locations",
     href: "/locations",
     icon: MapPin,
-    permissions: ["SUPER_ADMIN", "GYM_OWNER"],
+    permissions: ["SUPER_ADMIN"],
     group: "settings",
   },
   {
