@@ -11,41 +11,15 @@ import { CheckCircle2, MessageCircle } from "lucide-react";
 import FullScreenLoader from "@/components/common/FullScreenLoader";
 import DataFetchError from "@/components/common/DataFetchError";
 import { PageContainer } from "@/components/layout/page-container";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
-import { CONTACT } from "@/constants/landing";
 import { cn } from "@/lib/utils";
-import type { PlanStatus, UsageItem, UsageRow } from "@/lib/my-plan";
-
-type MyPlanResponse = {
-  status: PlanStatus;
-  plan: { name: string; billing_model: string; price: number; start_date: string; end_date: string } | null;
-  features: string[];
-  usage: UsageItem[];
-};
+import type { UsageRow } from "@/lib/my-plan";
+import { MY_PLAN_QUERY_KEY, PlanStatusChip, renewUrl, type MyPlanResponse } from "@/components/subscription/plan-status";
 
 const day = (iso: string) => format(new Date(iso), "d MMM yyyy");
-
-const renewUrl = (planName?: string) =>
-  `https://wa.me/${CONTACT.whatsappNumber}?text=${encodeURIComponent(
-    planName ? `Hi, I'd like to renew or upgrade my Kettlio plan (${planName}).` : "Hi, I'd like to start a Kettlio plan."
-  )}`;
-
-function StatusBadge({ status }: { status: PlanStatus }) {
-  if (status.kind === "active") return <Badge className="bg-primary text-primary-foreground">Active</Badge>;
-  if (status.kind === "expiring") {
-    return (
-      <Badge className="bg-amber-500/15 text-amber-900 dark:text-amber-100">
-        Ends in {status.daysLeft} day{status.daysLeft === 1 ? "" : "s"}
-      </Badge>
-    );
-  }
-  if (status.kind === "expired") return <Badge variant="destructive">Expired</Badge>;
-  return <Badge variant="secondary">No plan</Badge>;
-}
 
 function rowNote(row: UsageRow): string {
   if (row.state === "notIncluded") return "Not included";
@@ -96,7 +70,7 @@ const SubscriptionPage = () => {
   const isOwner = session?.user?.role === "GYM_OWNER";
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["my-plan"],
+    queryKey: MY_PLAN_QUERY_KEY,
     queryFn: async () => (await axios.get<MyPlanResponse>("/api/subscription/myplan")).data,
     enabled: isOwner,
   });
@@ -132,7 +106,7 @@ const SubscriptionPage = () => {
                     </p>
                   )}
                 </div>
-                <StatusBadge status={status} />
+                <PlanStatusChip status={status} />
               </CardHeader>
               <CardContent className="space-y-4">
                 {status.kind === "active" && (
