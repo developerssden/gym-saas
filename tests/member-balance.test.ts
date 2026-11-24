@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   amountDue,
+  paidNowFor,
   parseMoney,
   summarizeBalance,
   validateFeeInput,
@@ -76,4 +77,18 @@ test("validateFeeInput rejects impossible fees with a readable message", () => {
     validateFeeInput({ price: 3000, discount: 500, admission_fee: 0, amount_paid: 2501 })!,
     /more than the amount due \(2500\)/
   );
+});
+
+test("with permission to take fees, paid now defaults to the full amount due", () => {
+  assert.deepEqual(paidNowFor(undefined, 3000, true), { paidNow: 3000 });
+  assert.deepEqual(paidNowFor(1000, 3000, true), { paidNow: 1000 });
+  assert.deepEqual(paidNowFor(0, 3000, true), { paidNow: 0 });
+});
+
+test("without permission, a membership is saved with nothing paid and money is refused", () => {
+  assert.deepEqual(paidNowFor(undefined, 3000, false), { paidNow: 0 });
+  assert.deepEqual(paidNowFor("", 3000, false), { paidNow: 0 });
+  assert.deepEqual(paidNowFor(0, 3000, false), { paidNow: 0 });
+  assert.ok(paidNowFor(3000, 3000, false).error);
+  assert.ok(paidNowFor("abc", 3000, false).error);
 });

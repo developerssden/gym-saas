@@ -2,9 +2,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/lib/prisma";
 import { StatusCodes } from "http-status-codes";
-import { requireAccess, ownsGym } from "@/lib/access";
+import { requireAccess, ownsGym, can } from "@/lib/access";
 import { PaymentMethod, SubscriptionTypeEnum } from "@/prisma/generated/client";
-import { amountDue, parseMoney, validateFeeInput } from "@/lib/member-balance";
+import { TAKE_FEE_PERMISSIONS, amountDue, paidNowFor, parseMoney, validateFeeInput } from "@/lib/member-balance";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -60,7 +60,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       discount: parseMoney(discount, 0),
       admission_fee: parseMoney(admission_fee, 0),
     };
-    const paidNow = parseMoney(amount_paid, amountDue(fee));
+    // Staff without "Record payments" (or "Renew") can add the membership but not take money.
+    const canTakeFee = TAKE_FEE_PERMISSIONS.some(p => can(access, p));
+    const paid = paidNowFor(amount_paid, amountDue(fee), canTakeFee);
+    if (paid.error !== undefined) {
+      return res.status(StatusCodes.FORBIDDEN).json({ error: paid.error, message: paid.error });
+    }
+    const paidNow = paid.paidNow;
     const feeError = validateFeeInput({ ...fee, amount_paid: paidNow });
     if (feeError) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: feeError });

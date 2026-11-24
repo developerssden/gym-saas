@@ -72,3 +72,25 @@ export function validateFeeInput(input: FeeInput): string | null {
   }
   return null;
 }
+
+/** Either is enough to take money at the counter (same rule as the quick Record payment flow). */
+export const TAKE_FEE_PERMISSIONS = ["payments.record", "membersubscriptions.renew"] as const;
+
+export const NO_FEE_PERMISSION_ERROR =
+  "You can add the membership, but you don't have permission to record payments. Save it with nothing paid, or ask the owner.";
+
+/**
+ * How much to record as paid when a membership is created.
+ * With permission: what was sent, or the full amount due when nothing was sent.
+ * Without: nothing by default, and an error if they tried to record money.
+ */
+export function paidNowFor(
+  requested: unknown,
+  due: number,
+  canTakeFee: boolean
+): { paidNow: number; error?: undefined } | { paidNow?: undefined; error: string } {
+  if (canTakeFee) return { paidNow: parseMoney(requested, due) };
+  const asked = parseMoney(requested, 0);
+  if (Number.isNaN(asked) || asked > 0) return { error: NO_FEE_PERMISSION_ERROR };
+  return { paidNow: 0 };
+}

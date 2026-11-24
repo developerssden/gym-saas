@@ -17,6 +17,7 @@ import { MemberStatusBadge } from "@/components/members/member-status-badge";
 import { MembershipForm, type MembershipSaved } from "@/components/membersubscriptions/MembershipForm";
 import { useDebounce } from "@/hooks/use-debounce";
 import { usePermissions } from "@/hooks/usePermissions";
+import { TAKE_FEE_PERMISSIONS } from "@/lib/member-balance";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { formatDate, paymentMethodLabel } from "@/lib/format";
 import type { MembershipRow } from "@/components/membersubscriptions/columns";
@@ -215,7 +216,7 @@ export function AddMembership({ initialMemberId }: { initialMemberId: string | n
           mode="new"
           memberId={member.id}
           gymId={gymId}
-          canTakeFee={can("payments.record") || can("membersubscriptions.renew")}
+          canTakeFee={TAKE_FEE_PERMISSIONS.some((p) => can(p))}
           onSaved={setSaved}
           onCancel={() => router.push(initialMemberId ? `/members/${initialMemberId}` : "/membersubscriptions")}
         />
