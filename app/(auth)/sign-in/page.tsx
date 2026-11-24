@@ -1,4 +1,4 @@
-import { LoginBrandPanel } from "@/components/auth/login-brand-panel";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/forms/login-form";
 import { Metadata } from "next";
 
@@ -9,12 +9,9 @@ export const metadata: Metadata = {
 
 const SignInPage = () => {
   return (
-    <div className="login-theme flex min-h-svh flex-col lg:flex-row">
-      <LoginBrandPanel />
-      <main className="flex flex-1 items-center justify-center bg-background px-5 py-10 sm:px-8 lg:w-[56%] lg:px-12">
-        <LoginForm />
-      </main>
-    </div>
+    <AuthShell>
+      <LoginForm />
+    </AuthShell>
   );
 };
 

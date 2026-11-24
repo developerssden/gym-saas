@@ -2,9 +2,9 @@ import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 import { firstAllowedPath, permissionsForPath } from '@/lib/staff-permissions';
 
-const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboarding', '/checkout-success'];
+const PUBLIC_PATHS = ['/', '/sign-in', '/auth/sign-in', '/unauthorized', '/onboarding', '/checkout-success', '/forgot-password', '/reset-password'];
 
-const PUBLIC_API_PATHS = ['/api/clients/complete-invite', '/api/webhooks/polar', '/api/registrations/create'];
+const PUBLIC_API_PATHS = ['/api/clients/complete-invite', '/api/webhooks/polar', '/api/registrations/create', '/api/password/forgot', '/api/password/reset'];
 
 const PWA_PUBLIC_PATHS = [
   '/manifest.webmanifest',

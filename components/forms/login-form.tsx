@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { authInput } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,14 +33,7 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-const fieldFocus =
-  "focus-visible:border-primary-dim focus-visible:ring-0 focus-visible:shadow-[0_0_0_3px_var(--ring)]";
-
-const inputStyles = cn(
-  "h-11 rounded-md border-border bg-surface text-foreground shadow-none",
-  "placeholder:text-faint md:text-sm",
-  fieldFocus
-);
+const inputStyles = authInput;
 
 export function LoginForm({
   className,
@@ -58,6 +52,10 @@ export function LoginForm({
       remember: false,
     },
   });
+
+  // Carry a typed email over to the reset form so it isn't typed twice.
+  const typedEmail = form.watch("email").trim();
+  const forgotHref = typedEmail ? `/forgot-password?email=${encodeURIComponent(typedEmail)}` : "/forgot-password";
 
   const onSubmit = async (values: LoginValues) => {
     setIsLoading(true);
@@ -205,7 +203,7 @@ export function LoginForm({
               )}
             />
             <Link
-              href="#"
+              href={forgotHref}
               className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:rounded-sm focus-visible:text-foreground focus-visible:shadow-[0_0_0_3px_var(--ring)]"
             >
               Forgot password?
@@ -236,7 +234,10 @@ export function LoginForm({
 
       <p className="mt-8 border-t border-border-soft pt-5 text-[13px] leading-relaxed text-faint">
         <span className="font-semibold text-foreground">New gym owner?</span>{" "}
-        Accounts are set up by invite — ask your platform admin to send you one.
+        <Link href="/pricing" className="underline underline-offset-2 hover:text-foreground focus-visible:rounded-sm focus-visible:text-foreground focus-visible:shadow-[0_0_0_3px_var(--ring)]">
+          See plans and get started
+        </Link>
+        . Staff get a sign-in link from their gym owner.
       </p>
     </div>
   );
