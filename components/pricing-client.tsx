@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { Mail } from "lucide-react";
 import { SUPPORT_EMAIL } from "@/constants/brand";
+import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
+import {
+  CUSTOM_PRICING_LABEL,
+  customPlanEmailUrl,
+  customPlanWhatsAppUrl,
+} from "@/lib/plan-pricing";
 import {
   BillingToggle,
   getCheckoutUrl,
@@ -79,7 +86,8 @@ export default function PricingClient() {
             const price = getPlanPrice(plan, billing);
             const checkoutUrl = getCheckoutUrl(plan, billing);
             const features = getPlanFeatures(plan);
-            const isPopular = index === 1 && plans.length >= 2;
+            const isCustom = plan.is_custom_pricing;
+            const isPopular = index === 1 && plans.length >= 2 && !isCustom;
 
             return (
               <div
@@ -98,14 +106,25 @@ export default function PricingClient() {
 
                 <div>
                   <h2 className="text-lg font-semibold">{plan.name}</h2>
-                  <div className="mt-3 flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">
-                      PKR {price.toLocaleString()}
-                    </span>
-                    <span className="text-muted-foreground text-sm">
-                      /{billing === "monthly" ? "mo" : "yr"}
-                    </span>
-                  </div>
+                  {isCustom ? (
+                    <div className="mt-3 space-y-1">
+                      <span className="block text-4xl font-bold">
+                        {CUSTOM_PRICING_LABEL}
+                      </span>
+                      <span className="block text-muted-foreground text-sm">
+                        Priced for your gym&apos;s size. Tell us what you need.
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="mt-3 flex items-baseline gap-1">
+                      <span className="text-4xl font-bold">
+                        PKR {price.toLocaleString()}
+                      </span>
+                      <span className="text-muted-foreground text-sm">
+                        /{billing === "monthly" ? "mo" : "yr"}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <ul className="space-y-2.5 text-sm flex-1">
@@ -114,7 +133,26 @@ export default function PricingClient() {
                   ))}
                 </ul>
 
-                {checkoutUrl ? (
+                {isCustom ? (
+                  <div className="flex flex-col gap-2">
+                    <a
+                      href={customPlanWhatsAppUrl(plan.name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                      <WhatsAppIcon className="size-4 text-current dark:text-current" />
+                      WhatsApp us
+                    </a>
+                    <a
+                      href={customPlanEmailUrl(plan.name)}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-muted"
+                    >
+                      <Mail className="size-4" />
+                      Email us
+                    </a>
+                  </div>
+                ) : checkoutUrl ? (
                   <a
                     href={checkoutUrl}
                     className={`w-full text-center rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${

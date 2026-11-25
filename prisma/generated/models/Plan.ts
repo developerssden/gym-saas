@@ -60,6 +60,7 @@ export type PlanMinAggregateOutputType = {
   updatedAt: Date | null
   is_active: boolean | null
   is_deleted: boolean | null
+  is_custom_pricing: boolean | null
   polar_product_id: string | null
   polar_checkout_url_monthly: string | null
   polar_checkout_url_yearly: string | null
@@ -79,6 +80,7 @@ export type PlanMaxAggregateOutputType = {
   updatedAt: Date | null
   is_active: boolean | null
   is_deleted: boolean | null
+  is_custom_pricing: boolean | null
   polar_product_id: string | null
   polar_checkout_url_monthly: string | null
   polar_checkout_url_yearly: string | null
@@ -98,6 +100,7 @@ export type PlanCountAggregateOutputType = {
   updatedAt: number
   is_active: number
   is_deleted: number
+  is_custom_pricing: number
   polar_product_id: number
   polar_checkout_url_monthly: number
   polar_checkout_url_yearly: number
@@ -139,6 +142,7 @@ export type PlanMinAggregateInputType = {
   updatedAt?: true
   is_active?: true
   is_deleted?: true
+  is_custom_pricing?: true
   polar_product_id?: true
   polar_checkout_url_monthly?: true
   polar_checkout_url_yearly?: true
@@ -158,6 +162,7 @@ export type PlanMaxAggregateInputType = {
   updatedAt?: true
   is_active?: true
   is_deleted?: true
+  is_custom_pricing?: true
   polar_product_id?: true
   polar_checkout_url_monthly?: true
   polar_checkout_url_yearly?: true
@@ -177,6 +182,7 @@ export type PlanCountAggregateInputType = {
   updatedAt?: true
   is_active?: true
   is_deleted?: true
+  is_custom_pricing?: true
   polar_product_id?: true
   polar_checkout_url_monthly?: true
   polar_checkout_url_yearly?: true
@@ -283,6 +289,7 @@ export type PlanGroupByOutputType = {
   updatedAt: Date
   is_active: boolean
   is_deleted: boolean
+  is_custom_pricing: boolean
   polar_product_id: string | null
   polar_checkout_url_monthly: string | null
   polar_checkout_url_yearly: string | null
@@ -325,6 +332,7 @@ export type PlanWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   is_active?: Prisma.BoolFilter<"Plan"> | boolean
   is_deleted?: Prisma.BoolFilter<"Plan"> | boolean
+  is_custom_pricing?: Prisma.BoolFilter<"Plan"> | boolean
   polar_product_id?: Prisma.StringNullableFilter<"Plan"> | string | null
   polar_checkout_url_monthly?: Prisma.StringNullableFilter<"Plan"> | string | null
   polar_checkout_url_yearly?: Prisma.StringNullableFilter<"Plan"> | string | null
@@ -345,6 +353,7 @@ export type PlanOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  is_custom_pricing?: Prisma.SortOrder
   polar_product_id?: Prisma.SortOrderInput | Prisma.SortOrder
   polar_checkout_url_monthly?: Prisma.SortOrderInput | Prisma.SortOrder
   polar_checkout_url_yearly?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -369,6 +378,7 @@ export type PlanWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   is_active?: Prisma.BoolFilter<"Plan"> | boolean
   is_deleted?: Prisma.BoolFilter<"Plan"> | boolean
+  is_custom_pricing?: Prisma.BoolFilter<"Plan"> | boolean
   polar_checkout_url_monthly?: Prisma.StringNullableFilter<"Plan"> | string | null
   polar_checkout_url_yearly?: Prisma.StringNullableFilter<"Plan"> | string | null
   ownerSubscriptions?: Prisma.OwnerSubscriptionListRelationFilter
@@ -388,6 +398,7 @@ export type PlanOrderByWithAggregationInput = {
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  is_custom_pricing?: Prisma.SortOrder
   polar_product_id?: Prisma.SortOrderInput | Prisma.SortOrder
   polar_checkout_url_monthly?: Prisma.SortOrderInput | Prisma.SortOrder
   polar_checkout_url_yearly?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -415,6 +426,7 @@ export type PlanScalarWhereWithAggregatesInput = {
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Plan"> | Date | string
   is_active?: Prisma.BoolWithAggregatesFilter<"Plan"> | boolean
   is_deleted?: Prisma.BoolWithAggregatesFilter<"Plan"> | boolean
+  is_custom_pricing?: Prisma.BoolWithAggregatesFilter<"Plan"> | boolean
   polar_product_id?: Prisma.StringNullableWithAggregatesFilter<"Plan"> | string | null
   polar_checkout_url_monthly?: Prisma.StringNullableWithAggregatesFilter<"Plan"> | string | null
   polar_checkout_url_yearly?: Prisma.StringNullableWithAggregatesFilter<"Plan"> | string | null
@@ -434,6 +446,7 @@ export type PlanCreateInput = {
   updatedAt?: Date | string
   is_active?: boolean
   is_deleted?: boolean
+  is_custom_pricing?: boolean
   polar_product_id?: string | null
   polar_checkout_url_monthly?: string | null
   polar_checkout_url_yearly?: string | null
@@ -454,6 +467,7 @@ export type PlanUncheckedCreateInput = {
   updatedAt?: Date | string
   is_active?: boolean
   is_deleted?: boolean
+  is_custom_pricing?: boolean
   polar_product_id?: string | null
   polar_checkout_url_monthly?: string | null
   polar_checkout_url_yearly?: string | null
@@ -474,6 +488,7 @@ export type PlanUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_custom_pricing?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polar_product_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_monthly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_yearly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -494,6 +509,7 @@ export type PlanUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_custom_pricing?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polar_product_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_monthly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_yearly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -514,6 +530,7 @@ export type PlanCreateManyInput = {
   updatedAt?: Date | string
   is_active?: boolean
   is_deleted?: boolean
+  is_custom_pricing?: boolean
   polar_product_id?: string | null
   polar_checkout_url_monthly?: string | null
   polar_checkout_url_yearly?: string | null
@@ -533,6 +550,7 @@ export type PlanUpdateManyMutationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_custom_pricing?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polar_product_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_monthly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_yearly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -552,6 +570,7 @@ export type PlanUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_custom_pricing?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polar_product_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_monthly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_yearly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -571,6 +590,7 @@ export type PlanCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  is_custom_pricing?: Prisma.SortOrder
   polar_product_id?: Prisma.SortOrder
   polar_checkout_url_monthly?: Prisma.SortOrder
   polar_checkout_url_yearly?: Prisma.SortOrder
@@ -600,6 +620,7 @@ export type PlanMaxOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  is_custom_pricing?: Prisma.SortOrder
   polar_product_id?: Prisma.SortOrder
   polar_checkout_url_monthly?: Prisma.SortOrder
   polar_checkout_url_yearly?: Prisma.SortOrder
@@ -619,6 +640,7 @@ export type PlanMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
   is_deleted?: Prisma.SortOrder
+  is_custom_pricing?: Prisma.SortOrder
   polar_product_id?: Prisma.SortOrder
   polar_checkout_url_monthly?: Prisma.SortOrder
   polar_checkout_url_yearly?: Prisma.SortOrder
@@ -667,6 +689,7 @@ export type PlanCreateWithoutOwnerSubscriptionsInput = {
   updatedAt?: Date | string
   is_active?: boolean
   is_deleted?: boolean
+  is_custom_pricing?: boolean
   polar_product_id?: string | null
   polar_checkout_url_monthly?: string | null
   polar_checkout_url_yearly?: string | null
@@ -686,6 +709,7 @@ export type PlanUncheckedCreateWithoutOwnerSubscriptionsInput = {
   updatedAt?: Date | string
   is_active?: boolean
   is_deleted?: boolean
+  is_custom_pricing?: boolean
   polar_product_id?: string | null
   polar_checkout_url_monthly?: string | null
   polar_checkout_url_yearly?: string | null
@@ -721,6 +745,7 @@ export type PlanUpdateWithoutOwnerSubscriptionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_custom_pricing?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polar_product_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_monthly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_yearly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -740,6 +765,7 @@ export type PlanUncheckedUpdateWithoutOwnerSubscriptionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_custom_pricing?: Prisma.BoolFieldUpdateOperationsInput | boolean
   polar_product_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_monthly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   polar_checkout_url_yearly?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -790,6 +816,7 @@ export type PlanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  is_custom_pricing?: boolean
   polar_product_id?: boolean
   polar_checkout_url_monthly?: boolean
   polar_checkout_url_yearly?: boolean
@@ -811,6 +838,7 @@ export type PlanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   updatedAt?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  is_custom_pricing?: boolean
   polar_product_id?: boolean
   polar_checkout_url_monthly?: boolean
   polar_checkout_url_yearly?: boolean
@@ -830,6 +858,7 @@ export type PlanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   updatedAt?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  is_custom_pricing?: boolean
   polar_product_id?: boolean
   polar_checkout_url_monthly?: boolean
   polar_checkout_url_yearly?: boolean
@@ -849,12 +878,13 @@ export type PlanSelectScalar = {
   updatedAt?: boolean
   is_active?: boolean
   is_deleted?: boolean
+  is_custom_pricing?: boolean
   polar_product_id?: boolean
   polar_checkout_url_monthly?: boolean
   polar_checkout_url_yearly?: boolean
 }
 
-export type PlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "monthly_price" | "yearly_price" | "max_gyms" | "max_locations" | "max_members" | "max_equipment" | "max_staff" | "createdAt" | "updatedAt" | "is_active" | "is_deleted" | "polar_product_id" | "polar_checkout_url_monthly" | "polar_checkout_url_yearly", ExtArgs["result"]["plan"]>
+export type PlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "monthly_price" | "yearly_price" | "max_gyms" | "max_locations" | "max_members" | "max_equipment" | "max_staff" | "createdAt" | "updatedAt" | "is_active" | "is_deleted" | "is_custom_pricing" | "polar_product_id" | "polar_checkout_url_monthly" | "polar_checkout_url_yearly", ExtArgs["result"]["plan"]>
 export type PlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ownerSubscriptions?: boolean | Prisma.Plan$ownerSubscriptionsArgs<ExtArgs>
   _count?: boolean | Prisma.PlanCountOutputTypeDefaultArgs<ExtArgs>
@@ -881,6 +911,7 @@ export type $PlanPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     updatedAt: Date
     is_active: boolean
     is_deleted: boolean
+    is_custom_pricing: boolean
     polar_product_id: string | null
     polar_checkout_url_monthly: string | null
     polar_checkout_url_yearly: string | null
@@ -1321,6 +1352,7 @@ export interface PlanFieldRefs {
   readonly updatedAt: Prisma.FieldRef<"Plan", 'DateTime'>
   readonly is_active: Prisma.FieldRef<"Plan", 'Boolean'>
   readonly is_deleted: Prisma.FieldRef<"Plan", 'Boolean'>
+  readonly is_custom_pricing: Prisma.FieldRef<"Plan", 'Boolean'>
   readonly polar_product_id: Prisma.FieldRef<"Plan", 'String'>
   readonly polar_checkout_url_monthly: Prisma.FieldRef<"Plan", 'String'>
   readonly polar_checkout_url_yearly: Prisma.FieldRef<"Plan", 'String'>

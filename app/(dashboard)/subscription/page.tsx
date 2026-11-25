@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { cn } from "@/lib/utils";
+import { CUSTOM_PRICING_LABEL } from "@/lib/plan-pricing";
 import type { UsageRow } from "@/lib/my-plan";
 import { MY_PLAN_QUERY_KEY, PlanStatusChip, renewUrl, type MyPlanResponse } from "@/components/subscription/plan-status";
 
@@ -102,7 +103,8 @@ const SubscriptionPage = () => {
                   <CardTitle className="text-2xl">{plan?.name ?? "No plan yet"}</CardTitle>
                   {plan && (
                     <p className="text-sm text-muted-foreground">
-                      {plan.billing_model === "YEARLY" ? "Yearly" : "Monthly"} · {money(plan.price)}
+                      {plan.billing_model === "YEARLY" ? "Yearly" : "Monthly"} ·{" "}
+                      {plan.custom_pricing ? CUSTOM_PRICING_LABEL : money(plan.price)}
                     </p>
                   )}
                 </div>

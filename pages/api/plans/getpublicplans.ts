@@ -20,11 +20,13 @@ export default async function handler(
       max_locations: true,
       max_members: true,
       max_equipment: true,
+      is_custom_pricing: true,
       polar_product_id: true,
       polar_checkout_url_monthly: true,
       polar_checkout_url_yearly: true,
     },
-    orderBy: { monthly_price: "asc" },
+    // Custom-priced plans go last, after the priced ones.
+    orderBy: [{ is_custom_pricing: "asc" }, { monthly_price: "asc" }],
   });
 
   return res.status(200).json({ plans });
