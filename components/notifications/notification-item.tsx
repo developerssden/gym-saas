@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { isExpiredMembersNotice } from "@/lib/notifications/expired-members-notice";
+import { filenameFromDisposition } from "@/lib/download-filename";
 
 export type InAppNotification = {
   id: string;
@@ -18,11 +19,6 @@ export type InAppNotification = {
   read: boolean;
   createdAt: string;
 };
-
-function filenameFrom(disposition: string | undefined, fallback: string) {
-  const match = disposition?.match(/filename="([^"]+)"/);
-  return match?.[1] ?? fallback;
-}
 
 export function NotificationItem({
   notification,
@@ -48,9 +44,9 @@ export function NotificationItem({
       const href = URL.createObjectURL(res.data);
       const link = document.createElement("a");
       link.href = href;
-      link.download = filenameFrom(
+      link.download = filenameFromDisposition(
         res.headers["content-disposition"],
-        "expired-members.pdf"
+        "Expired Members.pdf"
       );
       document.body.appendChild(link);
       link.click();

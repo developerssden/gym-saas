@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { requireAccess, ownedGymWhere } from "@/lib/access";
 import { parseExpiredMembersNotice } from "@/lib/notifications/expired-members-notice";
 import { notificationsErrorResponse } from "@/lib/notifications/api-error";
+import { contentDisposition, downloadFileName } from "@/lib/download-filename";
 
 const MAX_ENTRIES = 500;
 
@@ -88,6 +89,7 @@ export default async function handler(
         .json({ error: "No expired members found for this notice" });
     }
 
+    const gymNames = new Set(rows.map((row) => row.gym).filter((name) => name !== "—"));
     const doc = new PDFDocument({ margin: 40, size: "A4", layout: "landscape" });
     const buffers: Buffer[] = [];
     doc.on("data", buffers.push.bind(buffers));
@@ -95,7 +97,9 @@ export default async function handler(
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="expired-members-${notice.date}.pdf"`
+        contentDisposition(
+          downloadFileName(["Expired Members", gymNames.size === 1 ? [...gymNames][0] : null, displayDate(notice.date)], "pdf")
+        )
       );
       res.send(Buffer.concat(buffers));
     });

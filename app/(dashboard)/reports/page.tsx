@@ -26,6 +26,7 @@ import {
   type MonthlyReport,
 } from "@/lib/monthly-report";
 import { cn } from "@/lib/utils";
+import { filenameFromDisposition } from "@/lib/download-filename";
 
 type ReportResponse = MonthlyReport & { scopeLabel: string };
 
@@ -153,7 +154,10 @@ const ReportsPage = () => {
         params: { ...params, format },
         responseType: "blob",
       });
-      downloadBlob(res.data as Blob, `report-${month}.${format}`);
+      downloadBlob(
+        res.data as Blob,
+        filenameFromDisposition(res.headers["content-disposition"], `Monthly Report - ${monthLabel(month)}.${format}`),
+      );
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {

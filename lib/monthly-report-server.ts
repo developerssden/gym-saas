@@ -1,6 +1,7 @@
 // Loads and renders the monthly report (PDF and Excel). Calculations live in
 // lib/monthly-report.ts; the queries here use the same filters as the owner
 // dashboard so the numbers match it.
+import { downloadFileName, fileDateTime } from "@/lib/download-filename";
 import PDFDocument from "pdfkit";
 import * as XLSX from "xlsx";
 import prisma from "@/lib/prisma";
@@ -130,9 +131,12 @@ const shortDate = (d: Date) => {
   });
 };
 
-export function reportFileName(loaded: LoadedReport, ext: "pdf" | "xlsx"): string {
-  const slug = loaded.scopeLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "gym";
-  return `report-${slug}-${loaded.report.month}.${ext}`;
+/** "Monthly Report - Iron Gym · Main - November 2026 - made 25 Nov 2026 3.45 PM.pdf" */
+export function reportFileName(loaded: LoadedReport, ext: "pdf" | "xlsx", now = new Date()): string {
+  return downloadFileName(
+    ["Monthly Report", loaded.scopeLabel, loaded.report.monthLabel, `made ${fileDateTime(now)}`],
+    ext,
+  );
 }
 
 // ---------------------------------------------------------------- Excel

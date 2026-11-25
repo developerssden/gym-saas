@@ -9,6 +9,7 @@ import { Readable } from "stream";
 import { formatCurrency, resolveGymCountry } from "@/lib/currency";
 import { APP_NAME } from "@/constants/brand";
 import { summarizeBalance } from "@/lib/member-balance";
+import { contentDisposition, downloadFileName, paymentFileDate } from "@/lib/download-filename";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST")
@@ -119,7 +120,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     doc.on("end", () => {
       const pdfBuffer = Buffer.concat(buffers);
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="invoice-${payment.id}.pdf"`);
+      const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(" ") || "Member";
+      res.setHeader(
+        "Content-Disposition",
+        contentDisposition(
+          downloadFileName(["Receipt", customerName, paymentFileDate(payment.payment_date, payment.createdAt)], "pdf")
+        )
+      );
       res.send(pdfBuffer);
     });
 
