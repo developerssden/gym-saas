@@ -28,6 +28,7 @@ import { recordedByLabel } from "@/lib/recorded-by";
 import { resolveGymCountry } from "@/lib/currency";
 import { toWhatsAppNumber } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { filenameFromDisposition } from "@/lib/download-filename";
 import { initials } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
 import type { MemberProfileResponse } from "@/pages/api/members/getmemberprofile";
@@ -38,7 +39,7 @@ async function downloadReceipt(paymentId: string) {
     const url = URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `receipt-${paymentId}.pdf`;
+    link.download = filenameFromDisposition(res.headers["content-disposition"], "Receipt.pdf");
     document.body.appendChild(link);
     link.click();
     link.remove();

@@ -10,6 +10,7 @@ import { WhatsAppIcon } from "@/components/common/whatsapp-icon";
 import { useGymCurrency } from "@/hooks/useGymCurrency";
 import { formatCurrency } from "@/lib/currency";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { filenameFromDisposition } from "@/lib/download-filename";
 import {
   buildFeeReminderMessage,
   buildReceiptMessage,
@@ -139,8 +140,6 @@ function useShareReceipt(props: ShareReceiptProps) {
       amount,
       paymentDate: props.paymentDate,
     });
-    const filename = `receipt-${props.paymentId}.pdf`;
-
     try {
       const response = await axios.post(
         "/api/payments/generateinvoice",
@@ -148,6 +147,7 @@ function useShareReceipt(props: ShareReceiptProps) {
         { responseType: "blob" }
       );
       const blob = new Blob([response.data], { type: "application/pdf" });
+      const filename = filenameFromDisposition(response.headers["content-disposition"], `Receipt - ${props.memberName}.pdf`);
       const file = new File([blob], filename, { type: "application/pdf" });
 
       if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
@@ -241,7 +241,10 @@ export function ReceiptDownloadButton({
     setBusy(true);
     try {
       const response = await axios.post("/api/payments/generateinvoice", { payment_id: paymentId }, { responseType: "blob" });
-      downloadBlob(new Blob([response.data], { type: "application/pdf" }), `receipt-${paymentId}.pdf`);
+      downloadBlob(
+        new Blob([response.data], { type: "application/pdf" }),
+        filenameFromDisposition(response.headers["content-disposition"], "Receipt.pdf"),
+      );
       toast.success("Receipt downloaded");
     } catch (err) {
       toast.error(getErrorMessage(err) || "Couldn't create the receipt");
