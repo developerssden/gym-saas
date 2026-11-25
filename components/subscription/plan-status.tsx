@@ -5,7 +5,15 @@ import { cn } from "@/lib/utils";
 /** GET /api/subscription/myplan, shared by the Subscription page and Profile → Plan & billing. */
 export type MyPlanResponse = {
   status: PlanStatus;
-  plan: { name: string; billing_model: string; price: number; start_date: string; end_date: string } | null;
+  plan: {
+    name: string;
+    billing_model: string;
+    price: number;
+    /** Plan has no fixed price (e.g. Pro): show "Custom pricing", not the stored number. */
+    custom_pricing: boolean;
+    start_date: string;
+    end_date: string;
+  } | null;
   features: string[];
   usage: UsageItem[];
 };

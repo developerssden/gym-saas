@@ -61,6 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             name: plan.name,
             billing_model: String(subscription!.billing_model),
             price: subscription!.billing_model === "YEARLY" ? plan.yearly_price : plan.monthly_price,
+            custom_pricing: plan.is_custom_pricing,
             start_date: subscription!.start_date,
             end_date: subscription!.end_date,
           }

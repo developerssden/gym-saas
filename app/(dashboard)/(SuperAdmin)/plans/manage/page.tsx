@@ -40,6 +40,7 @@ const SubscriptionSchema = Yup.object({
     .min(0, "Can't be negative")
     .required("Max staff is required"),
   is_active: Yup.boolean(),
+  is_custom_pricing: Yup.boolean(),
   polar_product_id: Yup.string()
     .transform((v) => (v === "" ? null : v))
     .nullable(),
@@ -111,6 +112,7 @@ const ManageSubscriptionsContent = () => {
       // `??` so a plan with 0 staff seats shows 0, not the default.
       max_staff: subscriptionData?.max_staff ?? 2,
       is_active: subscriptionData?.is_active || true,
+      is_custom_pricing: subscriptionData?.is_custom_pricing ?? false,
       polar_product_id: subscriptionData?.polar_product_id || "",
       polar_checkout_url_monthly: subscriptionData?.polar_checkout_url_monthly || "",
       polar_checkout_url_yearly: subscriptionData?.polar_checkout_url_yearly || "",
@@ -286,6 +288,26 @@ const ManageSubscriptionsContent = () => {
                 }
                 disabled={action === "view"}
               />
+            </div>
+
+            {/* Custom pricing: no price or checkout on the pricing page */}
+            <div className="space-y-1 md:col-span-2">
+              <div className="flex items-center space-x-3">
+                <Label htmlFor="is_custom_pricing">Custom pricing</Label>
+                <Switch
+                  id="is_custom_pricing"
+                  checked={formik.values.is_custom_pricing}
+                  onCheckedChange={(val) =>
+                    formik.setFieldValue("is_custom_pricing", val)
+                  }
+                  disabled={action === "view"}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                The pricing page shows &quot;Custom pricing&quot; with WhatsApp
+                and Email buttons instead of the price and checkout. Prices
+                and limits above are still used when you assign this plan.
+              </p>
             </div>
 
             {/* Polar Product ID */}

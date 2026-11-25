@@ -297,6 +297,7 @@ export const PlanScalarFieldEnum = {
   updatedAt: 'updatedAt',
   is_active: 'is_active',
   is_deleted: 'is_deleted',
+  is_custom_pricing: 'is_custom_pricing',
   polar_product_id: 'polar_product_id',
   polar_checkout_url_monthly: 'polar_checkout_url_monthly',
   polar_checkout_url_yearly: 'polar_checkout_url_yearly'

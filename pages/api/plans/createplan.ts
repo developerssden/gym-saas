@@ -21,6 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       max_members,
       max_equipment,
       max_staff,
+      is_custom_pricing,
       polar_product_id,
       polar_checkout_url_monthly,
       polar_checkout_url_yearly,
@@ -37,6 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         max_equipment,
         // Staff logins allowed on this plan (schema default when not sent).
         max_staff: max_staff === undefined || max_staff === "" ? undefined : Number(max_staff),
+        is_custom_pricing: Boolean(is_custom_pricing),
         polar_product_id: polar_product_id || null,
         polar_checkout_url_monthly: polar_checkout_url_monthly || null,
         polar_checkout_url_yearly: polar_checkout_url_yearly || null,

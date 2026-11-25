@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CUSTOM_PLAN_FEATURES } from "@/lib/plan-pricing";
 
 export type PublicPlan = {
   id: string;
@@ -11,6 +12,7 @@ export type PublicPlan = {
   max_locations: number;
   max_members: number;
   max_equipment: number;
+  is_custom_pricing: boolean;
   polar_product_id: string | null;
   polar_checkout_url_monthly: string | null;
   polar_checkout_url_yearly: string | null;
@@ -43,6 +45,7 @@ export function getCheckoutUrl(plan: PublicPlan, billing: BillingPeriod) {
 }
 
 export function getPlanFeatures(plan: PublicPlan): string[] {
+  if (plan.is_custom_pricing) return [...CUSTOM_PLAN_FEATURES];
   return [
     `Up to ${plan.max_gyms} gym${plan.max_gyms > 1 ? "s" : ""}`,
     `Up to ${plan.max_locations} location${plan.max_locations > 1 ? "s" : ""}`,

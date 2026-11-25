@@ -311,6 +311,9 @@ model Plan {
   updatedAt           DateTime              @updatedAt
   is_active           Boolean               @default(true)
   is_deleted          Boolean               @default(false)
+  // No fixed price or checkout: the pricing page shows "Custom pricing" with
+  // WhatsApp / email contact buttons instead (e.g. Pro).
+  is_custom_pricing   Boolean               @default(false)
   polar_product_id            String?               @unique
   polar_checkout_url_monthly  String?
   polar_checkout_url_yearly   String?
