@@ -16,8 +16,13 @@ export const CUSTOM_PLAN_FEATURES = [
   "Member payment tracking",
 ] as const;
 
+/** "Pro Plan" → "Pro", so messages don't say "Pro Plan plan". */
+export function shortPlanName(planName: string) {
+  return planName.trim().replace(/\s+plan$/i, "") || planName.trim();
+}
+
 function enquiry(planName: string) {
-  return `Hi, I'm interested in the ${APP_NAME} ${planName} plan for my gym.`;
+  return `Hi, I'm interested in the ${APP_NAME} ${shortPlanName(planName)} plan for my gym.`;
 }
 
 /** wa.me link with a ready-made message about the plan. */
@@ -27,7 +32,7 @@ export function customPlanWhatsAppUrl(planName: string, whatsappNumber: string =
 
 /** mailto link with the plan in the subject and a starter message. */
 export function customPlanEmailUrl(planName: string, email: string = SUPPORT_EMAIL) {
-  const subject = encodeURIComponent(`${APP_NAME} ${planName} plan`);
+  const subject = encodeURIComponent(`${APP_NAME} ${shortPlanName(planName)} plan`);
   const body = encodeURIComponent(
     `${enquiry(planName)}\n\nGym name:\nNumber of branches:\nAbout how many members:\n`
   );
