@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { StatusCodes } from "http-status-codes";
 import { requireAccess } from "@/lib/access";
 import { formatCalendarMonth } from "@/lib/date-utils";
+import { contentDisposition } from "@/lib/download-filename";
 import {
   loadMonthlyReport,
   renderReportPdf,
@@ -40,13 +41,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (format === "pdf") {
       const pdf = await renderReportPdf(loaded);
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="${reportFileName(loaded, "pdf")}"`);
+      res.setHeader("Content-Disposition", contentDisposition(reportFileName(loaded, "pdf")));
       return res.status(StatusCodes.OK).send(pdf);
     }
     if (format === "xlsx") {
       const xlsx = renderReportXlsx(loaded);
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-      res.setHeader("Content-Disposition", `attachment; filename="${reportFileName(loaded, "xlsx")}"`);
+      res.setHeader("Content-Disposition", contentDisposition(reportFileName(loaded, "xlsx")));
       return res.status(StatusCodes.OK).send(xlsx);
     }
     return res.status(StatusCodes.OK).json({ ...loaded.report, scopeLabel: loaded.scopeLabel });
